@@ -1,4 +1,4 @@
-package sceat.domain;
+package sceat.domain.network;
 
 public enum Statut {
 	OPEN(0),

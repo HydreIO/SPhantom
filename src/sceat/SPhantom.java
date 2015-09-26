@@ -4,13 +4,15 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import sceat.domain.Manager;
+import sceat.domain.SPhantomTerminal;
 import sceat.domain.forkupdate.ForkUpdate;
-import ch.jamiete.mcping.MinecraftPing;
-import ch.jamiete.mcping.MinecraftPingOptions;
-import ch.jamiete.mcping.MinecraftPingReply;
+import sceat.domain.messaging.IMessaging;
+import sceat.infra.RabbitMqConnector;
 
 public class SPhantom {
 
@@ -20,9 +22,8 @@ public class SPhantom {
 	public static void main(String[] args) {
 		folder = new File(ClassLoader.getSystemClassLoader().getResource(".").getPath());
 		initLogger();
-		print("Démarrage de SPhantom");
-		SPhantom phantom = new SPhantom();
-		phantom.shutDown();
+		print("Démarrage de Sphantom");
+		new SPhantom();
 	}
 
 	private static SPhantom instance;
@@ -30,36 +31,84 @@ public class SPhantom {
 	private ForkUpdate updater;
 	private ExecutorService executor;
 	private boolean running;
+	private IMessaging messageBroker;
+	private SPhantomTerminal terminal;
+	boolean deploy = false;
+	private Manager manager;
 
 	public SPhantom() {
+		instance = this;
 		this.running = true;
+		this.manager = new Manager();
 		this.executor = Executors.newFixedThreadPool(30);
 		this.updater = new ForkUpdate();
-		try {
-			MinecraftPingReply data = new MinecraftPing().getPing(new MinecraftPingOptions().setHostname("mc.sceat.network").setPort(25565));
-			print(data.getDescription() + "  --  " + data.getPlayers().getOnline() + "/" + data.getPlayers().getMax());
-		} catch (IOException e) {
-			e.printStackTrace();
+		this.messageBroker = new RabbitMqConnector();
+		if (deploy) awaitForInput();
+		else {
+			terminal = new SPhantomTerminal();
+			getTerminal().awaitForInput();
 		}
+	}
+
+	// MinecraftPingReply data = new MinecraftPing().getPing(new MinecraftPingOptions().setHostname("mc.sceat.network").setPort(25565));
+	// print(data.getDescription() + "  --  " + data.getPlayers().getOnline() + "/" + data.getPlayers().getMax());
+
+	public Manager getManager() {
+		return manager;
+	}
+
+	public void awaitForInput() {
+		@SuppressWarnings("resource")
+		Scanner scan = new Scanner(System.in);
+		while (isRunning()) {
+			print("Input : exit|gui");
+			String nex = scan.next();
+			switch (nex) {
+				case "exit":
+					shutDown();
+					break;
+				case "gui":
+					terminal = new SPhantomTerminal();
+					getTerminal().awaitForInput();
+					break;
+				default:
+					print("Input : exit|gui");
+					break;
+			}
+		}
+
+	}
+
+	public SPhantomTerminal getTerminal() {
+		return terminal;
 	}
 
 	public static File getFolder() {
 		return folder;
 	}
 
-	public void shutDown() {
-		print("Arret de SPhantom..");
-		getExecutor().shutdown();
-		getUpdater().shutdown();
-		print("SPhantom éteint !");
+	public IMessaging getMessageBroker() {
+		return messageBroker;
+	}
+
+	public static void shutDown() {
+		print("Arret de Sphantom..");
+		getInstance().getExecutor().shutdown();
+		getInstance().getUpdater().shutdown();
+		print("Sphantom éteint !");
 		endLogger();
-		this.running = false;
+		getInstance().running = false;
+		System.exit(0);
 	}
 
 	public static void print(String txt) {
-		String s = new java.sql.Timestamp(System.currentTimeMillis()) + " || SPhantom |: " + txt;
+		print(txt, true);
+	}
+
+	public static void print(String txt, boolean log) {
+		String s = new java.sql.Timestamp(System.currentTimeMillis()).toString().substring(0, 19) + " | [Sphantom] > " + txt;
 		System.out.println(s);
-		log(s);
+		if (log) log(s);
 	}
 
 	public static SPhantom getInstance() {

@@ -1,9 +1,8 @@
 package sceat.infra;
 
-import java.awt.TextComponent;
 import java.io.IOException;
-import java.util.UUID;
 
+import sceat.SPhantom;
 import sceat.domain.messaging.destinationKey;
 import sceat.infra.RabbitMqConnector.messagesType;
 
@@ -52,7 +51,7 @@ public class RabbitMqReceiver {
 	 */
 	private static void bind(messagesType msg) {
 		try {
-			getChannel().queueBind(qname, msg.getName(), destinationKey.SPHANTOM.getKey());
+			getChannel().queueBind(qname, msg.getName(), destinationKey.SPHANTOM);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -77,11 +76,10 @@ public class RabbitMqReceiver {
 				String message = new String(body, "UTF-8");
 				messagesType messageType = messagesType.fromString(envelope.getExchange(), true);
 
-				// executer ce que bon vous semble
-				// envelope.getRoutingKey correspond a la valeur de notre enum destinationKey
-				// envelope.getExchange correspond a notre type de message
 				switch (messageType) {
-
+					case Update_Server:
+						SPhantom.getInstance().getManager().receiveServer(message);
+						break;
 					default:
 						break;
 				}

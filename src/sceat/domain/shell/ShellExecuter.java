@@ -25,6 +25,8 @@ import com.jcraft.jsch.Session;
 
 public class ShellExecuter {
 
+	public static final ShellExecuter OVH_1 = new ShellExecuter("root", "BHp3GLeELv9E", "94.23.218.25", 22);
+
 	private JSch jsch;
 	private Session session;
 
@@ -51,18 +53,18 @@ public class ShellExecuter {
 		if (getSession().isConnected()) getSession().disconnect();
 	}
 
-	public void runScript(String script) {
+	public void runScript(String cmd) {
 		openSession();
 		try {
 			ChannelExec channelExec = (ChannelExec) session.openChannel("exec");
-			channelExec.setCommand("sh " + script);
+			channelExec.setCommand(cmd);
 			channelExec.connect();
 			int exit = channelExec.getExitStatus();
 			channelExec.disconnect();
 			closeSession();
-			if (exit < 0) SPhantom.print(script + " éxécuté avec succes ! exitstatus inexisant !");
-			else if (exit > 0) SPhantom.print(script + " éxécuté avec erreurs ! /!\\");
-			else SPhantom.print(script + " éxécuté avec succes ! exitstatus inexisant !");
+			if (exit < 0) SPhantom.print(cmd + " éxécuté avec succes ! exitstatus inexisant !");
+			else if (exit > 0) SPhantom.print(cmd + " éxécuté avec erreurs ! /!\\");
+			else SPhantom.print(cmd + " éxécuté avec succes ! exitstatus inexisant !");
 		} catch (JSchException e) {
 			e.printStackTrace();
 		}

@@ -5,8 +5,6 @@ import java.util.concurrent.TimeoutException;
 
 import sceat.domain.messaging.IMessaging;
 import sceat.domain.messaging.destinationKey;
-import sceat.domain.messaging.dao.DAO_serverboot;
-import sceat.domain.messaging.dao.DAO_serverclose;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -41,6 +39,8 @@ public class RabbitMqConnector implements IMessaging {
 	 *
 	 */
 	public static enum messagesType {
+		Boot_Server("exchange_server_boot"),
+		Close_Server("exchange_server_close"),
 		Update_Server("exchange_server");
 
 		private String exchangeName;
@@ -66,7 +66,10 @@ public class RabbitMqConnector implements IMessaging {
 	 */
 	public void init() {
 		instance = this;
-		getFactory().setHost("localhost");
+		getFactory().setHost("94.23.218.25");
+		getFactory().setPort(5672);
+		getFactory().setUsername("sceat");
+		getFactory().setPassword("3ffZ37a6F3srgMc58fE");
 		try {
 			connection = getFactory().newConnection();
 			channel = getConnection().createChannel();
@@ -133,38 +136,17 @@ public class RabbitMqConnector implements IMessaging {
 	 * @param json
 	 *            le message
 	 */
-	public void basicPublich(messagesType msg, destinationKey key, String json) {
+	public void basicPublich(messagesType msg, String key, String json) {
 		try {
-			getChannel().basicPublish(msg.getName(), routing_enabled ? key.getKey() : "", null, json.getBytes());
+			getChannel().basicPublish(msg.getName(), routing_enabled ? key : "", null, json.getBytes());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	// *************** IMessaging **************
-
-	// Ne pas tenir compte du IMessaging c'est juste pour mon architecture hexagonale mais vous pouvez directement utiliser la methode !
-
-	@Override
-	public IMessaging sendBanned(Jms_BanPlayer jms) {
-		return this;
-	}
-
 	@Override
 	public void sendServer(String json) {
 		basicPublich(messagesType.Update_Server, destinationKey.HUBS_AND_PROXY, json);
-	}
-
-	@Override
-	public void bootServer(DAO_serverboot dao) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void closeServer(DAO_serverclose dao) {
-		// TODO Auto-generated method stub
-		
 	}
 
 }

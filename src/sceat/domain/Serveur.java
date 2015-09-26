@@ -1,9 +1,10 @@
 package sceat.domain;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Set;
 
-import sceat.domain.messaging.destinationKey;
+import sceat.SPhantom;
+import sceat.domain.network.Grades;
+import sceat.domain.network.Statut;
 import sceat.domain.utils.New;
 import sceat.domain.utils.UtilGson;
 
@@ -11,45 +12,24 @@ import com.google.gson.annotations.Expose;
 
 public class Serveur {
 
-	private String name;
+	@Expose
 	private int max_player;
-	/**
-	 * Collection d'uuid
-	 */
 	@SuppressWarnings("unchecked")
 	@Expose
-	private Collection<String>[] playersPerGrade = new Collection[Grades.values().length];
+	private Set<String>[] playersPerGrade = new Set[Grades.values().length];
 	@Expose
-	private Collection<String> players = New.coll();
+	private Set<String> players = New.set();
 	@Expose
 	private ServeurType type;
 	@Expose
 	private Statut statu;
-	private RessourcePack pack;
 	@Expose
 	private int index;
-	private Long lastHandshake;
-	private Collection<destinationKey> keys = new ArrayList<destinationKey>();
 	@Expose
 	private String ipadress;
 
-	public Serveur() {
-		this.statu = Statut.CLOSED;
-		this.pack = RessourcePack.RESSOURCE_PACK_DEFAULT;
-		this.lastHandshake = System.currentTimeMillis();
-	}
-
 	public String getIpadress() {
 		return ipadress;
-	}
-
-	/**
-	 * Return la derniere fois qu'il a indiqué être vivant
-	 * 
-	 * @return
-	 */
-	public Long getLastHandShake() {
-		return this.lastHandshake;
 	}
 
 	public String toJson() {
@@ -67,40 +47,18 @@ public class Serveur {
 	}
 
 	public void synchronize() {
-		Sceat.getJmsConnector().syncServer(toJson());
+		SPhantom.getInstance().getMessageBroker().sendServer(toJson());
 	}
 
-	public boolean close() {
-		if (getStatut() == Statut.CLOSED) return false;
-		// TODO: run close server
-		return true;
-	}
-
-	public boolean boot() {
-		if (getStatut() != Statut.CLOSED) return false;
-		// TODO: run start server
-		return true;
-	}
-
-	/**
-	 * Indique que ce serveur n'a pas crash
-	 * 
-	 * @return
-	 */
-	public Serveur handShake() {
-		this.lastHandshake = System.currentTimeMillis();
-		return this;
-	}
-
-	public RessourcePack getPack() {
-		return this.pack;
+	public Set<String>[] getPlayersPerGrade() {
+		return playersPerGrade;
 	}
 
 	/**
 	 * 
 	 * @return une collection d'uuid
 	 */
-	public Collection<String> getPlayers() {
+	public Set<String> getPlayers() {
 		return players;
 	}
 
@@ -110,7 +68,7 @@ public class Serveur {
 	 * @param gr
 	 * @return
 	 */
-	public Collection<String> getPlayers(Grades gr) {
+	public Set<String> getPlayers(Grades gr) {
 		return this.playersPerGrade[gr.getValue()];
 	}
 
@@ -119,16 +77,12 @@ public class Serveur {
 	}
 
 	/**
-	 * Set une collection d'uuid
+	 * Set d'uuid
 	 * 
 	 * @param players
 	 */
-	public void setPlayers(Collection<String> players) {
+	public void setPlayers(Set<String> players) {
 		this.players = players;
-	}
-
-	public Collection<destinationKey> getDestinations() {
-		return keys;
 	}
 
 	public Serveur setStatus(Statut s) {
@@ -175,7 +129,7 @@ public class Serveur {
 	}
 
 	public String getName() {
-		return this.name;
+		return getType().getName() + getIndex();
 	}
 
 	public int getMaxPlayers() {
@@ -184,21 +138,6 @@ public class Serveur {
 
 	public ServeurType getType() {
 		return this.type;
-	}
-
-	public Serveur addDestination(destinationKey key) {
-		this.keys.add(key);
-		return this;
-	}
-
-	public Serveur setPack(RessourcePack pack) {
-		this.pack = pack;
-		return this;
-	}
-
-	public Serveur setName(String name) {
-		this.name = name;
-		return this;
 	}
 
 	public Serveur setMaxPlayers(int max) {
@@ -216,10 +155,11 @@ public class Serveur {
 		lobbyAresRpg("§7Lobby §6AresRpg"),
 		lobbyAgares("§7Lobby §2Agar.es"),
 		lobbyIron("§7Lobby §3Iron"),
-		aresrpg("§aAres§a§lRpg"),
+		aresRpg("§aAres§a§lRpg"),
 		iron("§3Iron"),
 		agares("§6Agar.es"),
-		build("§9Build");
+		build("§9Build"),
+		proxy("proxy");
 
 		private String name;
 
