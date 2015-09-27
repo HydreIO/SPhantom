@@ -25,7 +25,7 @@ import com.jcraft.jsch.Session;
 
 public class ShellExecuter {
 
-	public static final ShellExecuter OVH_1 = new ShellExecuter("root", "BHp3GLeELv9E", "94.23.218.25", 22);
+	public static final ShellExecuter OVH_1 = new ShellExecuter("_", "_", "94.23.218.25", 22);
 
 	private JSch jsch;
 	private Session session;

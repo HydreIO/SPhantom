@@ -36,7 +36,7 @@ public class NetworkWindow extends Window {
 
 	private Label onlineCount = new Label("Players online : 0", Color.BLUE);
 	private Label staffOnlineCount = new Label("Staff online : 0", Color.BLUE);
-	private Label networkStatus = new Label("Network Status : " + Manager.Network_Status, Color.MAGENTA, true);
+	private Label networkStatus = new Label("Network Status : " + Manager.Network_Status, Color.GREEN, true);
 	private Button changeStatus = new Button("Update network status", new Action() {
 
 		@Override
@@ -160,7 +160,7 @@ public class NetworkWindow extends Window {
 	}
 
 	public void showExit() {
-		DialogResult result = MessageBox.showMessageBox(getOwner(), "Sphantom", " exit Sphantom ?", DialogButtons.OK_CANCEL);
+		DialogResult result = MessageBox.showMessageBox(getOwner(), "Sphantom", " Shutdown Sphantom ?", DialogButtons.OK_CANCEL);
 		if (result == DialogResult.OK) getTerminal().shutdown();
 	}
 

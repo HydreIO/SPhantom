@@ -91,6 +91,9 @@ public class ServeurBox {
 				syncMap();
 			}
 		});
+		name.setText("Name : " + s.getName());
+		type.setText("Type : " + s.getType());
+		index.setText("Index : " + s.getIndex());
 		serverBox_2.addComponent(infoxbox, LinearLayout.GROWS_HORIZONTALLY, LinearLayout.GROWS_VERTICALLY);
 		serverBox_2.addComponent(cmdbox, LinearLayout.MAXIMIZES_VERTICALLY);
 		allplayersBox.addComponent(stafflist, LinearLayout.MAXIMIZES_HORIZONTALLY, LinearLayout.MAXIMIZES_VERTICALLY);
@@ -105,7 +108,7 @@ public class ServeurBox {
 		staff.setText("Staff : " + staffcount);
 		maxp.setText("MaxPlayers : " + getServer().getMaxPlayers());
 		host.setText("Host : " + getServer().getIpadress());
-		ping.setText("Ping : " + (getServer().ping == -1 ? "DOWN" : getServer().ping));
+		ping.setText("Ping : " + (getServer().ping <= 0 ? "DOWN" : getServer().ping));
 		// infoxbox.addComponent(new Label("Status : " + getServer().getStatut(), Color.BLUE));
 		// infoxbox.addComponent(new Label("Players : " + getServer().getPlayersCount(), Color.BLUE));
 		// infoxbox.addComponent(new Label("Staff : " + staffcount, Color.BLUE));

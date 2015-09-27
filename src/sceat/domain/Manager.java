@@ -167,7 +167,7 @@ public class Manager implements IForkUpdade {
 		}
 		this.onlineStaff = stf;
 		this.onlinePlayers = onlinepl;
-		SPhantom.getInstance().getTerminal().getWindow().syncInfos(onlinepl.size(), stf.size());
+		if (SPhantom.getInstance().getTerminal().getWindow() != null) SPhantom.getInstance().getTerminal().getWindow().syncInfos(onlinepl.size(), stf.size());
 	}
 
 	public void startPingWorker() {
