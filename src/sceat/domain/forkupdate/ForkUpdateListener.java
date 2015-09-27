@@ -5,9 +5,6 @@ import java.util.HashSet;
 
 public class ForkUpdateListener {
 
-	public static void init() {
-	}
-
 	private static void addToHashMapList(ForkUpdateType type, Method m, Object o) {
 		HashSet<Method> methods = new HashSet<Method>();
 		if (ForkUpdate.methods.get(type) != null) methods = ForkUpdate.methods.get(type);

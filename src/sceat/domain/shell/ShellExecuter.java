@@ -37,7 +37,7 @@ public class ShellExecuter {
 			session.setConfig("StrictHostKeyChecking", "no");
 			session.setPassword(pass);
 		} catch (Exception e) {
-
+			SPhantom.printStackTrace(e);
 		}
 	}
 
@@ -45,7 +45,7 @@ public class ShellExecuter {
 		if (!getSession().isConnected()) try {
 			getSession().connect();
 		} catch (JSchException e) {
-			e.printStackTrace();
+			SPhantom.printStackTrace(e);
 		}
 	}
 
@@ -66,7 +66,7 @@ public class ShellExecuter {
 			else if (exit > 0) SPhantom.print(cmd + " éxécuté avec erreurs ! /!\\");
 			else SPhantom.print(cmd + " éxécuté avec succes ! exitstatus inexisant !");
 		} catch (JSchException e) {
-			e.printStackTrace();
+			SPhantom.printStackTrace(e);
 		}
 	}
 
@@ -111,7 +111,7 @@ public class ShellExecuter {
 			else SPhantom.print(scriptFileName + " éxécuté avec succes ! exitstatus inexisant !");
 
 		} catch (Exception e) {
-			System.err.println("Error: " + e);
+			SPhantom.printStackTrace(e);
 		}
 		return result;
 	}

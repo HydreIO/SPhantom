@@ -16,6 +16,7 @@ public class SPhantomTerminal {
 	private GUIScreen screen;
 	private ScreenWriter writer;
 	private boolean running = false;
+	private NetworkWindow window;
 
 	public SPhantomTerminal() {
 		screen = TerminalFacade.createGUIScreen();
@@ -32,8 +33,12 @@ public class SPhantomTerminal {
 		getScreen().startScreen();
 		getWriter().setBackgroundColor(Color.BLACK);
 		getWriter().setForegroundColor(Color.WHITE);
-		getGUI().showWindow(new NetworkWindow(this), Position.CENTER);
+		getGUI().showWindow((window = new NetworkWindow(this)), Position.CENTER);
 		refreshScreen();
+	}
+
+	public NetworkWindow getWindow() {
+		return window;
 	}
 
 	public void awaitForInput() {

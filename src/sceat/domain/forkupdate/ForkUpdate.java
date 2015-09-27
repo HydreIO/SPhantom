@@ -12,6 +12,8 @@ import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import sceat.SPhantom;
+
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class ForkUpdate implements Runnable {
@@ -51,7 +53,7 @@ public class ForkUpdate implements Runnable {
 					try {
 						met.add(m);
 					} catch (Exception e) {
-						e.printStackTrace();
+						SPhantom.printStackTrace(e);
 					}
 				getPool().invoke(new Overclock(met)); // ont créé une tache recursive
 
@@ -74,7 +76,7 @@ public class ForkUpdate implements Runnable {
 			try {
 				m.invoke(listener.get(m));
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-				e.printStackTrace();
+				SPhantom.printStackTrace(e);
 			}
 
 		}

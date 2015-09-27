@@ -26,17 +26,28 @@ public class ServeurBox {
 	private NetworkWindow window;
 	private Serveur server;
 
+	private Label name = new Label("Name : ..", Color.BLUE);
+	private Label type = new Label("Type : ..", Color.BLUE);
+	private Label index = new Label("Index : ..", Color.BLUE);
+	private Label status = new Label("Status : ..", Color.BLUE);
+	private Label players = new Label("Players : ..", Color.BLUE);
+	private Label staff = new Label("Staff : ..", Color.BLUE);
+	private Label maxp = new Label("MaxPlayers : ..", Color.BLUE);
+	private Label host = new Label("Host : 0.0.0.0:0000", Color.BLUE);
+	private Label ping = new Label("Ping : ..", Color.BLUE);
+
 	public ServeurBox(NetworkWindow windo, Serveur s) {
 		this.window = windo;
 		this.server = s;
-		infoxbox.addComponent(new Label("Name : lobbyMain1", Color.BLUE));
-		infoxbox.addComponent(new Label("Type : lobbyMain", Color.BLUE));
-		infoxbox.addComponent(new Label("Index : 1", Color.BLUE));
-		infoxbox.addComponent(new Label("Status : OPEN", Color.BLUE));
-		infoxbox.addComponent(new Label("Players : 0", Color.BLUE));
-		infoxbox.addComponent(new Label("Staff : 0", Color.BLUE));
-		infoxbox.addComponent(new Label("MaxPlayers : 100", Color.BLUE));
-		infoxbox.addComponent(new Label("Host : 0.0.0.0:0000", Color.BLUE));
+		infoxbox.addComponent(name);
+		infoxbox.addComponent(type);
+		infoxbox.addComponent(index);
+		infoxbox.addComponent(status);
+		infoxbox.addComponent(players);
+		infoxbox.addComponent(staff);
+		infoxbox.addComponent(maxp);
+		infoxbox.addComponent(host);
+		infoxbox.addComponent(ping);
 
 		cmdbox.addAction("Boot server", new Action() {
 
@@ -88,12 +99,29 @@ public class ServeurBox {
 		serversBox.addComponent(allplayersBox, LinearLayout.MAXIMIZES_HORIZONTALLY, LinearLayout.MAXIMIZES_VERTICALLY);
 	}
 
+	public void syncServerInfos(int staffcount) {
+		status.setText("Status : " + getServer().getStatut());
+		players.setText("Players : " + getServer().getPlayersCount());
+		staff.setText("Staff : " + staffcount);
+		maxp.setText("MaxPlayers : " + getServer().getMaxPlayers());
+		host.setText("Host : " + getServer().getIpadress());
+		ping.setText("Ping : " + (getServer().ping == -1 ? "DOWN" : getServer().ping));
+		// infoxbox.addComponent(new Label("Status : " + getServer().getStatut(), Color.BLUE));
+		// infoxbox.addComponent(new Label("Players : " + getServer().getPlayersCount(), Color.BLUE));
+		// infoxbox.addComponent(new Label("Staff : " + staffcount, Color.BLUE));
+		// infoxbox.addComponent(new Label("MaxPlayers : " + getServer().getMaxPlayers(), Color.BLUE));
+		// infoxbox.addComponent(new Label("Host : " + getServer().getIpadress(), Color.BLUE));
+		// infoxbox.addComponent(new Label("Ping : " + (getServer().ping == -1 ? "DOWN" : getServer().ping), Color.BLUE));
+	}
+
 	public void show() {
 		getWindow().getSelectionSrv().addComponent(serversBox, LinearLayout.MAXIMIZES_HORIZONTALLY, LinearLayout.MAXIMIZES_VERTICALLY);
+		getWindow().currentShowingBox = this;
 	}
 
 	public void hide() {
 		getWindow().getSelectionSrv().removeComponent(serversBox);
+		getWindow().currentShowingBox = null;
 	}
 
 	public Serveur getServer() {

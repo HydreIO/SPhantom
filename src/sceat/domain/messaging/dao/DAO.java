@@ -4,8 +4,8 @@ import sceat.domain.utils.UtilGson;
 
 public class DAO {
 
-	public <T> String toJson(T ty) {
-		return UtilGson.serialize(ty);
+	public <T> String toJson(Object ins) {
+		return UtilGson.serialize(ins);
 	}
 
 	@SuppressWarnings("unchecked")

@@ -10,11 +10,14 @@ import java.util.concurrent.Executors;
 
 import sceat.domain.Manager;
 import sceat.domain.SPhantomTerminal;
+import sceat.domain.config.SPhantomConfig;
 import sceat.domain.forkupdate.ForkUpdate;
 import sceat.domain.messaging.IMessaging;
 import sceat.infra.RabbitMqConnector;
 
 public class SPhantom {
+
+	boolean deploy = false;
 
 	private static BufferedWriter writer;
 	private static File folder;
@@ -22,27 +25,46 @@ public class SPhantom {
 	public static void main(String[] args) {
 		folder = new File(ClassLoader.getSystemClassLoader().getResource(".").getPath());
 		initLogger();
-		print("Démarrage de Sphantom");
-		new SPhantom();
+		print("__________________________________________________");
+		print("___________________ SPHANTOM _____________________");
+		print("Booting..");
+		if (args.length == 2) {
+			if (args[0].endsWith("-auth")) {
+				String user = args[1].substring(0, args[1].indexOf('@'));
+				String pass = args[1].substring(args[1].indexOf('@') + 1);
+				new SPhantom(user, pass);
+			} else {
+				print("Incorrect args ! type ./sphantom start -auth user@pass");
+			}
+		} else {
+			print("Incorrect args ! type ./sphantom start -auth user@pass");
+		}
+		print("Shutdown..");
+		print("Bye.");
+
+		System.exit(1);
 	}
 
 	private static SPhantom instance;
 
 	private ForkUpdate updater;
 	private ExecutorService executor;
+	private ExecutorService pinger;
 	private boolean running;
 	private IMessaging messageBroker;
 	private SPhantomTerminal terminal;
-	boolean deploy = false;
 	private Manager manager;
+	private SPhantomConfig config;
 
-	public SPhantom() {
+	public SPhantom(String user, String pass) {
 		instance = this;
 		this.running = true;
+		this.pinger = Executors.newSingleThreadExecutor();
+		this.config = new SPhantomConfig();
 		this.manager = new Manager();
 		this.executor = Executors.newFixedThreadPool(30);
 		this.updater = new ForkUpdate();
-		this.messageBroker = new RabbitMqConnector();
+		this.messageBroker = new RabbitMqConnector(user, pass);
 		if (deploy) awaitForInput();
 		else {
 			terminal = new SPhantomTerminal();
@@ -50,8 +72,13 @@ public class SPhantom {
 		}
 	}
 
-	// MinecraftPingReply data = new MinecraftPing().getPing(new MinecraftPingOptions().setHostname("mc.sceat.network").setPort(25565));
-	// print(data.getDescription() + "  --  " + data.getPlayers().getOnline() + "/" + data.getPlayers().getMax());
+	public SPhantomConfig getSphantomConfig() {
+		return config;
+	}
+
+	public ExecutorService getPinger() {
+		return pinger;
+	}
 
 	public Manager getManager() {
 		return manager;
@@ -79,6 +106,12 @@ public class SPhantom {
 
 	}
 
+	public static void printStackTrace(Exception e) {
+		e.printStackTrace();
+		for (StackTraceElement ez : e.getStackTrace())
+			log(ez.toString());
+	}
+
 	public SPhantomTerminal getTerminal() {
 		return terminal;
 	}
@@ -92,10 +125,10 @@ public class SPhantom {
 	}
 
 	public static void shutDown() {
-		print("Arret de Sphantom..");
+		print("Shutdown..");
 		getInstance().getExecutor().shutdown();
 		getInstance().getUpdater().shutdown();
-		print("Sphantom éteint !");
+		print("Bye.");
 		endLogger();
 		getInstance().running = false;
 		System.exit(0);
@@ -107,6 +140,12 @@ public class SPhantom {
 
 	public static void print(String txt, boolean log) {
 		String s = new java.sql.Timestamp(System.currentTimeMillis()).toString().substring(0, 19) + " | [Sphantom] > " + txt;
+		System.out.println(s);
+		if (log) log(s);
+	}
+
+	public static void print(String txt, boolean error, boolean log) {
+		String s = new java.sql.Timestamp(System.currentTimeMillis()).toString().substring(0, 19) + " | [" + (error ? "Error" : "Sphantom") + "] > " + txt;
 		System.out.println(s);
 		if (log) log(s);
 	}
@@ -136,7 +175,7 @@ public class SPhantom {
 		File f = new File(getFolder().getAbsolutePath() + "/SPhantom.log");
 		try {
 			if (!f.exists()) f.createNewFile();
-			fw = new FileWriter(f);
+			fw = new FileWriter(f, true);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -155,6 +194,7 @@ public class SPhantom {
 		try {
 			getWriter().newLine();
 			getWriter().write(txt);
+			getWriter().flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

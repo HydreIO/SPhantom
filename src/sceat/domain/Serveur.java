@@ -1,8 +1,10 @@
 package sceat.domain;
 
+import java.util.List;
 import java.util.Set;
 
 import sceat.SPhantom;
+import sceat.domain.Manager.ServerInfo;
 import sceat.domain.network.Grades;
 import sceat.domain.network.Statut;
 import sceat.domain.utils.New;
@@ -18,7 +20,7 @@ public class Serveur {
 	@Expose
 	private Set<String>[] playersPerGrade = new Set[Grades.values().length];
 	@Expose
-	private Set<String> players = New.set();
+	private List<String> players = New.arrayList();
 	@Expose
 	private ServeurType type;
 	@Expose
@@ -27,9 +29,20 @@ public class Serveur {
 	private int index;
 	@Expose
 	private String ipadress;
+	public short ping;
 
 	public String getIpadress() {
 		return ipadress;
+	}
+
+	public static Serveur fromServerInfo(ServerInfo infos) {
+		Serveur s = new Serveur();
+		s.ipadress = infos.getHost() + ":" + infos.getPort();
+		s.type = infos.getType();
+		s.index = infos.getIndex();
+		s.statu = Statut.CLOSED;
+		s.max_player = 0;
+		return s;
 	}
 
 	public String toJson() {
@@ -58,7 +71,7 @@ public class Serveur {
 	 * 
 	 * @return une collection d'uuid
 	 */
-	public Set<String> getPlayers() {
+	public List<String> getPlayers() {
 		return players;
 	}
 
@@ -81,7 +94,7 @@ public class Serveur {
 	 * 
 	 * @param players
 	 */
-	public void setPlayers(Set<String> players) {
+	public void setPlayers(List<String> players) {
 		this.players = players;
 	}
 
@@ -129,7 +142,7 @@ public class Serveur {
 	}
 
 	public String getName() {
-		return getType().getName() + getIndex();
+		return getType().name() + getIndex();
 	}
 
 	public int getMaxPlayers() {

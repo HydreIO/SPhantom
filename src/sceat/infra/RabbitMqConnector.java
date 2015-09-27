@@ -3,6 +3,7 @@ package sceat.infra;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
+import sceat.SPhantom;
 import sceat.domain.messaging.IMessaging;
 import sceat.domain.messaging.destinationKey;
 
@@ -24,8 +25,8 @@ public class RabbitMqConnector implements IMessaging {
 
 	public static String type = routing_enabled ? "direct" : "fanout";
 
-	public RabbitMqConnector() {
-		init();
+	public RabbitMqConnector(String user, String pass) {
+		init(user, pass);
 	}
 
 	public RabbitMqReceiver getReceiver() {
@@ -64,20 +65,28 @@ public class RabbitMqConnector implements IMessaging {
 	/**
 	 * Initialisation de la connection et du channel, ainsi que déclaration des messages json a envoyer (par leur nom : banP etc) On initialise aussi les receiver (une fois le channel créé)
 	 */
-	public void init() {
+	public void init(String user, String passwd) {
 		instance = this;
 		getFactory().setHost("94.23.218.25");
 		getFactory().setPort(5672);
-		getFactory().setUsername("sceat");
-		getFactory().setPassword("3ffZ37a6F3srgMc58fE");
+		getFactory().setUsername(user);
+		getFactory().setPassword(passwd);
 		try {
 			connection = getFactory().newConnection();
 			channel = getConnection().createChannel();
 		} catch (IOException | TimeoutException e) {
-			e.printStackTrace();
+			SPhantom.print("Unable to access message broker RMQ, Sphantom is going down..", true);
+			SPhantom.printStackTrace(e);
+			try {
+				Thread.sleep(3000);
+			} catch (InterruptedException e1) {
+				SPhantom.printStackTrace(e);
+			}
+			SPhantom.shutDown();
+			return;
 		}
+		SPhantom.print("Sucessfully connected to broker RMQ");
 		exchangeDeclare(messagesType.Update_Server);
-
 		this.receiver = new RabbitMqReceiver();
 	}
 
@@ -89,7 +98,7 @@ public class RabbitMqConnector implements IMessaging {
 			getChannel().close();
 			getConnection().close();
 		} catch (IOException | TimeoutException e) {
-			e.printStackTrace();
+			SPhantom.printStackTrace(e);
 		}
 	}
 
@@ -118,7 +127,7 @@ public class RabbitMqConnector implements IMessaging {
 		try {
 			getChannel().exchangeDeclare(msg.getName(), type);
 		} catch (IOException e) {
-			e.printStackTrace();
+			SPhantom.printStackTrace(e);
 		}
 	}
 
@@ -140,7 +149,7 @@ public class RabbitMqConnector implements IMessaging {
 		try {
 			getChannel().basicPublish(msg.getName(), routing_enabled ? key : "", null, json.getBytes());
 		} catch (IOException e) {
-			e.printStackTrace();
+			SPhantom.printStackTrace(e);
 		}
 	}
 

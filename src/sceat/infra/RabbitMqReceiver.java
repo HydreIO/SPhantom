@@ -29,7 +29,7 @@ public class RabbitMqReceiver {
 			if (RabbitMqConnector.routing_enabled) bind();
 			startReceiver();
 		} catch (IOException e) {
-			e.printStackTrace();
+			SPhantom.printStackTrace(e);
 		}
 	}
 
@@ -53,7 +53,7 @@ public class RabbitMqReceiver {
 		try {
 			getChannel().queueBind(qname, msg.getName(), destinationKey.SPHANTOM);
 		} catch (IOException e) {
-			e.printStackTrace();
+			SPhantom.printStackTrace(e);
 		}
 	}
 

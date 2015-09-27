@@ -29,6 +29,7 @@ import com.googlecode.lanterna.terminal.Terminal.Color;
 public class NetworkWindow extends Window {
 
 	private SPhantomTerminal terminal;
+	public ServeurBox currentShowingBox = null;
 
 	private Panel networkingPanel = new Panel("Networking", new Border.Bevel(false), Orientation.VERTICAL);
 	private Panel infosPlayersPanel = new Panel("Global", new Border.Bevel(false), Orientation.VERTICAL);;
@@ -50,6 +51,7 @@ public class NetworkWindow extends Window {
 	private Map<ServeurType, ActionListBox> serverInfosBox = New.map();
 
 	private Map<ServeurType, Panel> serversInfosCadre = New.map();
+	private Map<String, ServeurBox> serversBox = New.map();
 
 	public NetworkWindow(SPhantomTerminal terminal) {
 		super("Sphantom Terminal | © Sceat.Network");
@@ -72,11 +74,22 @@ public class NetworkWindow extends Window {
 				}
 			});
 		}
+
+		for (Serveur s : SPhantom.getInstance().getManager().getServers())
+			getServersBox().put(s.getName(), new ServeurBox(this, s));
 		build();
 	}
 
 	public void openChangeStatus() {
 		// TODO change status rabbit
+	}
+
+	public void reloadConfig() {
+		// TODO recharger la config et recharger les servers a ping
+	}
+
+	public Map<String, ServeurBox> getServersBox() {
+		return serversBox;
 	}
 
 	public SPhantomTerminal getTerminal() {
@@ -97,6 +110,7 @@ public class NetworkWindow extends Window {
 		Panel serversInfoscadre = serversInfosCadre.get(type);
 		selectionSrvhide.addComponent(serversInfoscadre);
 		serversInfoscadre.setVisible(true);
+		if (currentShowingBox != null) currentShowingBox.hide();
 	}
 
 	public void initInfosPanel(ServeurType type) {
@@ -109,16 +123,14 @@ public class NetworkWindow extends Window {
 
 				@Override
 				public void doAction() {
-					showServeurInfos(s);
+					if (s != null && s.getName() != null) showServeurInfos(s);
 				}
 			});
 	}
 
 	public void showServeurInfos(Serveur s) {
-
-	}
-
-	public void init() {
+		if (currentShowingBox != null) currentShowingBox.hide();
+		if (getServersBox().containsKey(s.getName()) && getServersBox().get(s.getName()) != null) getServersBox().get(s.getName()).show();
 	}
 
 	public Label getStaffOnlineCount() {
@@ -145,11 +157,10 @@ public class NetworkWindow extends Window {
 		selectionSrvhide.addComponent(servertypeCadre, LinearLayout.MAXIMIZES_VERTICALLY);
 		selectionSrv.addComponent(selectionSrvhide, LinearLayout.MAXIMIZES_VERTICALLY);
 		addComponent(selectionSrv, LinearLayout.MAXIMIZES_HORIZONTALLY, LinearLayout.MAXIMIZES_VERTICALLY);
-		new ServeurBox(this, null).show();
 	}
 
 	public void showExit() {
-		DialogResult result = MessageBox.showMessageBox(getOwner(), "Sphantom", "exit Sphantom ?", DialogButtons.OK_CANCEL);
+		DialogResult result = MessageBox.showMessageBox(getOwner(), "Sphantom", " exit Sphantom ?", DialogButtons.OK_CANCEL);
 		if (result == DialogResult.OK) getTerminal().shutdown();
 	}
 
