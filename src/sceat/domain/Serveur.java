@@ -35,6 +35,10 @@ public class Serveur {
 		return ipadress;
 	}
 
+	public void setPlayersPerGrade(Set<String>[] playersPerGrade) {
+		this.playersPerGrade = playersPerGrade;
+	}
+
 	public static Serveur fromServerInfo(ServerInfo infos) {
 		Serveur s = new Serveur();
 		s.ipadress = infos.getHost() + ":" + infos.getPort();

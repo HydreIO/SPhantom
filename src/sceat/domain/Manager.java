@@ -1,7 +1,9 @@
 package sceat.domain;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -100,15 +102,26 @@ public class Manager implements IForkUpdade {
 			}
 
 		for (ServerInfo inf : getServersInfos())
-			putServer(Serveur.fromServerInfo(inf));
+			putServer(Serveur.fromServerInfo(inf), true);
 
 		startPingWorker();
 		ForkUpdateListener.register(this);
 	}
 
-	public void putServer(Serveur s) {
-		getServersArray(s.getType())[s.getIndex() - 1] = s;
+	@SuppressWarnings("unchecked")
+	public void putServer(Serveur s, boolean putstatus) {
+		if (s.getType() == ServeurType.proxy) {
+			s.setPlayers(Arrays.asList("not implemented"));
+			s.setPlayersPerGrade(new HashSet[Grades.values().length]);
+		}
+		Serveur cur = getServersArray(s.getType())[s.getIndex() - 1];
+		if (cur != null) {
+			if (!putstatus) getServersArray(s.getType())[s.getIndex() - 1] = s.setStatus(cur.getStatut());
+			getServersArray(s.getType())[s.getIndex() - 1] = s;
+		} else getServersArray(s.getType())[s.getIndex() - 1] = s;
 		servers.put(s.getName(), s);
+		SPhantomTerminal term = SPhantom.getInstance().getTerminal();
+		if (term != null && term.getWindow() != null && term.getWindow().getServersBox() != null) term.getWindow().getServersBox().get(s.getName()).setServer(s);
 	}
 
 	public Serveur[] getServersArray(ServeurType type) {
@@ -120,7 +133,8 @@ public class Manager implements IForkUpdade {
 	}
 
 	public void receiveServer(String json) {
-		putServer(Serveur.fromJson(json));
+		Serveur s = Serveur.fromJson(json);
+		putServer(getServer(s.getName()).setStatus(s.getStatut()), true);
 	}
 
 	public Serveur getServer(String name) {
@@ -156,18 +170,21 @@ public class Manager implements IForkUpdade {
 		Set<String> stf = New.set();
 		Set<String> onlinepl = New.set();
 		for (Serveur s : getServers()) {
-			onlinepl.addAll(s.getPlayers());
+			if (s.getType() != ServeurType.proxy) onlinepl.addAll(s.getPlayers());
 			Set<String> ssf = New.set();
-			for (int i = 0; i < (Grades.values().length - 1); i++) {
+			if (s.getType() != ServeurType.proxy) for (int i = 0; i < (Grades.values().length - 1); i++) {
 				if (s.getPlayersPerGrade()[1] != null) ssf.addAll(s.getPlayersPerGrade()[i]);
 			}
 			stf.addAll(ssf);
-			NetworkWindow wind = SPhantom.getInstance().getTerminal().getWindow();
-			if (wind != null) wind.getServersBox().get(s.getName()).syncServerInfos(ssf);
+			if (SPhantom.getInstance().getTerminal() != null) {
+				NetworkWindow wind = SPhantom.getInstance().getTerminal().getWindow();
+				if (wind != null) wind.getServersBox().get(s.getName()).syncServerInfos(ssf);
+			}
 		}
 		this.onlineStaff = stf;
 		this.onlinePlayers = onlinepl;
-		if (SPhantom.getInstance().getTerminal().getWindow() != null) SPhantom.getInstance().getTerminal().getWindow().syncInfos(onlinepl.size(), stf.size());
+		if (SPhantom.getInstance().getTerminal() != null && SPhantom.getInstance().getTerminal().getWindow() != null) SPhantom.getInstance().getTerminal().getWindow()
+				.syncInfos(onlinepl.size(), stf.size());
 	}
 
 	public void startPingWorker() {
@@ -183,17 +200,19 @@ public class Manager implements IForkUpdade {
 
 						long ms = System.currentTimeMillis();
 						MinecraftPingReply data = new MinecraftPing().getPing(new MinecraftPingOptions().setHostname(s.getHost()).setPort(s.getPort()).setTimeout(300));
+						short cur = (short) (System.currentTimeMillis() - ms);
 						Serveur sr = Serveur.fromServerInfo(s);
-						sr.ping = (short) (System.currentTimeMillis() - ms);
+						sr.ping = cur;
 						if (data == null) {
 							sr.ping = -1;
 							sr.setStatus(Statut.CLOSED);
 						}
 						List<String> str = new ArrayList<String>();
-						if (data != null && data.getPlayers() != null && data.getPlayers().getSample() != null) for (Player pl : data.getPlayers().getSample())
+						if (data != null && data.getPlayers() != null && data.getPlayers().getSample() != null) for (Player pl : data.getPlayers().getSample()) {
 							str.add(pl.getId());
+						}
 						sr.setPlayers(str);
-						putServer(sr);
+						putServer(sr, sr.ping < 1 ? true : false);
 
 					}
 					sleep(1000); // Petite pause d'une seconde

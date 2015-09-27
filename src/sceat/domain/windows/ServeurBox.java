@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import sceat.domain.Serveur;
+import sceat.domain.Serveur.ServeurType;
 import sceat.domain.utils.UtilUuid;
 
 import com.googlecode.lanterna.gui.Action;
@@ -112,9 +113,10 @@ public class ServeurBox {
 		this.staff.setText("Staff : " + staff.size());
 		maxp.setText("MaxPlayers : " + getServer().getMaxPlayers());
 		host.setText("Host : " + getServer().getIpadress());
-		ping.setText("Ping : " + (getServer().ping <= 0 ? "DOWN" : getServer().ping));
+		this.ping.setText("Ping : " + (getServer().ping <= 0 ? "DOWN" : getServer().ping));
 		stafflist.removeAllRows();
 		playerslist.removeAllRows();
+		if (getServer().getType() == ServeurType.proxy) return;
 		for (String po : getServer().getPlayers())
 			playerslist.addRow(new Label(UtilUuid.getName(UUID.fromString(po)), Color.MAGENTA));
 		for (String pol : staff)
@@ -124,6 +126,10 @@ public class ServeurBox {
 	public void show() {
 		getWindow().getSelectionSrv().addComponent(serversBox, LinearLayout.MAXIMIZES_HORIZONTALLY, LinearLayout.MAXIMIZES_VERTICALLY);
 		getWindow().currentShowingBox = this;
+	}
+
+	public void setServer(Serveur server) {
+		this.server = server;
 	}
 
 	public void hide() {
