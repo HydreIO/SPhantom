@@ -157,13 +157,13 @@ public class Manager implements IForkUpdade {
 		Set<String> onlinepl = New.set();
 		for (Serveur s : getServers()) {
 			onlinepl.addAll(s.getPlayers());
-			Collection<String> ssf = New.coll();
+			Set<String> ssf = New.set();
 			for (int i = 0; i < (Grades.values().length - 1); i++) {
 				if (s.getPlayersPerGrade()[1] != null) ssf.addAll(s.getPlayersPerGrade()[i]);
 			}
 			stf.addAll(ssf);
 			NetworkWindow wind = SPhantom.getInstance().getTerminal().getWindow();
-			if (wind != null) wind.getServersBox().get(s.getName()).syncServerInfos(ssf.size());
+			if (wind != null) wind.getServersBox().get(s.getName()).syncServerInfos(ssf);
 		}
 		this.onlineStaff = stf;
 		this.onlinePlayers = onlinepl;
