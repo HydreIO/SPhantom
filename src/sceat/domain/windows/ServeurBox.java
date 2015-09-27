@@ -1,6 +1,10 @@
 package sceat.domain.windows;
 
+import java.util.Set;
+import java.util.UUID;
+
 import sceat.domain.Serveur;
+import sceat.domain.utils.UtilUuid;
 
 import com.googlecode.lanterna.gui.Action;
 import com.googlecode.lanterna.gui.Border;
@@ -102,19 +106,19 @@ public class ServeurBox {
 		serversBox.addComponent(allplayersBox, LinearLayout.MAXIMIZES_HORIZONTALLY, LinearLayout.MAXIMIZES_VERTICALLY);
 	}
 
-	public void syncServerInfos(int staffcount) {
+	public void syncServerInfos(Set<String> staff) {
 		status.setText("Status : " + getServer().getStatut());
 		players.setText("Players : " + getServer().getPlayersCount());
-		staff.setText("Staff : " + staffcount);
+		this.staff.setText("Staff : " + staff.size());
 		maxp.setText("MaxPlayers : " + getServer().getMaxPlayers());
 		host.setText("Host : " + getServer().getIpadress());
 		ping.setText("Ping : " + (getServer().ping <= 0 ? "DOWN" : getServer().ping));
-		// infoxbox.addComponent(new Label("Status : " + getServer().getStatut(), Color.BLUE));
-		// infoxbox.addComponent(new Label("Players : " + getServer().getPlayersCount(), Color.BLUE));
-		// infoxbox.addComponent(new Label("Staff : " + staffcount, Color.BLUE));
-		// infoxbox.addComponent(new Label("MaxPlayers : " + getServer().getMaxPlayers(), Color.BLUE));
-		// infoxbox.addComponent(new Label("Host : " + getServer().getIpadress(), Color.BLUE));
-		// infoxbox.addComponent(new Label("Ping : " + (getServer().ping == -1 ? "DOWN" : getServer().ping), Color.BLUE));
+		stafflist.removeAllRows();
+		playerslist.removeAllRows();
+		for (String po : getServer().getPlayers())
+			playerslist.addRow(new Label(UtilUuid.getName(UUID.fromString(po)), Color.MAGENTA));
+		for (String pol : staff)
+			stafflist.addRow(new Label(UtilUuid.getName(UUID.fromString(pol)), Color.MAGENTA));
 	}
 
 	public void show() {
