@@ -112,6 +112,17 @@ public class SPhantom {
 			log(ez.toString());
 	}
 
+	public void stackTrace(int maxline) {
+		String msg = new String();
+		int i = 0;
+		for (StackTraceElement e : Thread.currentThread().getStackTrace()) {
+			msg += "\n[" + e.getClassName() + "]" + e.getMethodName() + ":" + e.getLineNumber();
+			if (i == maxline) break;
+			else i++;
+		}
+		System.out.println(msg);
+	}
+
 	public SPhantomTerminal getTerminal() {
 		return terminal;
 	}

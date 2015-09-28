@@ -35,8 +35,9 @@ public class Serveur {
 		return ipadress;
 	}
 
-	public void setPlayersPerGrade(Set<String>[] playersPerGrade) {
+	public Serveur setPlayersPerGrade(Set<String>[] playersPerGrade) {
 		this.playersPerGrade = playersPerGrade;
+		return this;
 	}
 
 	public static Serveur fromServerInfo(ServerInfo infos) {

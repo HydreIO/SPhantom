@@ -102,23 +102,38 @@ public class Manager implements IForkUpdade {
 			}
 
 		for (ServerInfo inf : getServersInfos())
-			putServer(Serveur.fromServerInfo(inf), true);
+			putServer(Serveur.fromServerInfo(inf), true, false);
 
 		startPingWorker();
 		ForkUpdateListener.register(this);
 	}
 
+	/**
+	 * Synchronize a server
+	 * 
+	 * @param s
+	 *            the server
+	 * @param putstatus
+	 *            wheter or not if we have to update the status
+	 * @param putStaffpl
+	 *            same for the online staff list
+	 */
 	@SuppressWarnings("unchecked")
-	public void putServer(Serveur s, boolean putstatus) {
-		if (s.getType() == ServeurType.proxy) {
+	public void putServer(Serveur s, boolean putstatus, boolean putStaffpl) {
+		boolean proxy = s.getType() == ServeurType.proxy;
+		if (proxy) {
 			s.setPlayers(Arrays.asList("not implemented"));
 			s.setPlayersPerGrade(new HashSet[Grades.values().length]);
 		}
 		Serveur cur = getServersArray(s.getType())[s.getIndex() - 1];
 		if (cur != null) {
-			if (!putstatus) getServersArray(s.getType())[s.getIndex() - 1] = s.setStatus(cur.getStatut());
-			getServersArray(s.getType())[s.getIndex() - 1] = s;
+			if (!putstatus) {
+				if (!putStaffpl) getServersArray(s.getType())[s.getIndex() - 1] = s.setStatus(cur.getStatut()).setPlayersPerGrade(cur.getPlayersPerGrade());
+				else getServersArray(s.getType())[s.getIndex() - 1] = s.setStatus(cur.getStatut());
+			} else if (!putStaffpl) getServersArray(s.getType())[s.getIndex() - 1] = s.setPlayersPerGrade(cur.getPlayersPerGrade());
+			else getServersArray(s.getType())[s.getIndex() - 1] = s;
 		} else getServersArray(s.getType())[s.getIndex() - 1] = s;
+		if (proxy && s.ping > 1) s.setStatus(Statut.OPEN);
 		servers.put(s.getName(), s);
 		SPhantomTerminal term = SPhantom.getInstance().getTerminal();
 		if (term != null && term.getWindow() != null && term.getWindow().getServersBox() != null) term.getWindow().getServersBox().get(s.getName()).setServer(s);
@@ -134,7 +149,7 @@ public class Manager implements IForkUpdade {
 
 	public void receiveServer(String json) {
 		Serveur s = Serveur.fromJson(json);
-		putServer(getServer(s.getName()).setStatus(s.getStatut()), true);
+		putServer(getServer(s.getName()).setStatus(s.getStatut()).setPlayersPerGrade(s.getPlayersPerGrade()), true, true);
 	}
 
 	public Serveur getServer(String name) {
@@ -197,7 +212,6 @@ public class Manager implements IForkUpdade {
 				while (SPhantom.getInstance().isRunning()) {
 					for (ServerInfo s : serversInfos) {
 						if (s == null) continue;
-
 						long ms = System.currentTimeMillis();
 						MinecraftPingReply data = new MinecraftPing().getPing(new MinecraftPingOptions().setHostname(s.getHost()).setPort(s.getPort()).setTimeout(300));
 						short cur = (short) (System.currentTimeMillis() - ms);
@@ -212,8 +226,7 @@ public class Manager implements IForkUpdade {
 							str.add(pl.getId());
 						}
 						sr.setPlayers(str);
-						putServer(sr, sr.ping < 1 ? true : false);
-
+						putServer(sr, sr.ping < 1 ? true : false, false);
 					}
 					sleep(1000); // Petite pause d'une seconde
 				}
