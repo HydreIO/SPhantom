@@ -6,6 +6,7 @@ import java.util.concurrent.TimeoutException;
 import sceat.SPhantom;
 import sceat.domain.messaging.IMessaging;
 import sceat.domain.messaging.destinationKey;
+import sceat.domain.messaging.dao.Jms_AgarMode;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -42,7 +43,8 @@ public class RabbitMqConnector implements IMessaging {
 	public static enum messagesType {
 		Boot_Server("exchange_server_boot"),
 		Close_Server("exchange_server_close"),
-		Update_Server("exchange_server");
+		Update_Server("exchange_server"),
+		AgarMode("exchange_agarmode");
 
 		private String exchangeName;
 
@@ -156,6 +158,12 @@ public class RabbitMqConnector implements IMessaging {
 	@Override
 	public void sendServer(String json) {
 		basicPublich(messagesType.Update_Server, destinationKey.HUBS_AND_PROXY, json);
+	}
+
+	@Override
+	public void sendAgarMode(Jms_AgarMode jms) {
+		basicPublich(messagesType.AgarMode, destinationKey.SRV_AGARES, jms.toJson());
+		basicPublich(messagesType.AgarMode, destinationKey.HUBS_AGARES, jms.toJson());
 	}
 
 }
