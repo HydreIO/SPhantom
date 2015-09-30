@@ -1,6 +1,6 @@
 package sceat.domain.messaging.dao;
 
-import sceat.domain.serverTypes.ServeurAgares.AgarMode;
+import sceat.domain.server.serverTypes.ServeurAgares.AgarMode;
 import sceat.domain.utils.UtilGson;
 
 import com.google.gson.annotations.Expose;

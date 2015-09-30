@@ -1,6 +1,6 @@
-package sceat.domain.serverTypes;
+package sceat.domain.server.serverTypes;
 
-import sceat.domain.Serveur;
+import sceat.domain.server.Serveur;
 
 public class ServeurAgares extends Serveur {
 

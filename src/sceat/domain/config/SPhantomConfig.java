@@ -6,7 +6,7 @@ import java.util.Arrays;
 
 import sceat.SPhantom;
 import sceat.domain.Manager;
-import sceat.domain.Serveur.ServeurType;
+import sceat.domain.server.Serveur.ServeurType;
 
 public class SPhantomConfig {
 

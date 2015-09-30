@@ -1,4 +1,4 @@
-package sceat.domain;
+package sceat.domain.shell;
 
 import sceat.SPhantom;
 import sceat.domain.windows.NetworkWindow;
@@ -78,12 +78,11 @@ public class SPhantomTerminal {
 
 	public void shutdown() {
 		this.running = false;
-		SPhantom.print("Shutdown du terminal !");
+		SPhantom.print("Shutdown du screen..");
 		while (getGUI().getActiveWindow() != null)
 			getGUI().getActiveWindow().close();
-		SPhantom.print("Shutdown du screen");
+		SPhantom.print("Shutdown du terminal..");
 		getScreen().stopScreen();
-
 	}
 
 }

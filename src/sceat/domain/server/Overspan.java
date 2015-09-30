@@ -1,6 +1,6 @@
-package sceat.domain;
+package sceat.domain.server;
 
-import sceat.domain.Serveur.ServeurType;
+import sceat.domain.server.Serveur.ServeurType;
 import sceat.domain.shell.ShellExecuter;
 
 public class Overspan {

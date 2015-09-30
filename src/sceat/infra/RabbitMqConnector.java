@@ -6,6 +6,7 @@ import java.util.concurrent.TimeoutException;
 import sceat.SPhantom;
 import sceat.domain.messaging.IMessaging;
 import sceat.domain.messaging.destinationKey;
+import sceat.domain.messaging.dao.DAO_HeartBeat;
 import sceat.domain.messaging.dao.Jms_AgarMode;
 
 import com.rabbitmq.client.Channel;
@@ -41,10 +42,10 @@ public class RabbitMqConnector implements IMessaging {
 	 *
 	 */
 	public static enum messagesType {
-		Boot_Server("exchange_server_boot"),
-		Close_Server("exchange_server_close"),
 		Update_Server("exchange_server"),
-		AgarMode("exchange_agarmode");
+		AgarMode("exchange_agarmode"),
+		HeartBeat("exchange_heartbeat"),
+		TakeLead("exchange_takelead");
 
 		private String exchangeName;
 
@@ -89,6 +90,10 @@ public class RabbitMqConnector implements IMessaging {
 		}
 		SPhantom.print("Sucessfully connected to broker RMQ");
 		exchangeDeclare(messagesType.Update_Server);
+		exchangeDeclare(messagesType.AgarMode);
+		exchangeDeclare(messagesType.HeartBeat);
+		exchangeDeclare(messagesType.TakeLead);
+
 		this.receiver = new RabbitMqReceiver();
 	}
 
@@ -164,6 +169,16 @@ public class RabbitMqConnector implements IMessaging {
 	public void sendAgarMode(Jms_AgarMode jms) {
 		basicPublich(messagesType.AgarMode, destinationKey.SRV_AGARES, jms.toJson());
 		basicPublich(messagesType.AgarMode, destinationKey.HUBS_AGARES, jms.toJson());
+	}
+
+	@Override
+	public void takeLead(DAO_HeartBeat json) {
+		basicPublich(messagesType.TakeLead, destinationKey.SPHANTOM, json.toJson());
+	}
+
+	@Override
+	public void heartBeat(DAO_HeartBeat json) {
+		basicPublich(messagesType.HeartBeat, destinationKey.SPHANTOM, json.toJson());
 	}
 
 }

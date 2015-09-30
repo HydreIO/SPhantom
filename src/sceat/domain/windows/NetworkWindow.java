@@ -4,9 +4,9 @@ import java.util.Map;
 
 import sceat.SPhantom;
 import sceat.domain.Manager;
-import sceat.domain.SPhantomTerminal;
-import sceat.domain.Serveur;
-import sceat.domain.Serveur.ServeurType;
+import sceat.domain.server.Serveur;
+import sceat.domain.server.Serveur.ServeurType;
+import sceat.domain.shell.SPhantomTerminal;
 import sceat.domain.utils.New;
 
 import com.googlecode.lanterna.gui.Action;
@@ -81,7 +81,7 @@ public class NetworkWindow extends Window {
 	}
 
 	public void openChangeStatus() {
-		// TODO change status rabbit
+		MessageBox.showMessageBox(getOwner(), "SPhantom", "Not implemented yet !", DialogButtons.OK);
 	}
 
 	public void reloadConfig() {
@@ -161,7 +161,10 @@ public class NetworkWindow extends Window {
 
 	public void showExit() {
 		DialogResult result = MessageBox.showMessageBox(getOwner(), "Sphantom", " Shutdown Sphantom ?", DialogButtons.OK_CANCEL);
-		if (result == DialogResult.OK) getTerminal().shutdown();
+		if (result == DialogResult.OK) {
+			getTerminal().shutdown();
+			SPhantom.shutDown();
+		}
 	}
 
 	public Panel getNetworkingPanel() {

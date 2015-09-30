@@ -3,6 +3,7 @@ package sceat.infra;
 import java.io.IOException;
 
 import sceat.SPhantom;
+import sceat.domain.Heart;
 import sceat.domain.messaging.destinationKey;
 import sceat.infra.RabbitMqConnector.messagesType;
 
@@ -62,6 +63,8 @@ public class RabbitMqReceiver {
 	 */
 	private static void bind() {
 		bind(messagesType.Update_Server);
+		bind(messagesType.TakeLead);
+		bind(messagesType.HeartBeat);
 	}
 
 	/**
@@ -75,10 +78,15 @@ public class RabbitMqReceiver {
 			public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
 				String message = new String(body, "UTF-8");
 				messagesType messageType = messagesType.fromString(envelope.getExchange(), true);
-
 				switch (messageType) {
 					case Update_Server:
 						SPhantom.getInstance().getManager().receiveServer(message);
+						break;
+					case HeartBeat:
+						Heart.getInstance().transfuse(message);
+						break;
+					case TakeLead:
+						Heart.getInstance().transplant(message);
 						break;
 					default:
 						break;

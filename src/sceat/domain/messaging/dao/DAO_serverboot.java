@@ -1,6 +1,6 @@
 package sceat.domain.messaging.dao;
 
-import sceat.domain.Serveur;
+import sceat.domain.server.Serveur;
 
 public class DAO_serverboot extends DAO {
 

@@ -1,26 +1,33 @@
 package sceat;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
+import java.util.logging.Formatter;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
+import sceat.domain.Heart;
 import sceat.domain.Manager;
-import sceat.domain.SPhantomTerminal;
 import sceat.domain.config.SPhantomConfig;
 import sceat.domain.forkupdate.ForkUpdate;
 import sceat.domain.messaging.IMessaging;
+import sceat.domain.shell.SPhantomTerminal;
 import sceat.infra.RabbitMqConnector;
 
 public class SPhantom {
 
-	boolean deploy = false;
-
-	private static BufferedWriter writer;
+	private static Logger logger = Logger.getLogger("SPhantom.class");
 	private static File folder;
+	public static final UUID serial = UUID.randomUUID();
+	public static final UUID security = UUID.randomUUID();
 
 	public static void main(String[] args) {
 		folder = new File(ClassLoader.getSystemClassLoader().getResource(".").getPath());
@@ -35,14 +42,17 @@ public class SPhantom {
 				new SPhantom(user, pass);
 			} else {
 				print("Incorrect args ! type ./sphantom start -auth user@pass");
+				print("Shutdown..");
+				print("Bye.");
+				System.exit(1);
 			}
 		} else {
 			print("Incorrect args ! type ./sphantom start -auth user@pass");
+			print("Shutdown..");
+			print("Bye.");
+			System.exit(1);
 		}
-		print("Shutdown..");
-		print("Bye.");
-
-		System.exit(1);
+		SPhantom.getInstance().awaitForInput();
 	}
 
 	private static SPhantom instance;
@@ -50,26 +60,26 @@ public class SPhantom {
 	private ForkUpdate updater;
 	private ExecutorService executor;
 	private ExecutorService pinger;
+	private ExecutorService peaceMaker;
 	private boolean running;
 	private IMessaging messageBroker;
 	private SPhantomTerminal terminal;
 	private Manager manager;
 	private SPhantomConfig config;
 
-	public SPhantom(String user, String pass) {
+	public SPhantom(String user, String pass) { // don't change the implementation order !
 		instance = this;
 		this.running = true;
 		this.pinger = Executors.newSingleThreadExecutor();
+		this.peaceMaker = Executors.newSingleThreadExecutor();
 		this.config = new SPhantomConfig();
 		this.manager = new Manager();
 		this.executor = Executors.newFixedThreadPool(30);
 		this.updater = new ForkUpdate();
 		this.messageBroker = new RabbitMqConnector(user, pass);
-		if (deploy) awaitForInput();
-		else {
-			terminal = new SPhantomTerminal();
-			getTerminal().awaitForInput();
-		}
+		new Heart().takeLead();
+		terminal = new SPhantomTerminal();
+		getTerminal().awaitForInput();
 	}
 
 	public SPhantomConfig getSphantomConfig() {
@@ -80,6 +90,10 @@ public class SPhantom {
 		return pinger;
 	}
 
+	public ExecutorService getPeaceMaker() {
+		return peaceMaker;
+	}
+
 	public Manager getManager() {
 		return manager;
 	}
@@ -87,19 +101,23 @@ public class SPhantom {
 	public void awaitForInput() {
 		@SuppressWarnings("resource")
 		Scanner scan = new Scanner(System.in);
+		print("----------------------------------------------------------");
+		print("SPHantom instance has lost the lead !");
+		print("Starting to run in background and wait for wakingUp !");
+		print("SPhantom can't attach the TUI until he get the lead ! try <forcelead> or switch to the leading SPhantom instance");
+		print("----------------------------------------------------------");
 		while (isRunning()) {
-			print("Input : exit|gui");
+			print("Input : shutdown|forcelead");
 			String nex = scan.next();
 			switch (nex) {
-				case "exit":
+				case "shutdown":
 					shutDown();
 					break;
-				case "gui":
-					terminal = new SPhantomTerminal();
-					getTerminal().awaitForInput();
+				case "forcelead":
+					Heart.getInstance().takeLead();
+					wakeUp();
 					break;
 				default:
-					print("Input : exit|gui");
 					break;
 			}
 		}
@@ -107,9 +125,7 @@ public class SPhantom {
 	}
 
 	public static void printStackTrace(Exception e) {
-		e.printStackTrace();
-		for (StackTraceElement ez : e.getStackTrace())
-			log(ez.toString());
+		getLogger().log(Level.SEVERE, e.getMessage(), e);
 	}
 
 	public void stackTrace(int maxline) {
@@ -121,6 +137,15 @@ public class SPhantom {
 			else i++;
 		}
 		System.out.println(msg);
+	}
+
+	public void pause() {
+		if (getTerminal() == null) return;
+		if (getTerminal().isRunning()) getTerminal().shutdown();
+	}
+
+	public void wakeUp() {
+		if (!getTerminal().isRunning()) getTerminal().awaitForInput();
 	}
 
 	public SPhantomTerminal getTerminal() {
@@ -139,8 +164,8 @@ public class SPhantom {
 		print("Shutdown..");
 		getInstance().getExecutor().shutdown();
 		getInstance().getUpdater().shutdown();
+		Heart.getInstance().broke();
 		print("Bye.");
-		endLogger();
 		getInstance().running = false;
 		System.exit(0);
 	}
@@ -150,15 +175,9 @@ public class SPhantom {
 	}
 
 	public static void print(String txt, boolean log) {
-		String s = new java.sql.Timestamp(System.currentTimeMillis()).toString().substring(0, 19) + " | [Sphantom] > " + txt;
-		System.out.println(s);
-		if (log) log(s);
-	}
+		if (log) getLogger().info(txt);
+		else System.out.println(new java.sql.Timestamp(System.currentTimeMillis()).toString().substring(0, 16) + " | [Sphantom] > " + txt);
 
-	public static void print(String txt, boolean error, boolean log) {
-		String s = new java.sql.Timestamp(System.currentTimeMillis()).toString().substring(0, 19) + " | [" + (error ? "Error" : "Sphantom") + "] > " + txt;
-		System.out.println(s);
-		if (log) log(s);
 	}
 
 	public static SPhantom getInstance() {
@@ -177,38 +196,41 @@ public class SPhantom {
 		return executor;
 	}
 
-	private static BufferedWriter getWriter() {
-		return writer;
+	public static Logger getLogger() {
+		return logger;
 	}
 
 	private static void initLogger() {
-		FileWriter fw = null;
-		File f = new File(getFolder().getAbsolutePath() + "/SPhantom.log");
-		try {
-			if (!f.exists()) f.createNewFile();
-			fw = new FileWriter(f, true);
-		} catch (IOException e) {
-			e.printStackTrace();
+		FileHandler file;
+		Logger rootLogger = Logger.getLogger("");
+		Handler[] handlers = rootLogger.getHandlers();
+		if (handlers[0] instanceof ConsoleHandler) {
+			rootLogger.removeHandler(handlers[0]);
 		}
-		writer = new BufferedWriter(fw);
-	}
 
-	private static void endLogger() {
 		try {
-			getWriter().close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+			file = new FileHandler(getFolder().getAbsolutePath() + "/SPhantom.log");
+			file.setFormatter(new Formatter() {
 
-	private static void log(String txt) {
-		try {
-			getWriter().newLine();
-			getWriter().write(txt);
-			getWriter().flush();
-		} catch (IOException e) {
+				@Override
+				public String format(LogRecord record) {
+					return new java.sql.Timestamp(System.currentTimeMillis()).toString().substring(0, 16) + " | [Sphantom] > " + record.getMessage() + "\n";
+				}
+			});
+			ConsoleHandler hand = new ConsoleHandler();
+			hand.setFormatter(new Formatter() {
+
+				@Override
+				public String format(LogRecord record) {
+					return new java.sql.Timestamp(System.currentTimeMillis()).toString().substring(0, 16) + " | [Sphantom] > " + record.getMessage() + "\n";
+				}
+			});
+			logger.addHandler(hand);
+			logger.addHandler(file);
+		} catch (SecurityException | IOException e) {
 			e.printStackTrace();
 		}
+
 	}
 
 }

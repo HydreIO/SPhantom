@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 
 import sceat.SPhantom;
-import sceat.domain.Serveur.ServeurType;
 import sceat.domain.config.Configuration;
 import sceat.domain.forkupdate.ForkUpdateHandler;
 import sceat.domain.forkupdate.ForkUpdateListener;
@@ -18,6 +17,9 @@ import sceat.domain.forkupdate.IForkUpdade;
 import sceat.domain.messaging.dao.DAO;
 import sceat.domain.network.Grades;
 import sceat.domain.network.Statut;
+import sceat.domain.server.Serveur;
+import sceat.domain.server.Serveur.ServeurType;
+import sceat.domain.shell.SPhantomTerminal;
 import sceat.domain.utils.New;
 import sceat.domain.utils.UtilGson;
 import sceat.domain.windows.NetworkWindow;

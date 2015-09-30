@@ -16,8 +16,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-import sceat.SPhantom;
-
 import com.google.common.collect.ImmutableList;
 
 public class UtilUuid implements Callable<Map<String, UUID>> {
@@ -71,7 +69,6 @@ public class UtilUuid implements Callable<Map<String, UUID>> {
 			connection = createConnection2(uuid);
 			response = (JSONObject) jsonParser.parse(new InputStreamReader(connection.getInputStream()));
 		} catch (Exception e) {
-			SPhantom.print("Erreur de récuperation du name pour l'uuid " + uuid.toString());
 			return "Unkhnow";
 		}
 		if (response == null) return null;

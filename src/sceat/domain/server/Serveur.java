@@ -1,4 +1,4 @@
-package sceat.domain;
+package sceat.domain.server;
 
 import java.util.List;
 import java.util.Set;

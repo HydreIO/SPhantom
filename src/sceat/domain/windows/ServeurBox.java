@@ -3,8 +3,8 @@ package sceat.domain.windows;
 import java.util.Set;
 import java.util.UUID;
 
-import sceat.domain.Serveur;
-import sceat.domain.Serveur.ServeurType;
+import sceat.domain.server.Serveur;
+import sceat.domain.server.Serveur.ServeurType;
 import sceat.domain.utils.UtilUuid;
 
 import com.googlecode.lanterna.gui.Action;
