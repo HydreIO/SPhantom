@@ -57,7 +57,7 @@ public class NetworkWindow extends Window {
 		super("Sphantom Terminal | © Sceat.Network");
 		this.terminal = terminal;
 		setBorder(new Border.Bevel(false));
-		servers.addBorder(new Border.Bevel(false), "Servers");
+		// servers.addBorder(new Border.Bevel(false), "Servers");
 		servers.setAlignment(Alignment.TOP_LEFT);
 		for (final ServeurType type : ServeurType.values()) {
 			final Panel pan = new Panel(new Border.Bevel(false), Panel.Orientation.VERTICAL);

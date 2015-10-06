@@ -25,7 +25,6 @@ public class SPhantomTerminal {
 			return;
 		}
 		writer = new ScreenWriter(getScreen());
-
 	}
 
 	public void show() {
@@ -33,7 +32,9 @@ public class SPhantomTerminal {
 		getScreen().startScreen();
 		getWriter().setBackgroundColor(Color.BLACK);
 		getWriter().setForegroundColor(Color.WHITE);
-		getGUI().showWindow((window = new NetworkWindow(this)), Position.CENTER);
+		window = new NetworkWindow(this);
+		System.out.println("SHOWING");
+		getGUI().showWindow(window, Position.CENTER);
 		refreshScreen();
 	}
 

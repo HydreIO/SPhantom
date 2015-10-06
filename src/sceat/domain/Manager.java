@@ -1,6 +1,5 @@
 package sceat.domain;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -26,7 +25,6 @@ import sceat.domain.windows.NetworkWindow;
 import ch.jamiete.mcping.MinecraftPing;
 import ch.jamiete.mcping.MinecraftPingOptions;
 import ch.jamiete.mcping.MinecraftPingReply;
-import ch.jamiete.mcping.MinecraftPingReply.Player;
 
 import com.google.gson.annotations.Expose;
 
@@ -151,7 +149,8 @@ public class Manager implements IForkUpdade {
 
 	public void receiveServer(String json) {
 		Serveur s = Serveur.fromJson(json);
-		putServer(getServer(s.getName()).setStatus(s.getStatut()).setPlayersPerGrade(s.getPlayersPerGrade()), true, true);
+		if (getServer(s.getName()) == null) return;
+		putServer(getServer(s.getName()).setPlayers(s.getPlayers()).setStatus(s.getStatut()).setPlayersPerGrade(s.getPlayersPerGrade()), true, true);
 	}
 
 	public Serveur getServer(String name) {
@@ -182,7 +181,7 @@ public class Manager implements IForkUpdade {
 		process = false;
 	}
 
-	@ForkUpdateHandler(rate = ForkUpdateType.SEC_01)
+	@ForkUpdateHandler(rate = ForkUpdateType.SEC_03)
 	public void log() {
 		Set<String> stf = New.set();
 		Set<String> onlinepl = New.set();
@@ -223,12 +222,7 @@ public class Manager implements IForkUpdade {
 							sr.ping = -1;
 							sr.setStatus(Statut.CLOSED);
 						}
-						List<String> str = new ArrayList<String>();
-						if (data != null && data.getPlayers() != null && data.getPlayers().getSample() != null) for (Player pl : data.getPlayers().getSample()) {
-							str.add(pl.getId());
-						}
-						sr.setPlayers(str);
-						putServer(sr, sr.ping < 1 ? true : false, false);
+						putServer(sr.setPlayers(getServer(sr.getName()).getPlayers()), sr.ping < 1 ? true : false, false);
 					}
 					sleep(1000); // Petite pause d'une seconde
 				}

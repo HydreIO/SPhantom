@@ -99,8 +99,9 @@ public class Serveur {
 	 * 
 	 * @param players
 	 */
-	public void setPlayers(List<String> players) {
+	public Serveur setPlayers(List<String> players) {
 		this.players = players;
+		return this;
 	}
 
 	public Serveur setStatus(Statut s) {

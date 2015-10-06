@@ -19,6 +19,7 @@ import sceat.domain.Manager;
 import sceat.domain.config.SPhantomConfig;
 import sceat.domain.forkupdate.ForkUpdate;
 import sceat.domain.messaging.IMessaging;
+import sceat.domain.server.Overspan;
 import sceat.domain.shell.SPhantomTerminal;
 import sceat.infra.RabbitMqConnector;
 
@@ -78,6 +79,7 @@ public class SPhantom {
 		this.updater = new ForkUpdate();
 		this.messageBroker = new RabbitMqConnector(user, pass);
 		new Heart().takeLead();
+		new Overspan();
 		terminal = new SPhantomTerminal();
 		getTerminal().awaitForInput();
 	}
@@ -164,7 +166,7 @@ public class SPhantom {
 		print("Shutdown..");
 		getInstance().getExecutor().shutdown();
 		getInstance().getUpdater().shutdown();
-		Heart.getInstance().broke();
+		if (Heart.getInstance() != null) Heart.getInstance().broke();
 		print("Bye.");
 		getInstance().running = false;
 		System.exit(0);
