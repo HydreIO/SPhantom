@@ -1,23 +1,20 @@
 package sceat.domain;
 
+import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import sceat.SPhantom;
 import sceat.domain.config.Configuration;
-import sceat.domain.forkupdate.ForkUpdateHandler;
-import sceat.domain.forkupdate.ForkUpdateListener;
-import sceat.domain.forkupdate.ForkUpdateType;
-import sceat.domain.forkupdate.IForkUpdade;
-import sceat.domain.messaging.dao.DAO;
 import sceat.domain.network.Grades;
 import sceat.domain.network.Statut;
-import sceat.domain.server.Serveur;
-import sceat.domain.server.Serveur.ServeurType;
+import sceat.domain.schedule.Schedule;
+import sceat.domain.schedule.TimeUnit;
 import sceat.domain.shell.SPhantomTerminal;
 import sceat.domain.utils.New;
 import sceat.domain.utils.UtilGson;
@@ -31,14 +28,12 @@ import com.google.gson.annotations.Expose;
 public class Manager implements IForkUpdade {
 
 	public static Statut Network_Status = Statut.OPEN;
-	public static int tot_srv = 0;
 
 	private Set<ServerInfo> serversInfos = New.set();
 
-	private Map<String, Serveur> servers = New.map();
-	private Set<String> onlineStaff = New.set();
-	private Set<String> onlinePlayers = New.set();
-	private Map<ServeurType, Serveur[]> serversByType = New.map();
+	private Map<InetAddress, Serveur> servers = New.map();
+	private Set<UUID> onlineStaff = New.set();
+	private Map<ServeurType, List<Serveur>> serversByType = New.map();
 
 	// -------- Config nombre servers --------
 
@@ -172,7 +167,7 @@ public class Manager implements IForkUpdade {
 
 	private boolean process = false;
 
-	@ForkUpdateHandler(rate = ForkUpdateType.SEC_01)
+	@Schedule(rate = 1, unit = TimeUnit.SECONDS)
 	public void syncServers() {
 		if (process) return;
 		process = true;

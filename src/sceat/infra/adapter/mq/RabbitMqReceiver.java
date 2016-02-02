@@ -1,11 +1,11 @@
-package sceat.infra;
+package sceat.infra.adapter.mq;
 
 import java.io.IOException;
 
 import sceat.SPhantom;
 import sceat.domain.Heart;
 import sceat.domain.messaging.destinationKey;
-import sceat.infra.RabbitMqConnector.messagesType;
+import sceat.infra.adapter.mq.RabbitMqConnector.messagesType;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;

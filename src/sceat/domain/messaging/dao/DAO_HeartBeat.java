@@ -2,7 +2,7 @@ package sceat.domain.messaging.dao;
 
 import java.util.UUID;
 
-import sceat.SPhantom;
+import sceat.Main;
 import sceat.domain.utils.UtilGson;
 
 import com.google.gson.annotations.Expose;
@@ -46,7 +46,7 @@ public class DAO_HeartBeat {
 	}
 
 	public boolean isLocal() {
-		return getSerial().equals(SPhantom.serial.toString()) && getSecurity().equals(SPhantom.security.toString());
+		return getSerial().equals(Main.serial.toString()) && getSecurity().equals(Main.security.toString());
 	}
 
 	public void setRunning(boolean running) {

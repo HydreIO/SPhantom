@@ -4,24 +4,26 @@ public enum Grades {
 
 	Fondateur(0, "Fondateur"),
 	Admin(1, "Admin"),
-	Moderateur(2, "Moderateur"),
-	Developpeur(3, "Developpeur"),
-	Architecte(4, "Architecte"),
-	Web_Developpeur(5, "Web_Developpeur"),
-	Graphiste(6, "Graphiste"),
-	Builder(7, "Builder"),
-	Helper(8, "Helper"),
-	Build_Test(9, "Build_Test"),
-	Staff(10, "Staff"),
-	Ami(11, "Ami"),
-	Partenaire(12, "Partenaire"),
-	Youtube(13, "Youtube"),
-	Streamer(14, "Streamer"),
-	Musclay(15, "Musclay"),
-	Lva(16, "Lva"),
-	Vip_plus(17, "Vip_plus"),
-	Vip(18, "Vip"),
-	Joueur(19, "Joueur");
+	SysAdmin(2, "SysAdmin"),
+	Resp(3, "Resp"),
+	Moderateur(4, "Moderateur"),
+	Developpeur(5, "Developpeur"),
+	Architecte(6, "Architecte"),
+	Web_Developpeur(7, "Web_Developpeur"),
+	Graphiste(8, "Graphiste"),
+	Builder(9, "Builder"),
+	Helper(10, "Helper"),
+	Build_Test(11, "Build_Test"),
+	Staff(12, "Staff"),
+	Ami(13, "Ami"),
+	Partenaire(14, "Partenaire"),
+	Youtube(15, "Youtube"),
+	Streamer(16, "Streamer"),
+	Musclay(17, "Musclay"),
+	Lva(18, "Lva"),
+	Vip_plus(19, "Vip_plus"),
+	Vip(20, "Vip"),
+	Joueur(21, "Joueur");
 
 	private int _perm;
 	private String _gName;
@@ -33,6 +35,10 @@ public enum Grades {
 
 	public boolean isBetterOrSimilarThan(int perm) {
 		return this._perm <= perm;
+	}
+
+	public boolean isBetterOrSimilarThan(Grades gr) {
+		return isBetterOrSimilarThan(gr.getValue());
 	}
 
 	public boolean isBetterThan(int perm) {

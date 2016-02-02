@@ -1,4 +1,4 @@
-package sceat.infra;
+package sceat.infra.adapter.mq;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;

@@ -3,14 +3,15 @@ package sceat.domain;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
+import sceat.Main;
 import sceat.SPhantom;
-import sceat.domain.forkupdate.ForkUpdateHandler;
-import sceat.domain.forkupdate.ForkUpdateListener;
-import sceat.domain.forkupdate.ForkUpdateType;
-import sceat.domain.forkupdate.IForkUpdade;
 import sceat.domain.messaging.dao.DAO_HeartBeat;
+import sceat.domain.schedule.Schedule;
+import sceat.domain.schedule.Scheduled;
+import sceat.domain.schedule.Scheduler;
+import sceat.domain.schedule.TimeUnit;
 
-public class Heart implements IForkUpdade {
+public class Heart implements Scheduled {
 
 	private static Heart instance;
 	private ConcurrentLinkedDeque<DAO_HeartBeat> replicas = new ConcurrentLinkedDeque<DAO_HeartBeat>();
@@ -20,8 +21,8 @@ public class Heart implements IForkUpdade {
 	public Heart() {
 		instance = this;
 		this.alive = true;
-		ForkUpdateListener.register(this);
-		this.localBeat = new DAO_HeartBeat(SPhantom.serial, SPhantom.security);
+		Scheduler.getScheduler().register(this);
+		this.localBeat = new DAO_HeartBeat(Main.serial, Main.security);
 	}
 
 	public static Heart getInstance() {
@@ -83,7 +84,7 @@ public class Heart implements IForkUpdade {
 	/**
 	 * Remove other instance when they aren't reachable and update the lead
 	 */
-	@ForkUpdateHandler(rate = ForkUpdateType.SEC_01)
+	@Schedule(rate = 1, unit = TimeUnit.SECONDS)
 	public void murder() {
 		if (!isAlive() || getReplicas().isEmpty()) return;
 		SPhantom.getInstance().getMessageBroker().heartBeat(getLocalBeat().handshake());
