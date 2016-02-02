@@ -1,4 +1,4 @@
-package sceat.domain.messaging.dao;
+package sceat.domain.protocol.dao;
 
 import java.util.UUID;
 

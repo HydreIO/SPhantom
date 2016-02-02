@@ -1,4 +1,4 @@
-package sceat.domain.messaging.protocol;
+package sceat.domain.protocol.packets;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import sceat.domain.network.Grades;
+import sceat.domain.network.Statut;
 import sceat.domain.server.Server.ServerType;
 import sceat.domain.utils.UtilGson;
 
@@ -21,13 +22,19 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 	private String ip;
 	private Map<Grades, Set<UUID>> players = new HashMap<Grades, Set<UUID>>();
 	private Collection<String> keys = new ArrayList<String>();
+	private Statut state;
 
-	public PacketPhantomServerInfo(InetAddress ip, ServerType type, int maxp, Map<Grades, Set<UUID>> pl, Collection<String> keys) {
+	public PacketPhantomServerInfo(Statut state, InetAddress ip, ServerType type, int maxp, Map<Grades, Set<UUID>> pl, Collection<String> keys) {
 		this.ip = ip.getHostAddress();
 		this.keys = keys;
 		this.type = type;
 		this.players = pl;
 		this.maxp = maxp;
+		this.state = state;
+	}
+
+	public Statut getState() {
+		return state;
 	}
 
 	public Collection<String> getKeys() {
@@ -74,4 +81,5 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 	public static PacketPhantomServerInfo fromJson(String json) {
 		return UtilGson.deserialize(json, PacketPhantomServerInfo.class);
 	}
+
 }

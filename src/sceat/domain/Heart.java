@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
 import sceat.Main;
 import sceat.SPhantom;
-import sceat.domain.messaging.dao.DAO_HeartBeat;
+import sceat.domain.protocol.dao.DAO_HeartBeat;
 import sceat.domain.schedule.Schedule;
 import sceat.domain.schedule.Scheduled;
 import sceat.domain.schedule.Scheduler;
@@ -54,7 +54,6 @@ public class Heart implements Scheduled {
 		if (dao.correspond(getLocalBeat())) return;
 		SPhantom.print("Another instance has taken the lead ! SPhantom is going to sleep");
 		getReplicas().addLast(dao);
-		SPhantom.getInstance().pause();
 	}
 
 	/**
@@ -95,11 +94,8 @@ public class Heart implements Scheduled {
 				it.remove();
 			}
 		}
-		if (!getReplicas().peekLast().isLocal()) {
-			SPhantom.getInstance().pause();
-		} else {
-			SPhantom.getInstance().wakeUp();
-		}
+		// TODO gestion
+		if (!getReplicas().peekLast().isLocal()) {} else {}
 	}
 
 }

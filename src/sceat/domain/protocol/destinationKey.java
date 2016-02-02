@@ -1,4 +1,4 @@
-package sceat.domain.messaging;
+package sceat.domain.protocol;
 
 /**
  * Enum des endroits ou on pourra envoyer les messages

@@ -9,15 +9,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import sceat.domain.messaging.protocol.PacketPhantomServerInfo;
 import sceat.domain.network.Grades;
 import sceat.domain.network.RessourcePack;
 import sceat.domain.network.Statut;
+import sceat.domain.protocol.packets.PacketPhantomServerInfo;
 
 public class Server {
 
 	public static Server fromPacket(PacketPhantomServerInfo pkt) {
-		return new Server(pkt.getLabel(), pkt.getType(), pkt.getMaxp(), pkt.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, pkt.getKeys().stream().toArray(String[]::new));
+		return new Server(pkt.getLabel(), pkt.getType(), pkt.getState(), pkt.getMaxp(), pkt.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, pkt.getKeys().stream().toArray(String[]::new));
 	}
 
 	private String label;
@@ -29,11 +29,11 @@ public class Server {
 	private Collection<String> keys = new ArrayList<String>();
 	private InetAddress ipadress;
 
-	public Server(String label, ServerType type, int maxplayer, InetAddress ip, RessourcePack pack, String... destinationKeys) {
+	public Server(String label, ServerType type, Statut state, int maxplayer, InetAddress ip, RessourcePack pack, String... destinationKeys) {
 		this.label = label;
 		this.type = type;
 		this.maxPlayers = maxplayer;
-		this.status = Statut.CLOSED;
+		this.status = state;
 		this.pack = pack;
 		this.ipadress = ip;
 		Arrays.stream(destinationKeys).forEach(keys::add);

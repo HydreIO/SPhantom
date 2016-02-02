@@ -1,4 +1,4 @@
-package sceat.domain.messaging.protocol;
+package sceat.domain.protocol.packets;
 
 public abstract class PacketPhantom {
 

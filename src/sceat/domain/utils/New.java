@@ -35,13 +35,13 @@ public class New {
 
 	/**
 	 * Attention ! si la liste est vide yaura une belle erreur
-	 * 
+	 *
 	 * @param col
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T> T[] toArray(List<? extends T> col) {
-		if (col.isEmpty()) throw new IndexOutOfBoundsException("La liste ne doit pas être vide putin !");
+		if (col.isEmpty()) throw new IndexOutOfBoundsException("La liste ne doit pas Ãªtre vide putin !");
 		return (T[]) Array.newInstance(col.get(0).getClass(), col.size());
 	}
 

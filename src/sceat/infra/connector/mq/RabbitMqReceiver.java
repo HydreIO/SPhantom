@@ -1,11 +1,14 @@
-package sceat.infra.adapter.mq;
+package sceat.infra.connector.mq;
 
 import java.io.IOException;
 
-import sceat.SPhantom;
+import sceat.Main;
 import sceat.domain.Heart;
-import sceat.domain.messaging.destinationKey;
-import sceat.infra.adapter.mq.RabbitMqConnector.messagesType;
+import sceat.domain.Manager.Notifier;
+import sceat.domain.protocol.PacketHandler;
+import sceat.domain.protocol.destinationKey;
+import sceat.domain.protocol.packets.PacketPhantomServerInfo;
+import sceat.infra.connector.mq.RabbitMqConnector.messagesType;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
@@ -30,7 +33,7 @@ public class RabbitMqReceiver {
 			if (RabbitMqConnector.routing_enabled) bind();
 			startReceiver();
 		} catch (IOException e) {
-			SPhantom.printStackTrace(e);
+			Main.printStackTrace(e);
 		}
 	}
 
@@ -43,8 +46,8 @@ public class RabbitMqReceiver {
 	}
 
 	/**
-	 * Içi on "bind" un type de message sur une destination
-	 * 
+	 * Iï¿½i on "bind" un type de message sur une destination
+	 *
 	 * @param msg
 	 *            le type de message
 	 * @param key
@@ -54,7 +57,7 @@ public class RabbitMqReceiver {
 		try {
 			getChannel().queueBind(qname, msg.getName(), destinationKey.SPHANTOM);
 		} catch (IOException e) {
-			SPhantom.printStackTrace(e);
+			Main.printStackTrace(e);
 		}
 	}
 
@@ -69,10 +72,11 @@ public class RabbitMqReceiver {
 
 	/**
 	 * Fonction rabbitMq pour recevoir les messages (pour faire simple c'est une callable dans un nouveau thread dont le futur est notre message)
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	private static void startReceiver() throws IOException {
+		PacketHandler handler = PacketHandler.getInstance();
 		Consumer consumer = new DefaultConsumer(getChannel()) {
 			@Override
 			public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
@@ -80,7 +84,7 @@ public class RabbitMqReceiver {
 				messagesType messageType = messagesType.fromString(envelope.getExchange(), true);
 				switch (messageType) {
 					case Update_Server:
-						SPhantom.getInstance().getManager().receiveServer(message);
+						handler.receive(Notifier.PacketPhantomServerInfo, PacketPhantomServerInfo.fromJson(message));
 						break;
 					case HeartBeat:
 						Heart.getInstance().transfuse(message);

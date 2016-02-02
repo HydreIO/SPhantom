@@ -1,11 +1,9 @@
 package sceat.domain.network;
 
 public enum Statut {
-	OPEN(0),
-	CLOSED(1),
-	REDEMARRAGE(2),
-	MAINTENANCE(3);
-
+	BOOTING(0),
+	OPEN(1),
+	CLOSING(2);
 	private int _value;
 
 	private Statut(int value) {

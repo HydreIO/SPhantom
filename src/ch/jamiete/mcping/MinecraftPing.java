@@ -35,7 +35,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
-import sceat.SPhantom;
+import sceat.Main;
 
 import com.google.gson.Gson;
 
@@ -134,7 +134,7 @@ public class MinecraftPing {
 			in.close();
 			socket.close();
 		} catch (IOException e) {
-			SPhantom.printStackTrace(e);
+			Main.printStackTrace(e);
 		}
 		return new Gson().fromJson(json, MinecraftPingReply.class);
 	}

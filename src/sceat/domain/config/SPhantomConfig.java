@@ -6,7 +6,7 @@ import java.util.Arrays;
 
 import sceat.Main;
 import sceat.SPhantom;
-import sceat.domain.Manager;
+import sceat.domain.LastManager;
 import sceat.domain.server.Server.ServerType;
 
 public class SPhantomConfig {
@@ -27,7 +27,7 @@ public class SPhantomConfig {
 
 		if (mkdir) {
 			getConfig().set("Servers",
-					Arrays.asList(new Manager.ServerInfo(ServerType.Proxy, 1, "127.0.0.1", 25565).toJson(), new Manager.ServerInfo(ServerType.Proxy, 2, "127.0.0.1", 25566).toJson()));
+					Arrays.asList(new LastManager.ServerInfo(ServerType.Proxy, 1, "127.0.0.1", 25565).toJson(), new LastManager.ServerInfo(ServerType.Proxy, 2, "127.0.0.1", 25566).toJson()));
 			saveConfig(getConfig(), cong);
 			SPhantom.print("SPhantom.yml just created to " + cong.getAbsolutePath() + " Please configure and reload /!\\");
 		} else {

@@ -1,13 +1,13 @@
-package sceat.infra.adapter.mq;
+package sceat.infra.connector.mq;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
+import sceat.Main;
 import sceat.SPhantom;
-import sceat.domain.messaging.IMessaging;
-import sceat.domain.messaging.destinationKey;
-import sceat.domain.messaging.dao.DAO_HeartBeat;
-import sceat.domain.messaging.dao.Jms_AgarMode;
+import sceat.domain.protocol.IMessaging;
+import sceat.domain.protocol.destinationKey;
+import sceat.domain.protocol.dao.DAO_HeartBeat;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -37,9 +37,8 @@ public class RabbitMqConnector implements IMessaging {
 
 	/**
 	 * Enum de type de messages
-	 * 
-	 * @author MrSceat
 	 *
+	 * @author MrSceat
 	 */
 	public static enum messagesType {
 		Update_Server("exchange_server"),
@@ -66,7 +65,7 @@ public class RabbitMqConnector implements IMessaging {
 	}
 
 	/**
-	 * Initialisation de la connection et du channel, ainsi que déclaration des messages json a envoyer (par leur nom : banP etc) On initialise aussi les receiver (une fois le channel créé)
+	 * Initialisation de la connection et du channel, ainsi que dï¿½claration des messages json a envoyer (par leur nom : banP etc) On initialise aussi les receiver (une fois le channel crï¿½ï¿½)
 	 */
 	public void init(String user, String passwd) {
 		instance = this;
@@ -79,13 +78,13 @@ public class RabbitMqConnector implements IMessaging {
 			channel = getConnection().createChannel();
 		} catch (IOException | TimeoutException e) {
 			SPhantom.print("Unable to access message broker RMQ, Sphantom is going down..", true);
-			SPhantom.printStackTrace(e);
+			Main.printStackTrace(e);
 			try {
 				Thread.sleep(3000);
 			} catch (InterruptedException e1) {
-				SPhantom.printStackTrace(e);
+				Main.printStackTrace(e);
 			}
-			SPhantom.shutDown();
+			Main.shutDown();
 			return;
 		}
 		SPhantom.print("Sucessfully connected to broker RMQ");
@@ -98,14 +97,14 @@ public class RabbitMqConnector implements IMessaging {
 	}
 
 	/**
-	 * Utilisé pour fermer la connection onDisable // A METTRE ONDISABLE()
+	 * Utilisï¿½ pour fermer la connection onDisable // A METTRE ONDISABLE()
 	 */
 	public void close() {
 		try {
 			getChannel().close();
 			getConnection().close();
 		} catch (IOException | TimeoutException e) {
-			SPhantom.printStackTrace(e);
+			Main.printStackTrace(e);
 		}
 	}
 
@@ -126,15 +125,15 @@ public class RabbitMqConnector implements IMessaging {
 	// **************** Utils *****************
 
 	/**
-	 * Déclaration d'un nouveau type d'échange (type de message comme le ban d'un joueur)
-	 * 
+	 * Dï¿½claration d'un nouveau type d'ï¿½change (type de message comme le ban d'un joueur)
+	 *
 	 * @param exchange
 	 */
 	public void exchangeDeclare(messagesType msg) {
 		try {
 			getChannel().exchangeDeclare(msg.getName(), type);
 		} catch (IOException e) {
-			SPhantom.printStackTrace(e);
+			Main.printStackTrace(e);
 		}
 	}
 
@@ -144,7 +143,7 @@ public class RabbitMqConnector implements IMessaging {
 
 	/**
 	 * Publication d'un message
-	 * 
+	 *
 	 * @param msg
 	 *            le type du message
 	 * @param key
@@ -156,7 +155,7 @@ public class RabbitMqConnector implements IMessaging {
 		try {
 			getChannel().basicPublish(msg.getName(), routing_enabled ? key : "", null, json.getBytes());
 		} catch (IOException e) {
-			SPhantom.printStackTrace(e);
+			Main.printStackTrace(e);
 		}
 	}
 
@@ -165,11 +164,12 @@ public class RabbitMqConnector implements IMessaging {
 		basicPublich(messagesType.Update_Server, destinationKey.HUBS_AND_PROXY, json);
 	}
 
-	@Override
-	public void sendAgarMode(Jms_AgarMode jms) {
-		basicPublich(messagesType.AgarMode, destinationKey.SRV_AGARES, jms.toJson());
-		basicPublich(messagesType.AgarMode, destinationKey.HUBS_AGARES, jms.toJson());
-	}
+	// @Override
+	// a ajouter dans les spécificitée lors de la création d'un serveur
+	// public void sendAgarMode(Jms_AgarMode jms) {
+	// basicPublich(messagesType.AgarMode, destinationKey.SRV_AGARES, jms.toJson());
+	// basicPublich(messagesType.AgarMode, destinationKey.HUBS_AGARES, jms.toJson());
+	// }
 
 	@Override
 	public void takeLead(DAO_HeartBeat json) {

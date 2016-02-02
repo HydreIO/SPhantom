@@ -6,13 +6,9 @@ import java.util.concurrent.Executors;
 
 import sceat.domain.Heart;
 import sceat.domain.Manager;
-import sceat.domain.Smanager;
 import sceat.domain.config.SPhantomConfig;
-import sceat.domain.messaging.IMessaging;
-import sceat.domain.server.Overspan;
-import sceat.domain.shell.SPhantomTerminal;
-import sceat.domain.shell.ShellExecuter;
-import sceat.infra.adapter.mq.RabbitMqConnector;
+import sceat.domain.protocol.IMessaging;
+import sceat.infra.connector.mq.RabbitMqConnector;
 
 public class SPhantom {
 
@@ -22,26 +18,18 @@ public class SPhantom {
 	private ExecutorService peaceMaker;
 	boolean running;
 	private IMessaging messageBroker;
-	private SPhantomTerminal terminal;
-	private Manager manager;
 	private SPhantomConfig config;
 
 	public SPhantom(String user, String pass) { // don't change the implementation order !
 		instance = this;
 		this.running = true;
-		new Smanager();
+		new Manager();
 		this.pinger = Executors.newSingleThreadExecutor();
 		this.peaceMaker = Executors.newSingleThreadExecutor();
 		this.config = new SPhantomConfig();
-		this.manager = new Manager();
-
-		new ShellExecuter();
 		this.executor = Executors.newFixedThreadPool(30);
 		this.messageBroker = new RabbitMqConnector(user, pass);
 		new Heart().takeLead();
-		new Overspan();
-		terminal = new SPhantomTerminal();
-		getTerminal().awaitForInput();
 	}
 
 	public SPhantomConfig getSphantomConfig() {
@@ -54,10 +42,6 @@ public class SPhantom {
 
 	public ExecutorService getPeaceMaker() {
 		return peaceMaker;
-	}
-
-	public Manager getManager() {
-		return manager;
 	}
 
 	public void awaitForInput() {
@@ -77,7 +61,6 @@ public class SPhantom {
 					break;
 				case "forcelead":
 					Heart.getInstance().takeLead();
-					wakeUp();
 					break;
 				default:
 					break;
@@ -95,19 +78,6 @@ public class SPhantom {
 			else i++;
 		}
 		System.out.println(msg);
-	}
-
-	public void pause() {
-		if (getTerminal() == null) return;
-		if (getTerminal().isRunning()) getTerminal().shutdown();
-	}
-
-	public void wakeUp() {
-		if (!getTerminal().isRunning()) getTerminal().awaitForInput();
-	}
-
-	public SPhantomTerminal getTerminal() {
-		return terminal;
 	}
 
 	public IMessaging getMessageBroker() {

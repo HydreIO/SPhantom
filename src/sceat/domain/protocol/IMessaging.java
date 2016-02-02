@@ -1,6 +1,6 @@
-package sceat.domain.messaging;
+package sceat.domain.protocol;
 
-import sceat.domain.messaging.dao.DAO_HeartBeat;
+import sceat.domain.protocol.dao.DAO_HeartBeat;
 
 public interface IMessaging {
 
