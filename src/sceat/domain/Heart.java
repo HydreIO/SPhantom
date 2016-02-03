@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
 import sceat.Main;
 import sceat.SPhantom;
+import sceat.domain.protocol.PacketSender;
 import sceat.domain.protocol.dao.DAO_HeartBeat;
 import sceat.domain.schedule.Schedule;
 import sceat.domain.schedule.Scheduled;
@@ -40,7 +41,7 @@ public class Heart implements Scheduled {
 	public Heart takeLead() {
 		SPhantom.print("Take lead !");
 		getReplicas().add(getLocalBeat().handshake());
-		SPhantom.getInstance().getMessageBroker().takeLead(getLocalBeat());
+		PacketSender.getInstance().takeLead(getLocalBeat());
 		return this;
 	}
 
@@ -86,7 +87,7 @@ public class Heart implements Scheduled {
 	@Schedule(rate = 1, unit = TimeUnit.SECONDS)
 	public void murder() {
 		if (!isAlive() || getReplicas().isEmpty()) return;
-		SPhantom.getInstance().getMessageBroker().heartBeat(getLocalBeat().handshake());
+		PacketSender.getInstance().heartBeat(getLocalBeat().handshake());
 		Iterator<DAO_HeartBeat> it = getReplicas().iterator();
 		while (it.hasNext()) {
 			DAO_HeartBeat da = it.next();
@@ -94,8 +95,11 @@ public class Heart implements Scheduled {
 				it.remove();
 			}
 		}
-		// TODO gestion
-		if (!getReplicas().peekLast().isLocal()) {} else {}
+		if (!getReplicas().peekLast().isLocal()) {
+			PacketSender.getInstance().pause(true);
+		} else {
+			PacketSender.getInstance().pause(false);
+		}
 	}
 
 }

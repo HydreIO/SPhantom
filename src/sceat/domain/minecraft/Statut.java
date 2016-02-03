@@ -1,9 +1,11 @@
-package sceat.domain.network;
+package sceat.domain.minecraft;
 
 public enum Statut {
-	BOOTING(0),
-	OPEN(1),
-	CLOSING(2);
+	CREATING(0),
+	BOOTING(1),
+	OPEN(2),
+	REBOOTING(3),
+	CLOSING(4);
 	private int _value;
 
 	private Statut(int value) {

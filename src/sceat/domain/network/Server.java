@@ -1,4 +1,4 @@
-package sceat.domain.server;
+package sceat.domain.network;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -9,15 +9,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import sceat.domain.network.Grades;
-import sceat.domain.network.RessourcePack;
-import sceat.domain.network.Statut;
+import sceat.domain.minecraft.Grades;
+import sceat.domain.minecraft.RessourcePack;
+import sceat.domain.minecraft.Statut;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
+import sceat.domain.utils.ServerLabel;
 
 public class Server {
 
 	public static Server fromPacket(PacketPhantomServerInfo pkt) {
 		return new Server(pkt.getLabel(), pkt.getType(), pkt.getState(), pkt.getMaxp(), pkt.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, pkt.getKeys().stream().toArray(String[]::new));
+	}
+
+	public static Server fromScratch(ServerType type, int maxPlayers, InetAddress ip, RessourcePack pack, String... destinationKeys) {
+		return new Server(ServerLabel.newLabel(type), type, Statut.CREATING, maxPlayers, ip, pack, destinationKeys);
 	}
 
 	private String label;
@@ -28,6 +33,12 @@ public class Server {
 	private Map<Grades, Set<UUID>> players = new HashMap<Grades, Set<UUID>>();
 	private Collection<String> keys = new ArrayList<String>();
 	private InetAddress ipadress;
+	/**
+	 * Lors de la gestion, sphantom decide en fonction du nombre de joueurs combien d'instance de ce type de serveur sont requise
+	 * <p>
+	 * si il y a déja suffisament d'instance, "needed" passe sur false et permet ainsi la destruction du serveur si le dernier joueur se déconnecte
+	 */
+	private boolean needed = true;
 
 	public Server(String label, ServerType type, Statut state, int maxplayer, InetAddress ip, RessourcePack pack, String... destinationKeys) {
 		this.label = label;

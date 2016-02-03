@@ -7,7 +7,7 @@ import java.util.Arrays;
 import sceat.Main;
 import sceat.SPhantom;
 import sceat.domain.LastManager;
-import sceat.domain.server.Server.ServerType;
+import sceat.domain.network.Server.ServerType;
 
 public class SPhantomConfig {
 

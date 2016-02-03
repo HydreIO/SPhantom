@@ -2,7 +2,7 @@ package sceat.domain.protocol.packets;
 
 import java.util.UUID;
 
-import sceat.domain.network.Grades;
+import sceat.domain.minecraft.Grades;
 import sceat.domain.utils.UtilGson;
 
 public class PacketPhantomPlayer extends PacketPhantom {

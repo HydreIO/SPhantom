@@ -9,10 +9,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import sceat.SPhantom;
-import sceat.domain.network.Grades;
-import sceat.domain.server.Server;
-import sceat.domain.server.Server.ServerType;
-import sceat.domain.utils.ServerLabel;
+import sceat.domain.minecraft.Grades;
+import sceat.domain.network.Server;
 
 public class Manager {
 
@@ -36,10 +34,6 @@ public class Manager {
 			}
 
 		});
-	}
-
-	public void createServer(ServerType type) {
-		String label = ServerLabel.newLabel(type);
 	}
 
 	public static Manager getInstance() {

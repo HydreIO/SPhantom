@@ -6,8 +6,9 @@ import java.util.concurrent.Executors;
 
 import sceat.domain.Heart;
 import sceat.domain.Manager;
+import sceat.domain.adapter.mq.IMessaging;
 import sceat.domain.config.SPhantomConfig;
-import sceat.domain.protocol.IMessaging;
+import sceat.domain.protocol.PacketSender;
 import sceat.infra.connector.mq.RabbitMqConnector;
 
 public class SPhantom {
@@ -17,7 +18,7 @@ public class SPhantom {
 	private ExecutorService pinger;
 	private ExecutorService peaceMaker;
 	boolean running;
-	private IMessaging messageBroker;
+	private boolean brokerInit = false;
 	private SPhantomConfig config;
 
 	public SPhantom(String user, String pass) { // don't change the implementation order !
@@ -28,8 +29,14 @@ public class SPhantom {
 		this.peaceMaker = Executors.newSingleThreadExecutor();
 		this.config = new SPhantomConfig();
 		this.executor = Executors.newFixedThreadPool(30);
-		this.messageBroker = new RabbitMqConnector(user, pass);
+		new PacketSender(user, pass);
 		new Heart().takeLead();
+	}
+
+	public IMessaging initBroker(String user, String pass) {
+		if (brokerInit) throw new IllegalAccessError("Broker already initialised !");
+		brokerInit = true;
+		return new RabbitMqConnector(user, pass);
 	}
 
 	public SPhantomConfig getSphantomConfig() {
@@ -78,10 +85,6 @@ public class SPhantom {
 			else i++;
 		}
 		System.out.println(msg);
-	}
-
-	public IMessaging getMessageBroker() {
-		return messageBroker;
 	}
 
 	public static void print(String txt) {

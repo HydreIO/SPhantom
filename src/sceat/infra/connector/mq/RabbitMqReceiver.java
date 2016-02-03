@@ -3,11 +3,8 @@ package sceat.infra.connector.mq;
 import java.io.IOException;
 
 import sceat.Main;
-import sceat.domain.Heart;
-import sceat.domain.Manager.Notifier;
 import sceat.domain.protocol.PacketHandler;
 import sceat.domain.protocol.destinationKey;
-import sceat.domain.protocol.packets.PacketPhantomServerInfo;
 import sceat.infra.connector.mq.RabbitMqConnector.messagesType;
 
 import com.rabbitmq.client.AMQP;
@@ -53,7 +50,7 @@ public class RabbitMqReceiver {
 	 * @param key
 	 *            la destination
 	 */
-	private static void bind(messagesType msg) {
+	private void bind(messagesType msg) {
 		try {
 			getChannel().queueBind(qname, msg.getName(), destinationKey.SPHANTOM);
 		} catch (IOException e) {
@@ -64,10 +61,11 @@ public class RabbitMqReceiver {
 	/**
 	 * On s'occupe de bind les message en fonction du serveur actuel
 	 */
-	private static void bind() {
+	private void bind() {
 		bind(messagesType.Update_Server);
 		bind(messagesType.TakeLead);
 		bind(messagesType.HeartBeat);
+		bind(messagesType.Update_PlayerAction);
 	}
 
 	/**
@@ -76,26 +74,12 @@ public class RabbitMqReceiver {
 	 * @throws IOException
 	 */
 	private static void startReceiver() throws IOException {
-		PacketHandler handler = PacketHandler.getInstance();
 		Consumer consumer = new DefaultConsumer(getChannel()) {
 			@Override
 			public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
 				String message = new String(body, "UTF-8");
 				messagesType messageType = messagesType.fromString(envelope.getExchange(), true);
-				switch (messageType) {
-					case Update_Server:
-						handler.receive(Notifier.PacketPhantomServerInfo, PacketPhantomServerInfo.fromJson(message));
-						break;
-					case HeartBeat:
-						Heart.getInstance().transfuse(message);
-						break;
-					case TakeLead:
-						Heart.getInstance().transplant(message);
-						break;
-					default:
-						break;
-				}
-
+				PacketHandler.getInstance().handle(messageType, message);
 			}
 		};
 		getChannel().basicConsume(qname, true, consumer);

@@ -9,9 +9,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import sceat.domain.network.Grades;
-import sceat.domain.network.Statut;
-import sceat.domain.server.Server.ServerType;
+import sceat.domain.minecraft.Grades;
+import sceat.domain.minecraft.Statut;
+import sceat.domain.network.Server.ServerType;
 import sceat.domain.utils.UtilGson;
 
 public class PacketPhantomServerInfo extends PacketPhantom {

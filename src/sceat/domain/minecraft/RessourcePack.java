@@ -1,4 +1,4 @@
-package sceat.domain.network;
+package sceat.domain.minecraft;
 
 public enum RessourcePack {
 

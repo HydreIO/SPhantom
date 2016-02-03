@@ -5,7 +5,7 @@ import java.util.concurrent.TimeoutException;
 
 import sceat.Main;
 import sceat.SPhantom;
-import sceat.domain.protocol.IMessaging;
+import sceat.domain.adapter.mq.IMessaging;
 import sceat.domain.protocol.destinationKey;
 import sceat.domain.protocol.dao.DAO_HeartBeat;
 
@@ -42,7 +42,7 @@ public class RabbitMqConnector implements IMessaging {
 	 */
 	public static enum messagesType {
 		Update_Server("exchange_server"),
-		AgarMode("exchange_agarmode"),
+		Update_PlayerAction("exchange_playerAction"),
 		HeartBeat("exchange_heartbeat"),
 		TakeLead("exchange_takelead");
 
@@ -89,7 +89,7 @@ public class RabbitMqConnector implements IMessaging {
 		}
 		SPhantom.print("Sucessfully connected to broker RMQ");
 		exchangeDeclare(messagesType.Update_Server);
-		exchangeDeclare(messagesType.AgarMode);
+		exchangeDeclare(messagesType.Update_PlayerAction);
 		exchangeDeclare(messagesType.HeartBeat);
 		exchangeDeclare(messagesType.TakeLead);
 
@@ -179,6 +179,11 @@ public class RabbitMqConnector implements IMessaging {
 	@Override
 	public void heartBeat(DAO_HeartBeat json) {
 		basicPublich(messagesType.HeartBeat, destinationKey.SPHANTOM, json.toJson());
+	}
+
+	@Override
+	public void sendPlayer(String json) {
+		basicPublich(messagesType.Update_PlayerAction, destinationKey.HUBS_AND_PROXY, json);
 	}
 
 }
