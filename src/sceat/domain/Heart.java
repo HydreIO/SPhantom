@@ -18,11 +18,14 @@ public class Heart implements Scheduled {
 	private ConcurrentLinkedDeque<DAO_HeartBeat> replicas = new ConcurrentLinkedDeque<DAO_HeartBeat>();
 	private DAO_HeartBeat localBeat;
 	private boolean alive;
+	private boolean local;
 
-	public Heart() {
+	public Heart(boolean local) {
 		instance = this;
+		this.local = local;
 		this.alive = true;
-		Scheduler.getScheduler().register(this);
+		if (local) SPhantom.print("Local mode ! No replicas service.");
+		else Scheduler.getScheduler().register(this);
 		this.localBeat = new DAO_HeartBeat(Main.serial, Main.security);
 	}
 
@@ -39,7 +42,9 @@ public class Heart implements Scheduled {
 	}
 
 	public Heart takeLead() {
+		if (this.local) return this; // if local, disable rabbit & replica
 		SPhantom.print("Take lead !");
+		SPhantom.getInstance().setLead(true);
 		getReplicas().add(getLocalBeat().handshake());
 		PacketSender.getInstance().takeLead(getLocalBeat());
 		return this;
@@ -54,6 +59,7 @@ public class Heart implements Scheduled {
 		DAO_HeartBeat dao = DAO_HeartBeat.fromJson(json);
 		if (dao.correspond(getLocalBeat())) return;
 		SPhantom.print("Another instance has taken the lead ! SPhantom is going to sleep");
+		SPhantom.getInstance().setLead(false);
 		getReplicas().addLast(dao);
 	}
 
@@ -91,15 +97,9 @@ public class Heart implements Scheduled {
 		Iterator<DAO_HeartBeat> it = getReplicas().iterator();
 		while (it.hasNext()) {
 			DAO_HeartBeat da = it.next();
-			if (da.isDead() && !da.isLocal()) {
-				it.remove();
-			}
+			if (da.isDead() && !da.isLocal()) it.remove();
 		}
-		if (!getReplicas().peekLast().isLocal()) {
-			PacketSender.getInstance().pause(true);
-		} else {
-			PacketSender.getInstance().pause(false);
-		}
+		PacketSender.getInstance().pause(!getReplicas().peekLast().isLocal());
 	}
 
 }

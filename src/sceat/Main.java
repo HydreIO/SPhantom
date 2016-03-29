@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.UUID;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
@@ -20,8 +19,8 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import sceat.domain.Heart;
+import sceat.domain.ressources.Constant;
 import sceat.domain.schedule.Scheduler;
-import sceat.domain.utils.Constant;
 
 public class Main {
 
@@ -31,7 +30,7 @@ public class Main {
 	public static final UUID security = UUID.randomUUID();
 
 	public static boolean GUImode = false;
-	public static String VultrKey;
+	public static boolean LocalMode = false;
 	public static InetAddress IpOvh;
 	public static String userOvh;
 	public static String passOvh;
@@ -45,43 +44,15 @@ public class Main {
 		if (cmd == null) throw new NullPointerException("Unable to setup the commandLine.. Aborting..");
 		Constant.startingText().forEach(SPhantom::print);
 		if (cmd.hasOption("gui")) GUImode = true;
-		if (cmd.hasOption("vultr")) VultrKey = cmd.getOptionValue("vultr");
-		if (cmd.hasOption("ovh")) {
-			try {
-				String cm = cmd.getOptionValue("ovh");
-				userOvh = cm.substring(cm.indexOf(":") + 1, cm.indexOf("@"));
-				passOvh = cm.substring(cm.indexOf("@") + 1);
-				IpOvh = InetAddress.getByName(cm.substring(0, cm.indexOf(":")));
-			} catch (UnknownHostException e) {
-				SPhantom.print("[WARN] UnknowHost for the -ovh arg !");
-				SPhantom.print("[WARN] Dedicated server support : DISABLED");
-			}
+		if (cmd.hasOption("local")) LocalMode = true;
+		ClassLoader loader = ClassLoader.getSystemClassLoader();
+		loader.setDefaultAssertionStatus(true);
+		try {
+			loader.loadClass("sceat.SPhantom").getConstructor(Boolean.class).newInstance(LocalMode);
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException | ClassNotFoundException e) {
+			e.printStackTrace();
 		}
-		if (cmd.hasOption("auth")) {
-			String str = cmd.getOptionValue("auth");
-			if (!str.contains("@")) {
-				SPhantom.print("[WARN] Invalid argument ! syntaxe must be \"user@pass\" for -auth");
-				SPhantom.print("Shuting down..");
-				SPhantom.print("Bye.");
-				System.exit(1);
-			}
-			String user = str.substring(0, args[1].indexOf('@'));
-			String pass = str.substring(args[1].indexOf('@') + 1);
-			ClassLoader loader = ClassLoader.getSystemClassLoader();
-			loader.setDefaultAssertionStatus(true);
-			try {
-				loader.loadClass("SPhantom.class").getConstructor(String.class, String.class).newInstance(user, pass);
-			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException | ClassNotFoundException e) {
-				e.printStackTrace();
-			}
-			SPhantom.getInstance().awaitForInput();
-		} else {
-			SPhantom.print("[WARN] User not specified ! try -auth user@pass");
-			SPhantom.print("Shuting down..");
-			SPhantom.print("Bye.");
-			System.exit(1);
-		}
-
+		SPhantom.getInstance().awaitForInput();
 	}
 
 	public static Logger getLogger() {
@@ -89,6 +60,10 @@ public class Main {
 	}
 
 	public static void printStackTrace(Exception e) {
+		getLogger().log(Level.SEVERE, e.getMessage(), e);
+	}
+
+	public static void printStackTrace(Throwable e) {
 		getLogger().log(Level.SEVERE, e.getMessage(), e);
 	}
 
@@ -136,9 +111,7 @@ public class Main {
 	}
 
 	public static CommandLine setupOptions(Options opt, String[] args) {
-		opt.addOption("auth", true, "RabbitMq User@Pass");
-		opt.addOption("vultr", true, "Vultr ApiKey");
-		opt.addOption("ovh", true, "0.0.0.0:user@pass");
+		opt.addOption("local", false, "Disable messaging for local test");
 		opt.addOption("gui", false, "boot has gui (if not specified Sphantom will boot has tui)");
 		try {
 			return new DefaultParser().parse(opt, args);

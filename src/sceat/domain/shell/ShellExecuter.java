@@ -9,6 +9,12 @@ import net.neoremind.sshxcute.exception.TaskExecFailException;
 import net.neoremind.sshxcute.task.impl.ExecShellScript;
 import sceat.SPhantom;
 
+/**
+ * Not actually used
+ * 
+ * @author MrSceat
+ *
+ */
 public class ShellExecuter {
 	private SSHExec ssh;
 

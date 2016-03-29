@@ -1,6 +1,7 @@
 package sceat.infra.connector.mq;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import sceat.Main;
 import sceat.domain.protocol.PacketHandler;
@@ -9,7 +10,6 @@ import sceat.infra.connector.mq.RabbitMqConnector.messagesType;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 
@@ -62,6 +62,7 @@ public class RabbitMqReceiver {
 	 * On s'occupe de bind les message en fonction du serveur actuel
 	 */
 	private void bind() {
+		Arrays.stream(messagesType.values()).forEach(this::bind);
 		bind(messagesType.Update_Server);
 		bind(messagesType.TakeLead);
 		bind(messagesType.HeartBeat);
@@ -74,14 +75,13 @@ public class RabbitMqReceiver {
 	 * @throws IOException
 	 */
 	private static void startReceiver() throws IOException {
-		Consumer consumer = new DefaultConsumer(getChannel()) {
+		getChannel().basicConsume(qname, true, new DefaultConsumer(getChannel()) {
 			@Override
 			public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
 				String message = new String(body, "UTF-8");
 				messagesType messageType = messagesType.fromString(envelope.getExchange(), true);
 				PacketHandler.getInstance().handle(messageType, message);
 			}
-		};
-		getChannel().basicConsume(qname, true, consumer);
+		});
 	}
 }

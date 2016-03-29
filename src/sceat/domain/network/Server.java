@@ -50,6 +50,10 @@ public class Server {
 		Arrays.stream(destinationKeys).forEach(keys::add);
 	}
 
+	public boolean isNeeded() {
+		return this.needed;
+	}
+
 	public Server setStatus(Statut st) {
 		this.status = st;
 		return this;

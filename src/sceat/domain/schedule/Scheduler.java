@@ -31,7 +31,7 @@ public class Scheduler {
 				try {
 					m.invoke(scheduled, new Object[m.getParameterCount()]);
 				} catch (Exception e) {
-					System.out.println("[Scheduler] Error with " + m.getName());
+					System.out.println("[Scheduler] Error with " + "//: " + m.getDeclaringClass() + "//:" + m.getName());
 					e.printStackTrace();
 				}
 			}, ns, ns, java.util.concurrent.TimeUnit.NANOSECONDS);

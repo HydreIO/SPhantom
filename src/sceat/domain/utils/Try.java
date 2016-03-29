@@ -13,7 +13,10 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 
+import sceat.Main;
+
 public class Try {
+
 	public static boolean debug = false;
 
 	@FunctionalInterface
@@ -30,7 +33,7 @@ public class Try {
 		try {
 			return runnable.run();
 		} catch (Throwable e) {
-			if (stackTrace) e.printStackTrace();
+			if (stackTrace) Main.printStackTrace(e);
 			return defaultValue;
 		}
 	}

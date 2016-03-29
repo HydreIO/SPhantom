@@ -20,8 +20,15 @@ public class SPhantom {
 	boolean running;
 	private boolean brokerInit = false;
 	private SPhantomConfig config;
+	private boolean lead = false;
 
-	public SPhantom(String user, String pass) { // don't change the implementation order !
+	/**
+	 * Init sphantom
+	 * 
+	 * @param local
+	 *            if true, allow the broker to send message (false for debugmode without broker)
+	 */
+	public SPhantom(Boolean local) { // don't change the implementation order !
 		instance = this;
 		this.running = true;
 		new Manager();
@@ -29,14 +36,29 @@ public class SPhantom {
 		this.peaceMaker = Executors.newSingleThreadExecutor();
 		this.config = new SPhantomConfig();
 		this.executor = Executors.newFixedThreadPool(30);
-		new PacketSender(user, pass);
-		new Heart().takeLead();
+		new PacketSender(getSphantomConfig().getRabbitUser(), getSphantomConfig().getRabbitPassword(), local);
+		new Heart(local).takeLead();
 	}
 
-	public IMessaging initBroker(String user, String pass) {
+	public void setLead(boolean lead) {
+		if (!lead) {
+			print("----------------------------------------------------------");
+			print("SPhantom instance has lost the lead !");
+			print("Starting to run in background and wait for wakingUp !");
+			print("SPhantom can't print report until he get the lead ! try <forcelead> or switch to the leading SPhantom instance");
+			print("----------------------------------------------------------");
+		}
+		this.lead = lead;
+	}
+
+	public boolean isLeading() {
+		return this.lead;
+	}
+
+	public IMessaging initBroker(String user, String pass, boolean local) {
 		if (brokerInit) throw new IllegalAccessError("Broker already initialised !");
 		brokerInit = true;
-		return new RabbitMqConnector(user, pass);
+		return new RabbitMqConnector(user, pass, local);
 	}
 
 	public SPhantomConfig getSphantomConfig() {
@@ -54,13 +76,9 @@ public class SPhantom {
 	public void awaitForInput() {
 		@SuppressWarnings("resource")
 		Scanner scan = new Scanner(System.in);
-		print("----------------------------------------------------------");
-		print("SPHantom instance has lost the lead !");
-		print("Starting to run in background and wait for wakingUp !");
-		print("SPhantom can't attach the TUI until he get the lead ! try <forcelead> or switch to the leading SPhantom instance");
-		print("----------------------------------------------------------");
 		while (isRunning()) {
-			print("Input : shutdown|forcelead");
+			print("Actual Input : shutdown|forcelead");
+			print(".. >_");
 			String nex = scan.next();
 			switch (nex) {
 				case "shutdown":

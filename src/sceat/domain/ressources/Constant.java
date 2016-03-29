@@ -1,4 +1,4 @@
-package sceat.domain.utils;
+package sceat.domain.ressources;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,4 +26,6 @@ public class Constant {
 		lis.add(" ");
 		return lis;
 	}
+
+	public static final String CONFIG_Optional_var = "Optional_Var";
 }

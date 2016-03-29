@@ -10,10 +10,10 @@ public class PacketSender implements IMessaging {
 	private IMessaging broker;
 	private boolean allowed = false;
 
-	public PacketSender(String user, String pass) {
+	public PacketSender(String user, String pass, boolean local) {
 		instance = this;
-		broker = SPhantom.getInstance().initBroker(user, pass);
-		allowed = true;
+		broker = SPhantom.getInstance().initBroker(user, pass, local);
+		allowed = local;
 	}
 
 	public static PacketSender getInstance() {

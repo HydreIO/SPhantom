@@ -27,8 +27,8 @@ public class RabbitMqConnector implements IMessaging {
 
 	public static String type = routing_enabled ? "direct" : "fanout";
 
-	public RabbitMqConnector(String user, String pass) {
-		init(user, pass);
+	public RabbitMqConnector(String user, String pass, boolean local) {
+		init(user, pass, local);
 	}
 
 	public RabbitMqReceiver getReceiver() {
@@ -65,10 +65,14 @@ public class RabbitMqConnector implements IMessaging {
 	}
 
 	/**
-	 * Initialisation de la connection et du channel, ainsi que dï¿½claration des messages json a envoyer (par leur nom : banP etc) On initialise aussi les receiver (une fois le channel crï¿½ï¿½)
+	 * Initialisation de la connection et du channel, ainsi que déclaration des messages json a envoyer (par leur nom : banP etc) On initialise aussi les receiver (une fois le channel créé)
 	 */
-	public void init(String user, String passwd) {
+	public void init(String user, String passwd, boolean local) {
 		instance = this;
+		if (local) {
+			SPhantom.print("Local mode ! No messaging service.");
+			return;
+		}
 		getFactory().setHost("94.23.218.25");
 		getFactory().setPort(5672);
 		getFactory().setUsername(user);
@@ -92,12 +96,11 @@ public class RabbitMqConnector implements IMessaging {
 		exchangeDeclare(messagesType.Update_PlayerAction);
 		exchangeDeclare(messagesType.HeartBeat);
 		exchangeDeclare(messagesType.TakeLead);
-
 		this.receiver = new RabbitMqReceiver();
 	}
 
 	/**
-	 * Utilisï¿½ pour fermer la connection onDisable // A METTRE ONDISABLE()
+	 * Utilisé pour fermer la connection onDisable // A METTRE ONDISABLE()
 	 */
 	public void close() {
 		try {
@@ -125,7 +128,7 @@ public class RabbitMqConnector implements IMessaging {
 	// **************** Utils *****************
 
 	/**
-	 * Dï¿½claration d'un nouveau type d'ï¿½change (type de message comme le ban d'un joueur)
+	 * Déclaration d'un nouveau type d'échange (type de message comme le ban d'un joueur)
 	 *
 	 * @param exchange
 	 */
