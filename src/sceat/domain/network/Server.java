@@ -17,8 +17,14 @@ import sceat.domain.utils.ServerLabel;
 
 public class Server {
 
+	/**
+	 * Au moment ou un packet server arrive c'est la qu'on synchronise les joueurs
+	 * @param pkt
+	 * @return
+	 */
 	public static Server fromPacket(PacketPhantomServerInfo pkt) {
-		return new Server(pkt.getLabel(), pkt.getType(), pkt.getState(), pkt.getMaxp(), pkt.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, pkt.getKeys().stream().toArray(String[]::new));
+		return new Server(pkt.getLabel(), pkt.getType(), pkt.getState(), pkt.getMaxp(), pkt.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, pkt.getKeys().stream().toArray(String[]::new))
+				.setPlayers(pkt.getPlayersPerGrade());
 	}
 
 	public static Server fromScratch(ServerType type, int maxPlayers, InetAddress ip, RessourcePack pack, String... destinationKeys) {

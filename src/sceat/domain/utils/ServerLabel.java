@@ -15,4 +15,8 @@ public class ServerLabel {
 		return label;
 	}
 
+	public static ServerType getTypeWithLabel(String label) {
+		return ServerType.valueOf(label.split("-")[0]);
+	}
+
 }

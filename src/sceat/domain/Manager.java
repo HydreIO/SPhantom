@@ -8,13 +8,13 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import sceat.SPhantom;
 import sceat.domain.minecraft.Grades;
 import sceat.domain.network.Server;
 
 public class Manager {
 
 	private static Manager instance;
+
 	private static ConcurrentHashMap<String, Server> serversByLabel = new ConcurrentHashMap<String, Server>();
 	private static CopyOnWriteArraySet<UUID> playersOnNetwork = new CopyOnWriteArraySet<UUID>();
 	private static ConcurrentHashMap<Grades, List<UUID>> playersPerGrade = new ConcurrentHashMap<Grades, List<UUID>>();
@@ -24,24 +24,16 @@ public class Manager {
 		Arrays.stream(Grades.values()).forEach(g -> playersPerGrade.put(g, new ArrayList<UUID>()));
 	}
 
-	public void initSynchronisation() {
-		SPhantom.getInstance().getExecutor().execute(() -> {
-			SPhantom.print("Synchronising... please wait !");
-			try {
-				Thread.sleep(7000);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-
-		});
-	}
-
 	public static Manager getInstance() {
 		return instance;
 	}
 
 	public Collection<Server> getServers() {
 		return getServersByLabel().values();
+	}
+
+	public int countPlayersOnNetwork() {
+		return getPlayersOnNetwork().size();
 	}
 
 	public ConcurrentHashMap<String, Server> getServersByLabel() {

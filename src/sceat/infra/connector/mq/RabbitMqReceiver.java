@@ -63,10 +63,6 @@ public class RabbitMqReceiver {
 	 */
 	private void bind() {
 		Arrays.stream(messagesType.values()).forEach(this::bind);
-		bind(messagesType.Update_Server);
-		bind(messagesType.TakeLead);
-		bind(messagesType.HeartBeat);
-		bind(messagesType.Update_PlayerAction);
 	}
 
 	/**

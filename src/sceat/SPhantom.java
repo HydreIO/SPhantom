@@ -1,5 +1,6 @@
 package sceat;
 
+import java.util.Calendar;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -8,6 +9,7 @@ import sceat.domain.Heart;
 import sceat.domain.Manager;
 import sceat.domain.adapter.mq.IMessaging;
 import sceat.domain.config.SPhantomConfig;
+import sceat.domain.protocol.PacketHandler;
 import sceat.domain.protocol.PacketSender;
 import sceat.infra.connector.mq.RabbitMqConnector;
 
@@ -32,6 +34,7 @@ public class SPhantom {
 		instance = this;
 		this.running = true;
 		new Manager();
+		new PacketHandler();
 		this.pinger = Executors.newSingleThreadExecutor();
 		this.peaceMaker = Executors.newSingleThreadExecutor();
 		this.config = new SPhantomConfig();
@@ -53,6 +56,11 @@ public class SPhantom {
 
 	public boolean isLeading() {
 		return this.lead;
+	}
+
+	public boolean isTimeBetween(int var1, int var2) {
+		int h = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+		return h >= var1 && h <= var2;
 	}
 
 	public IMessaging initBroker(String user, String pass, boolean local) {

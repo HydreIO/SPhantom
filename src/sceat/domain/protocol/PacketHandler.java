@@ -3,6 +3,7 @@ package sceat.domain.protocol;
 import sceat.SPhantom;
 import sceat.domain.Heart;
 import sceat.domain.Manager;
+import sceat.domain.network.Core;
 import sceat.domain.network.Server;
 import sceat.domain.protocol.packets.PacketPhantomPlayer;
 import sceat.domain.protocol.packets.PacketPhantomPlayer.PlayerAction;
@@ -10,7 +11,7 @@ import sceat.domain.protocol.packets.PacketPhantomServerInfo;
 import sceat.infra.connector.mq.RabbitMqConnector.messagesType;
 
 /**
- * Le PacketSender peut se mettre en paus en cas de prise du lead par un autre replica,
+ * Le PacketSender peut se mettre en pause en cas de prise du lead par un autre replica,
  * <p>
  * pour des raison d'affichage custom je ne met pas en pause le PacketHandler pour la simple raison qu'en continuant a process les packets je pourrai afficher via JavaFX le nombre de joueur etc
  * 
@@ -19,17 +20,30 @@ import sceat.infra.connector.mq.RabbitMqConnector.messagesType;
  */
 public class PacketHandler {
 
-	private static PacketHandler instance = new PacketHandler();
-	private static Manager m = Manager.getInstance();
+	private static PacketHandler instance;
+	private static Manager m;
 
-	private PacketHandler() {
+	public PacketHandler() {
+		instance = this;
+		m = Manager.getInstance();
 	}
 
 	public static PacketHandler getInstance() {
 		return instance;
 	}
 
-	public void handle(messagesType type, String msg) {
+	/**
+	 * Les listes des joueurs s'updatent à chaque reception de packet. Les packets serveur servent à mettre à jour globalement Sphantom notamment quand une nouvelle instance de sphantom est lancée, il ne permettent pas d'enlever des joueurs des autres listes mais remplacent la liste des joueurs dans
+	 * la map <serveurLabel,Serveur>
+	 * <p>
+	 * les updates par player permettent d'ajouter un joueur dans toutes les listes ainsi que de l'enlever quand il se déconnecte
+	 * <p>
+	 * Les deux updates sont requises pour éviter un lourd traitement de données si on avait uniquement les packets serveur, il y a d'autres raisons pratique mais c'est assez complex et je galere a m'en souvenir donc je completerai ce commentaire plus tard !
+	 * 
+	 * @param type
+	 * @param msg
+	 */
+	public synchronized void handle(messagesType type, String msg) {
 		if (m == null) SPhantom.print("Le manager est null !");
 		switch (type) {
 			case HeartBeat:
@@ -41,15 +55,20 @@ public class PacketHandler {
 			case Update_Server:
 				PacketPhantomServerInfo var1 = PacketPhantomServerInfo.fromJson(msg);
 				m.getServersByLabel().put(var1.getLabel(), Server.fromPacket(var1));
+				m.getPlayersOnNetwork().addAll(var1.getPlayers());
 				break;
 			case Update_PlayerAction:
 				PacketPhantomPlayer var2 = PacketPhantomPlayer.fromJson(msg);
 				if (var2.getAction() == PlayerAction.Connect) {
 					m.getPlayersOnNetwork().add(var2.getPlayer());
 					m.getPlayersPerGrade().get(var2.getGrade()).add(var2.getPlayer());
+					var2.getServer().getPlayersMap().get(var2.getGrade()).add(var2.getPlayer());
+					Core.getInstance().getPlayersByType().get(var2.getServerType()).add(var2.getPlayer());
 				} else {
 					m.getPlayersOnNetwork().removeIf(e -> e == var2.getPlayer());
 					m.getPlayersPerGrade().get(var2.getGrade()).removeIf(e -> e == var2.getPlayer());
+					var2.getServer().getPlayers().removeIf(e -> e == var2.getPlayer());
+					Core.getInstance().getPlayersByType().get(var2.getServerType()).removeIf(e -> e == var2.getPlayer());
 				}
 				break;
 			default:
