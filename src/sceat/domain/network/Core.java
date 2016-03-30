@@ -7,6 +7,9 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import sceat.SPhantom;
+import sceat.domain.config.SPhantomConfig;
+import sceat.domain.config.SPhantomConfig.McServerConfigObject;
+import sceat.domain.config.SPhantomConfig.VpsConfigObject;
 import sceat.domain.network.Server.ServerType;
 import sceat.domain.schedule.Schedule;
 import sceat.domain.schedule.Scheduled;
@@ -26,6 +29,7 @@ public class Core implements Scheduled {
 	private static Core instance;
 
 	private ConcurrentHashMap<ServerType, Set<UUID>> playersByType = new ConcurrentHashMap<Server.ServerType, Set<UUID>>();
+	private ConcurrentHashMap<VpsConfigObject, Set<String>> serverLabelsByVps = new ConcurrentHashMap<SPhantomConfig.VpsConfigObject, Set<String>>();
 
 	public Core() {
 		instance = this;
@@ -75,6 +79,24 @@ public class Core implements Scheduled {
 		setProcess(true);
 
 		setProcess(false);
+	}
+
+	public void growServers(ServerType type, int nbr) {
+
+	}
+
+	private void deployProxy() {
+
+	}
+
+	private void deployServer(ServerType type) {
+		if (type == ServerType.Proxy) {
+			deployProxy();
+			return;
+		}
+		SPhantomConfig conf = SPhantom.getInstance().getSphantomConfig();
+		McServerConfigObject obj = conf.getInstances().get(type);
+		SPhantom.getInstance().getIphantom().createServer(type, obj.getMaxPlayers(), /*ip*/, type.getPack(), type.getKeys());
 	}
 
 	public static enum OperatingMode {

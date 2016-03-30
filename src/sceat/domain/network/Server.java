@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -12,6 +13,7 @@ import java.util.UUID;
 import sceat.domain.minecraft.Grades;
 import sceat.domain.minecraft.RessourcePack;
 import sceat.domain.minecraft.Statut;
+import sceat.domain.protocol.destinationKey;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
 import sceat.domain.utils.ServerLabel;
 
@@ -19,6 +21,7 @@ public class Server {
 
 	/**
 	 * Au moment ou un packet server arrive c'est la qu'on synchronise les joueurs
+	 * 
 	 * @param pkt
 	 * @return
 	 */
@@ -139,11 +142,31 @@ public class Server {
 	}
 
 	public static enum ServerType {
-		Proxy,
-		Lobby,
-		Agares,
-		AresRpg,
-		Iron,
+		Proxy(RessourcePack.RESSOURCE_PACK_DEFAULT, destinationKey.PROXY, destinationKey.HUBS_AND_PROXY, destinationKey.ALL),
+		Lobby(RessourcePack.RESSOURCE_PACK_DEFAULT, destinationKey.ALL, destinationKey.HUBS, destinationKey.HUBS_AND_PROXY),
+		Agares(RessourcePack.AGARES, destinationKey.ALL, destinationKey.SERVEURS, destinationKey.SRV_AGARES),
+		AresRpg(RessourcePack.ARESRPG, destinationKey.ALL, destinationKey.SERVEURS, destinationKey.SRV_ARES),
+		Iron(RessourcePack.IRON, destinationKey.ALL, destinationKey.SERVEURS, destinationKey.SRV_IRON);
+
+		private String[] keys;
+		private RessourcePack pack;
+
+		private ServerType(RessourcePack pack, String... keys) {
+			this.keys = keys;
+			this.pack = pack;
+		}
+
+		public RessourcePack getPack() {
+			return pack;
+		}
+
+		public String[] getKeys() {
+			return keys;
+		}
+
+		public List<String> getKeysAslist() {
+			return Arrays.asList(getKeys());
+		}
 	}
 
 }

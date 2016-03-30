@@ -13,14 +13,28 @@ public class PacketPhantomPlayer extends PacketPhantom {
 
 	private UUID player;
 	private Grades grade;
+	private Grades newGrade;
 	private PlayerAction action;
 	private String serverLabel;
 
-	public PacketPhantomPlayer(UUID uid, Grades grad, PlayerAction action, String labelOnConnect) {
+	public PacketPhantomPlayer(UUID uid, Grades grade, PlayerAction action, String serverLabel) {
 		this.player = uid;
-		this.grade = grad;
+		this.grade = grade;
 		this.action = action;
-		this.serverLabel = labelOnConnect;
+		this.newGrade = null;
+		this.serverLabel = serverLabel;
+	}
+
+	public PacketPhantomPlayer(UUID uid, Grades lastGrade, Grades newGrade, String serverlabel) {
+		this.player = uid;
+		this.grade = lastGrade;
+		this.action = PlayerAction.Grade_Update;
+		this.newGrade = newGrade;
+		this.serverLabel = serverlabel;
+	}
+
+	public Grades getNewGrade() {
+		return newGrade;
 	}
 
 	public ServerType getServerType() {
@@ -61,6 +75,7 @@ public class PacketPhantomPlayer extends PacketPhantom {
 
 	public static enum PlayerAction {
 		Connect,
-		Disconnect
+		Disconnect,
+		Grade_Update
 	}
 }

@@ -8,6 +8,7 @@ import java.util.concurrent.Executors;
 import sceat.domain.Heart;
 import sceat.domain.Manager;
 import sceat.domain.adapter.mq.IMessaging;
+import sceat.domain.adapter.ssh.Iphantom;
 import sceat.domain.config.SPhantomConfig;
 import sceat.domain.protocol.PacketHandler;
 import sceat.domain.protocol.PacketSender;
@@ -24,6 +25,8 @@ public class SPhantom {
 	private SPhantomConfig config;
 	private boolean lead = false;
 
+	private Iphantom iphantom;
+
 	/**
 	 * Init sphantom
 	 * 
@@ -33,14 +36,18 @@ public class SPhantom {
 	public SPhantom(Boolean local) { // don't change the implementation order !
 		instance = this;
 		this.running = true;
-		new Manager();
-		new PacketHandler();
 		this.pinger = Executors.newSingleThreadExecutor();
 		this.peaceMaker = Executors.newSingleThreadExecutor();
-		this.config = new SPhantomConfig();
 		this.executor = Executors.newFixedThreadPool(30);
+		this.config = new SPhantomConfig();
+		new Manager();
+		new PacketHandler();
 		new PacketSender(getSphantomConfig().getRabbitUser(), getSphantomConfig().getRabbitPassword(), local);
 		new Heart(local).takeLead();
+	}
+
+	public Iphantom getIphantom() {
+		return iphantom;
 	}
 
 	public void setLead(boolean lead) {

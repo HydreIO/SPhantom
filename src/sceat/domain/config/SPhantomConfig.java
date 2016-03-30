@@ -19,6 +19,8 @@ public class SPhantomConfig {
 	private Configuration config;
 	private String RabbitUser = "user";
 	private String RabbitPassword = "pass";
+	private String RabbitAdress = "127.0.0.1";
+	private int RabbitPort = 0000;
 	private String VultrKey = "key";
 	private String VultrUser = "user";
 	private String VultrPass = "pass";
@@ -41,8 +43,10 @@ public class SPhantomConfig {
 			this.servers.add(new VpsConfigObject("Ovh_001", "127.0.0.1", "user", "pass", 25565, true));
 			this.servers.add(new VpsConfigObject("Vultr_001", "127.0.0.2", "user", "pass", 25566, false));
 			Arrays.stream(ServerType.values()).forEach(v -> this.instances.put(v, new McServerConfigObject(75, 50, 2)));
-			getConfig().set("Broker.User", "user");
-			getConfig().set("Broker.Pass", "pass");
+			getConfig().set("Broker.User", RabbitUser);
+			getConfig().set("Broker.Pass", RabbitPassword);
+			getConfig().set("Broker.Adress", RabbitAdress);
+			getConfig().set("Broker.Port", RabbitPort);
 			getConfig().set(Constant.CONFIG_Optional_var + ".Vultr_User", getVultrUser());
 			getConfig().set(Constant.CONFIG_Optional_var + ".Vultr_Pass", getVultrPass());
 			getConfig().set(Constant.CONFIG_Optional_var + ".Vultr_Api_Key", getVultrKey());
@@ -54,6 +58,14 @@ public class SPhantomConfig {
 			SPhantom.print("SPhantom.yml found in " + cong.getAbsolutePath() + " !");
 		}
 		load(false);
+	}
+
+	public String getRabbitAdress() {
+		return RabbitAdress;
+	}
+
+	public int getRabbitPort() {
+		return RabbitPort;
 	}
 
 	public String getVultrUser() {
@@ -79,6 +91,10 @@ public class SPhantomConfig {
 			SPhantom.print("Broker_user [ok]");
 			this.RabbitPassword = getConfig().getString("Broker.Pass");
 			SPhantom.print("Broker_pass [ok]");
+			this.RabbitAdress = getConfig().getString("Broker.Adress");
+			SPhantom.print("Broker_adress [ok]");
+			this.RabbitPort = getConfig().getInt("Broker.Port");
+			SPhantom.print("Broker_port [ok]");
 			this.VultrUser = getConfig().getString(Constant.CONFIG_Optional_var + ".Vultr_User");
 			SPhantom.print("Vultr_User [ok]");
 			this.VultrPass = getConfig().getString(Constant.CONFIG_Optional_var + ".Vultr_Pass");

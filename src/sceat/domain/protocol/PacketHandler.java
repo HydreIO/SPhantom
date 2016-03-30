@@ -1,5 +1,8 @@
 package sceat.domain.protocol;
 
+import java.util.Set;
+import java.util.UUID;
+
 import sceat.SPhantom;
 import sceat.domain.Heart;
 import sceat.domain.Manager;
@@ -55,7 +58,10 @@ public class PacketHandler {
 			case Update_Server:
 				PacketPhantomServerInfo var1 = PacketPhantomServerInfo.fromJson(msg);
 				m.getServersByLabel().put(var1.getLabel(), Server.fromPacket(var1));
-				m.getPlayersOnNetwork().addAll(var1.getPlayers());
+				Set<UUID> players = var1.getPlayers();
+				m.getPlayersOnNetwork().addAll(players);
+				m.getPlayersPerGrade().entrySet().forEach(e -> e.getValue().addAll(var1.getPlayersPerGrade().get(e.getKey())));
+				Core.getInstance().getPlayersByType().get(var1.getType()).addAll(players);
 				break;
 			case Update_PlayerAction:
 				PacketPhantomPlayer var2 = PacketPhantomPlayer.fromJson(msg);
@@ -64,6 +70,11 @@ public class PacketHandler {
 					m.getPlayersPerGrade().get(var2.getGrade()).add(var2.getPlayer());
 					var2.getServer().getPlayersMap().get(var2.getGrade()).add(var2.getPlayer());
 					Core.getInstance().getPlayersByType().get(var2.getServerType()).add(var2.getPlayer());
+				} else if (var2.getAction() == PlayerAction.Grade_Update) {
+					m.getPlayersPerGrade().get(var2.getGrade()).removeIf(e -> e == var2.getPlayer());
+					m.getPlayersPerGrade().get(var2.getNewGrade()).add(var2.getPlayer());
+					var2.getServer().getPlayersMap().get(var2.getGrade()).removeIf(e -> e == var2.getPlayer());
+					var2.getServer().getPlayersMap().get(var2.getNewGrade()).add(var2.getPlayer());
 				} else {
 					m.getPlayersOnNetwork().removeIf(e -> e == var2.getPlayer());
 					m.getPlayersPerGrade().get(var2.getGrade()).removeIf(e -> e == var2.getPlayer());
@@ -75,5 +86,4 @@ public class PacketHandler {
 				break;
 		}
 	}
-
 }

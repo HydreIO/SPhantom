@@ -73,8 +73,8 @@ public class RabbitMqConnector implements IMessaging {
 			SPhantom.print("Local mode ! No messaging service.");
 			return;
 		}
-		getFactory().setHost("94.23.218.25");
-		getFactory().setPort(5672);
+		getFactory().setHost(SPhantom.getInstance().getSphantomConfig().getRabbitAdress());
+		getFactory().setPort(SPhantom.getInstance().getSphantomConfig().getRabbitPort());
 		getFactory().setUsername(user);
 		getFactory().setPassword(passwd);
 		try {
