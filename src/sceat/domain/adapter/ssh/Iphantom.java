@@ -3,8 +3,9 @@ package sceat.domain.adapter.ssh;
 import java.net.InetAddress;
 
 import sceat.domain.minecraft.RessourcePack;
-import sceat.domain.network.Server;
-import sceat.domain.network.Server.ServerType;
+import sceat.domain.network.server.Server;
+import sceat.domain.network.server.Server.ServerType;
+import sceat.domain.network.server.Vps;
 
 public interface Iphantom {
 
@@ -15,5 +16,7 @@ public interface Iphantom {
 	public void stopServer();
 
 	public void destroyServer();
+
+	public Vps[] retrieveOnlineInstances();
 
 }

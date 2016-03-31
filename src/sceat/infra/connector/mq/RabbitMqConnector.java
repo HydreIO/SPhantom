@@ -164,6 +164,7 @@ public class RabbitMqConnector implements IMessaging {
 
 	@Override
 	public void sendServer(String json) {
+		if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketServer |to:HUBS_AND_PROXY");
 		basicPublich(messagesType.Update_Server, destinationKey.HUBS_AND_PROXY, json);
 	}
 
@@ -176,16 +177,19 @@ public class RabbitMqConnector implements IMessaging {
 
 	@Override
 	public void takeLead(DAO_HeartBeat json) {
+		if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketTakeLead |to:SPHANTOM");
 		basicPublich(messagesType.TakeLead, destinationKey.SPHANTOM, json.toJson());
 	}
 
 	@Override
 	public void heartBeat(DAO_HeartBeat json) {
+		if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketHeartBeat |to:SPHANTOM");
 		basicPublich(messagesType.HeartBeat, destinationKey.SPHANTOM, json.toJson());
 	}
 
 	@Override
 	public void sendPlayer(String json) {
+		if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketPlayer |to:HUBS_AND_PROXY");
 		basicPublich(messagesType.Update_PlayerAction, destinationKey.HUBS_AND_PROXY, json);
 	}
 

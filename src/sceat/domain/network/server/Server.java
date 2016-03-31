@@ -1,4 +1,4 @@
-package sceat.domain.network;
+package sceat.domain.network.server;
 
 import java.net.InetAddress;
 import java.util.ArrayList;

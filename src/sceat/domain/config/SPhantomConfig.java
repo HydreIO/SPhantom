@@ -10,8 +10,8 @@ import java.util.Map;
 
 import sceat.Main;
 import sceat.SPhantom;
-import sceat.domain.network.Server;
-import sceat.domain.network.Server.ServerType;
+import sceat.domain.network.server.Server;
+import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.ressources.Constant;
 
 public class SPhantomConfig {

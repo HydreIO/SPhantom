@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import sceat.domain.minecraft.Grades;
-import sceat.domain.network.Server;
+import sceat.domain.network.server.Server;
 
 public class Manager {
 

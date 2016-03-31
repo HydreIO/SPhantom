@@ -6,8 +6,9 @@ import java.util.UUID;
 import sceat.SPhantom;
 import sceat.domain.Heart;
 import sceat.domain.Manager;
+import sceat.domain.minecraft.Statut;
 import sceat.domain.network.Core;
-import sceat.domain.network.Server;
+import sceat.domain.network.server.Server;
 import sceat.domain.protocol.packets.PacketPhantomPlayer;
 import sceat.domain.protocol.packets.PacketPhantomPlayer.PlayerAction;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
@@ -50,14 +51,19 @@ public class PacketHandler {
 		if (m == null) SPhantom.print("Le manager est null !");
 		switch (type) {
 			case HeartBeat:
+				if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketHeartBeat []");
 				Heart.getInstance().transfuse(msg);
 				break;
 			case TakeLead:
+				if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketTakeLead []");
 				Heart.getInstance().transplant(msg);
 				break;
 			case Update_Server:
 				PacketPhantomServerInfo var1 = PacketPhantomServerInfo.fromJson(msg);
-				m.getServersByLabel().put(var1.getLabel(), Server.fromPacket(var1));
+				if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketServer [" + var1.getLabel() + "|" + var1.getState().name() + "|players(" + var1.getPlayers().size() + ")]");
+				Server srvf = Server.fromPacket(var1);
+				if (var1.getState() == Statut.CREATING || var1.getState() == Statut.BOOTING) srvf.setStatus(Statut.OPEN); // on met le statut ouvert car si on reçoi ce packet c'est que le serveur est pret
+				m.getServersByLabel().put(var1.getLabel(), srvf);
 				Set<UUID> players = var1.getPlayers();
 				m.getPlayersOnNetwork().addAll(players);
 				m.getPlayersPerGrade().entrySet().forEach(e -> e.getValue().addAll(var1.getPlayersPerGrade().get(e.getKey())));
@@ -65,6 +71,8 @@ public class PacketHandler {
 				break;
 			case Update_PlayerAction:
 				PacketPhantomPlayer var2 = PacketPhantomPlayer.fromJson(msg);
+				if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketPlayer [" + var2.getPlayer() + "|" + var2.getAction().name() + "|"
+						+ (var2.getAction() == PlayerAction.Grade_Update ? (var2.getGrade().name() + " to " + var2.getNewGrade().name()) : var2.getGrade().name()) + "]");
 				if (var2.getAction() == PlayerAction.Connect) {
 					m.getPlayersOnNetwork().add(var2.getPlayer());
 					m.getPlayersPerGrade().get(var2.getGrade()).add(var2.getPlayer());

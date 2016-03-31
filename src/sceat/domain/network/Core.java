@@ -5,12 +5,14 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import sceat.SPhantom;
 import sceat.domain.config.SPhantomConfig;
 import sceat.domain.config.SPhantomConfig.McServerConfigObject;
-import sceat.domain.config.SPhantomConfig.VpsConfigObject;
-import sceat.domain.network.Server.ServerType;
+import sceat.domain.network.server.Server;
+import sceat.domain.network.server.Server.ServerType;
+import sceat.domain.network.server.Vps;
 import sceat.domain.schedule.Schedule;
 import sceat.domain.schedule.Scheduled;
 import sceat.domain.schedule.Scheduler;
@@ -26,15 +28,32 @@ public class Core implements Scheduled {
 
 	private OperatingMode mode = OperatingMode.Normal;
 	private boolean process = false;
+	private boolean initialised = false;
 	private static Core instance;
 
 	private ConcurrentHashMap<ServerType, Set<UUID>> playersByType = new ConcurrentHashMap<Server.ServerType, Set<UUID>>();
-	private ConcurrentHashMap<VpsConfigObject, Set<String>> serverLabelsByVps = new ConcurrentHashMap<SPhantomConfig.VpsConfigObject, Set<String>>();
+	private CopyOnWriteArraySet<Vps> vps = new CopyOnWriteArraySet<Vps>();
 
 	public Core() {
 		instance = this;
 		Arrays.stream(ServerType.values()).forEach(t -> playersByType.put(t, new HashSet<UUID>()));
 		Scheduler.getScheduler().register(this);
+		call();
+	}
+
+	/**
+	 * on récup les instances
+	 */
+	private void call() {
+		SPhantom.print("Initialising Core...");
+		SPhantom.getInstance().getExecutor().execute(() -> {
+			SPhantom.print("Retrieving online existing instances from ETCD (vps/dedicated/...)");
+			long cur = System.currentTimeMillis();
+			Vps[] instances = SPhantom.getInstance().getIphantom().retrieveOnlineInstances();
+			Arrays.stream(instances).forEach(vps::add);
+			Core.this.initialised = true;
+			SPhantom.print("Core initialised ! (" + (System.currentTimeMillis() - cur) + "ms)");
+		});
 	}
 
 	public static Core getInstance() {
@@ -75,7 +94,7 @@ public class Core implements Scheduled {
 
 	@Schedule(rate = 30, unit = TimeUnit.SECONDS)
 	public void coreUpdate() {
-		if (isProcessing()) return;
+		if (isProcessing() || !this.initialised || !SPhantom.getInstance().isLeading() || SPhantom.getInstance().isLocal()) return;
 		setProcess(true);
 
 		setProcess(false);

@@ -11,7 +11,7 @@ import java.util.UUID;
 
 import sceat.domain.minecraft.Grades;
 import sceat.domain.minecraft.Statut;
-import sceat.domain.network.Server.ServerType;
+import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.utils.UtilGson;
 
 public class PacketPhantomServerInfo extends PacketPhantom {

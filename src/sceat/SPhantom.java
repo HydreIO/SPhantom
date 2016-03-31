@@ -10,6 +10,7 @@ import sceat.domain.Manager;
 import sceat.domain.adapter.mq.IMessaging;
 import sceat.domain.adapter.ssh.Iphantom;
 import sceat.domain.config.SPhantomConfig;
+import sceat.domain.network.Core;
 import sceat.domain.protocol.PacketHandler;
 import sceat.domain.protocol.PacketSender;
 import sceat.infra.connector.mq.RabbitMqConnector;
@@ -24,6 +25,8 @@ public class SPhantom {
 	private boolean brokerInit = false;
 	private SPhantomConfig config;
 	private boolean lead = false;
+	private boolean local = false;
+	private boolean logPkt = false;
 
 	private Iphantom iphantom;
 
@@ -36,14 +39,24 @@ public class SPhantom {
 	public SPhantom(Boolean local) { // don't change the implementation order !
 		instance = this;
 		this.running = true;
+		this.local = local;
 		this.pinger = Executors.newSingleThreadExecutor();
 		this.peaceMaker = Executors.newSingleThreadExecutor();
 		this.executor = Executors.newFixedThreadPool(30);
 		this.config = new SPhantomConfig();
 		new Manager();
+		new Core();
 		new PacketHandler();
 		new PacketSender(getSphantomConfig().getRabbitUser(), getSphantomConfig().getRabbitPassword(), local);
 		new Heart(local).takeLead();
+	}
+
+	public boolean logPkt() {
+		return this.logPkt;
+	}
+
+	public boolean isLocal() {
+		return this.local;
 	}
 
 	public Iphantom getIphantom() {
@@ -92,7 +105,10 @@ public class SPhantom {
 		@SuppressWarnings("resource")
 		Scanner scan = new Scanner(System.in);
 		while (isRunning()) {
-			print("Actual Input : shutdown|forcelead");
+			print("Actual Input :");
+			print("> shutdown [Close l'instance de Sphantom]");
+			print("> forcelead [Cette instance deviendra le leader du replica]");
+			print("> logpkt [Active/desactive le logger des packets]");
 			print(".. >_");
 			String nex = scan.next();
 			switch (nex) {
@@ -101,6 +117,9 @@ public class SPhantom {
 					break;
 				case "forcelead":
 					Heart.getInstance().takeLead();
+					break;
+				case "logpkt":
+					this.logPkt = !this.logPkt;
 					break;
 				default:
 					break;
