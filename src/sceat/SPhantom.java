@@ -7,8 +7,8 @@ import java.util.concurrent.Executors;
 
 import sceat.domain.Heart;
 import sceat.domain.Manager;
+import sceat.domain.adapter.general.Iphantom;
 import sceat.domain.adapter.mq.IMessaging;
-import sceat.domain.adapter.ssh.Iphantom;
 import sceat.domain.config.SPhantomConfig;
 import sceat.domain.network.Core;
 import sceat.domain.protocol.PacketHandler;

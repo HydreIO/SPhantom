@@ -97,7 +97,6 @@ public class Main {
 		} catch (SecurityException | IOException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	public static void shutDown() {

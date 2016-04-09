@@ -11,10 +11,11 @@ public class Vps {
 	private String label;
 	private int ram;
 	private InetAddress ip;
+	private VpsState state;
 	private Map<String, ServerType> servers;
 
 	public static Vps fromBoot(String label, int ram, InetAddress ip) {
-		return new Vps(label, ram, ip, new HashMap<String, Server.ServerType>());
+		return new Vps(label, ram, ip, new HashMap<String, Server.ServerType>()).setState(VpsState.Deploying);
 	}
 
 	public Vps(String label, int ram, InetAddress ip, Map<String, ServerType> srvs) {
@@ -22,6 +23,15 @@ public class Vps {
 		this.ram = ram;
 		this.servers = srvs;
 		this.ip = ip;
+	}
+
+	public VpsState getState() {
+		return state;
+	}
+
+	public Vps setState(VpsState st) {
+		this.state = st;
+		return this;
 	}
 
 	public InetAddress getIp() {
@@ -38,6 +48,12 @@ public class Vps {
 
 	public Map<String, ServerType> getServers() {
 		return servers;
+	}
+
+	public static enum VpsState {
+		Deploying,
+		Online,
+		Destroying
 	}
 
 }
