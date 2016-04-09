@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 import sceat.SPhantom;
 import sceat.domain.config.SPhantomConfig;
@@ -32,7 +31,7 @@ public class Core implements Scheduled {
 	private static Core instance;
 
 	private ConcurrentHashMap<ServerType, Set<UUID>> playersByType = new ConcurrentHashMap<Server.ServerType, Set<UUID>>();
-	private CopyOnWriteArraySet<Vps> vps = new CopyOnWriteArraySet<Vps>();
+	private ConcurrentHashMap<String, Vps> vps = new ConcurrentHashMap<String, Vps>();
 
 	public Core() {
 		instance = this;
@@ -41,10 +40,15 @@ public class Core implements Scheduled {
 		call();
 	}
 
+	public ConcurrentHashMap<String, Vps> getVps() {
+		return vps;
+	}
+
 	/**
 	 * on récup les instances
 	 */
 	private void call() {
+		// changer pour l'ecoute continue via rabbit des msg des symbiotes pour mettre a jour la map donc virer cette methode et réécrire
 		SPhantom.print("Initialising Core...");
 		SPhantom.getInstance().getExecutor().execute(() -> {
 			SPhantom.print("Retrieving online existing instances from ETCD (vps/dedicated/...)");
@@ -115,6 +119,7 @@ public class Core implements Scheduled {
 		}
 		SPhantomConfig conf = SPhantom.getInstance().getSphantomConfig();
 		McServerConfigObject obj = conf.getInstances().get(type);
+		
 		SPhantom.getInstance().getIphantom().createServer(type, obj.getMaxPlayers(), /*ip*/, type.getPack(), type.getKeys());
 	}
 

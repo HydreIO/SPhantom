@@ -60,6 +60,10 @@ public class SPhantomConfig {
 		load(false);
 	}
 
+	public int getRamFor(ServerType type) {
+		return instances.get(type).getRamNeeded();
+	}
+
 	public String getRabbitAdress() {
 		return RabbitAdress;
 	}

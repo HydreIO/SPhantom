@@ -1,10 +1,12 @@
 package sceat.domain.network.server;
 
 import java.net.InetAddress;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
-import sceat.domain.network.server.Server.ServerType;
+import sceat.SPhantom;
+import sceat.domain.network.Core;
+import sceat.domain.utils.ServerLabel;
 
 public class Vps {
 
@@ -12,17 +14,34 @@ public class Vps {
 	private int ram;
 	private InetAddress ip;
 	private VpsState state;
-	private Map<String, ServerType> servers;
+	/**
+	 * labels
+	 */
+	private Set<String> servers;
 
 	public static Vps fromBoot(String label, int ram, InetAddress ip) {
-		return new Vps(label, ram, ip, new HashMap<String, Server.ServerType>()).setState(VpsState.Deploying);
+		return new Vps(label, ram, ip, new HashSet<String>()).setState(VpsState.Deploying);
 	}
 
-	public Vps(String label, int ram, InetAddress ip, Map<String, ServerType> srvs) {
+	public Vps(String label, int ram, InetAddress ip, Set<String> srvs) {
 		this.label = label;
 		this.ram = ram;
 		this.servers = srvs;
 		this.ip = ip;
+	}
+
+	public Vps register() {
+		Core.getInstance().getVps().put(getLabel(), this);
+		return this;
+	}
+
+	/**
+	 * heavy
+	 * 
+	 * @return
+	 */
+	public int getAvailableRam() {
+		return ram - getServers().stream().mapToInt(t -> SPhantom.getInstance().getSphantomConfig().getRamFor(ServerLabel.getTypeWithLabel(getLabel()))).reduce((a, b) -> a + b).getAsInt();
 	}
 
 	public VpsState getState() {
@@ -46,7 +65,7 @@ public class Vps {
 		return ram;
 	}
 
-	public Map<String, ServerType> getServers() {
+	public Set<String> getServers() {
 		return servers;
 	}
 

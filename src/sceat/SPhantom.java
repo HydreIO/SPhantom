@@ -27,7 +27,7 @@ public class SPhantom {
 	private boolean lead = false;
 	private boolean local = false;
 	private boolean logPkt = false;
-
+	public boolean logprovider = false;
 	private Iphantom iphantom;
 
 	/**
@@ -109,6 +109,7 @@ public class SPhantom {
 			print("> shutdown [Close l'instance de Sphantom]");
 			print("> forcelead [Cette instance deviendra le leader du replica]");
 			print("> logpkt [Active/desactive le logger des packets]");
+			print("> logProvider [Active/desactive le logger de l'overspan]");
 			print(".. >_");
 			String nex = scan.next();
 			switch (nex) {
@@ -120,6 +121,9 @@ public class SPhantom {
 					break;
 				case "logpkt":
 					this.logPkt = !this.logPkt;
+					break;
+				case "logProvider":
+					this.logprovider = !this.logprovider;
 					break;
 				default:
 					break;
