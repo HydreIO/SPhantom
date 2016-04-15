@@ -13,6 +13,7 @@ import sceat.domain.config.SPhantomConfig;
 import sceat.domain.network.Core;
 import sceat.domain.protocol.PacketHandler;
 import sceat.domain.protocol.PacketSender;
+import sceat.domain.protocol.packets.PacketPhantom;
 import sceat.infra.connector.mq.RabbitMqConnector;
 
 public class SPhantom {
@@ -44,6 +45,7 @@ public class SPhantom {
 		this.peaceMaker = Executors.newSingleThreadExecutor();
 		this.executor = Executors.newFixedThreadPool(30);
 		this.config = new SPhantomConfig();
+		PacketPhantom.init();
 		new Manager();
 		new Core();
 		new PacketHandler();
@@ -71,6 +73,7 @@ public class SPhantom {
 			print("SPhantom can't print report until he get the lead ! try <forcelead> or switch to the leading SPhantom instance");
 			print("----------------------------------------------------------");
 		}
+		PacketSender.getInstance().pause(!lead);
 		this.lead = lead;
 	}
 

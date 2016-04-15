@@ -1,18 +1,19 @@
 package sceat.domain.network.server;
 
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import sceat.domain.Manager;
 import sceat.domain.minecraft.Grades;
 import sceat.domain.minecraft.RessourcePack;
 import sceat.domain.minecraft.Statut;
+import sceat.domain.network.Core;
 import sceat.domain.protocol.destinationKey;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
 import sceat.domain.utils.ServerLabel;
@@ -21,13 +22,24 @@ public class Server {
 
 	/**
 	 * Au moment ou un packet server arrive c'est la qu'on synchronise les joueurs
+	 * <p>
+	 * si le packet provient du symbiote on ne sync pas les joueurs
 	 * 
 	 * @param pkt
 	 * @return
 	 */
 	public static Server fromPacket(PacketPhantomServerInfo pkt) {
-		return new Server(pkt.getLabel(), pkt.getType(), pkt.getState(), pkt.getMaxp(), pkt.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, pkt.getKeys().stream().toArray(String[]::new))
+		Server sr = null; // je ne peut pas use la methode getOrDefault de la concurrentHashmap car je doit modif le serveur contenu dans la map :(
+		if (Manager.getInstance().getServersByLabel().contains(pkt.getLabel())) {
+			sr = Manager.getInstance().getServersByLabel().get(pkt.getLabel()).setStatus(pkt.getState());
+			if (!pkt.isFromSymbiote()) sr.setPlayers(pkt.getPlayersPerGrade());
+		} else sr = new Server(pkt.getLabel(), pkt.getType(), pkt.getState(), pkt.getMaxp(), pkt.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, pkt.getKeys().stream().toArray(String[]::new))
 				.setPlayers(pkt.getPlayersPerGrade());
+		if (pkt.getVpsLabel() != null) {
+			Core.getInstance().checkVps(pkt.getVpsLabel()); // verification de l'existance du vps, instanciation en cas de NULL (des qu'un packet symbiote arrivera il sera update)
+			sr.setVps(Core.getInstance().getVps().get(pkt.getVpsLabel()));
+		}
+		return sr;
 	}
 
 	public static Server fromScratch(ServerType type, int maxPlayers, InetAddress ip, RessourcePack pack, String... destinationKeys) {
@@ -40,8 +52,11 @@ public class Server {
 	private Statut status;
 	private RessourcePack pack;
 	private Map<Grades, Set<UUID>> players = new HashMap<Grades, Set<UUID>>();
-	private Collection<String> keys = new ArrayList<String>();
+	private Set<String> keys = new HashSet<String>();
 	private InetAddress ipadress;
+	private long timeout;
+	private Vps vps;
+
 	/**
 	 * Lors de la gestion, sphantom decide en fonction du nombre de joueurs combien d'instance de ce type de serveur sont requise
 	 * <p>
@@ -57,6 +72,23 @@ public class Server {
 		this.pack = pack;
 		this.ipadress = ip;
 		Arrays.stream(destinationKeys).forEach(keys::add);
+	}
+
+	public Server setVps(Vps vps) {
+		this.vps = vps;
+		return this;
+	}
+
+	public Vps getVps() {
+		return vps;
+	}
+
+	public void heartBeat() {
+		this.timeout = System.currentTimeMillis();
+	}
+
+	public boolean hasTimeout() {
+		return System.currentTimeMillis() > this.timeout + 10000;
 	}
 
 	public boolean isNeeded() {
@@ -88,7 +120,7 @@ public class Server {
 		return this;
 	}
 
-	public Server setKeys(Collection<String> keys) {
+	public Server setKeys(Set<String> keys) {
 		this.keys = keys;
 		return this;
 	}
@@ -106,7 +138,7 @@ public class Server {
 		return ipadress;
 	}
 
-	public Collection<String> getKeys() {
+	public Set<String> getKeys() {
 		return keys;
 	}
 

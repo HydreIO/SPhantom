@@ -3,8 +3,10 @@ package sceat.domain.protocol;
 import sceat.SPhantom;
 import sceat.domain.adapter.mq.IMessaging;
 import sceat.domain.protocol.dao.DAO_HeartBeat;
+import sceat.domain.protocol.packets.PacketPhantomPlayer;
+import sceat.domain.protocol.packets.PacketPhantomServerInfo;
 
-public class PacketSender implements IMessaging {
+public class PacketSender {
 
 	private static PacketSender instance;
 	private IMessaging broker;
@@ -27,7 +29,7 @@ public class PacketSender implements IMessaging {
 	 *            mettre en pause ou reveiller
 	 */
 	public void pause(boolean pause) {
-		allowed = pause;
+		allowed = !pause;
 	}
 
 	public IMessaging getBroker() {
@@ -35,26 +37,22 @@ public class PacketSender implements IMessaging {
 	}
 
 	/**
-	 * Tout ce qui n'est pas interne comme le heartbeat doit verifié d'être sur le bon replica avant de pouvoir envoyer le packet, si cet instance de Sphantom est en pause alors on n'evnoie rien
+	 * Tout ce qui n'est pas interne comme le heartbeat doit verifier d'être sur le bon replica avant de pouvoir envoyer le packet, si cet instance de Sphantom est en pause alors on n'envoie rien
 	 */
-	@Override
-	public void sendServer(String json) {
-		if (allowed) getBroker().sendServer(json);
+	public void sendServer(PacketPhantomServerInfo pkt) {
+		if (allowed) getBroker().sendServer(pkt.toByteArray());
 	}
 
-	@Override
 	public void takeLead(DAO_HeartBeat json) {
 		getBroker().takeLead(json);
 	}
 
-	@Override
 	public void heartBeat(DAO_HeartBeat json) {
 		getBroker().heartBeat(json);
 	}
 
-	@Override
-	public void sendPlayer(String json) {
-		if (allowed) getBroker().sendPlayer(json);
+	public void sendPlayer(PacketPhantomPlayer pkt) {
+		if (allowed) getBroker().sendPlayer(pkt.toByteArray());
 	}
 
 }

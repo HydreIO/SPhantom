@@ -1,5 +1,6 @@
 package sceat.domain.network;
 
+import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -7,6 +8,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import sceat.SPhantom;
+import sceat.domain.Manager;
 import sceat.domain.config.SPhantomConfig;
 import sceat.domain.config.SPhantomConfig.McServerConfigObject;
 import sceat.domain.network.server.Server;
@@ -16,6 +18,7 @@ import sceat.domain.schedule.Schedule;
 import sceat.domain.schedule.Scheduled;
 import sceat.domain.schedule.Scheduler;
 import sceat.domain.schedule.TimeUnit;
+import sceat.domain.utils.New;
 
 /**
  * This is where the magic happens
@@ -30,8 +33,20 @@ public class Core implements Scheduled {
 	private boolean initialised = false;
 	private static Core instance;
 
+	/**
+	 * a quoi sert cte map ? rip jsai plus on verra
+	 */
 	private ConcurrentHashMap<ServerType, Set<UUID>> playersByType = new ConcurrentHashMap<Server.ServerType, Set<UUID>>();
+
+	/**
+	 * Les vps via leur label
+	 */
 	private ConcurrentHashMap<String, Vps> vps = new ConcurrentHashMap<String, Vps>();
+
+	/**
+	 * Servers par type pour la gestion d'ouverture d'instance et de servers, remplis dans le packetHandler
+	 */
+	private ConcurrentHashMap<ServerType, Set<Server>> serversByType = new ConcurrentHashMap<Server.ServerType, Set<Server>>();
 
 	public Core() {
 		instance = this;
@@ -42,6 +57,15 @@ public class Core implements Scheduled {
 
 	public ConcurrentHashMap<String, Vps> getVps() {
 		return vps;
+	}
+
+	public ConcurrentHashMap<ServerType, Set<Server>> getServersByType() {
+		return serversByType;
+	}
+
+	public void checkVps(String label) {
+		if (getVps().contains(label)) return;
+		new Vps(label, 0, InetAddress.getByName("127.0.0.1"), New.set()).register();
 	}
 
 	/**
@@ -100,12 +124,14 @@ public class Core implements Scheduled {
 	public void coreUpdate() {
 		if (isProcessing() || !this.initialised || !SPhantom.getInstance().isLeading() || SPhantom.getInstance().isLocal()) return;
 		setProcess(true);
-
+		Manager m = Manager.getInstance();
+		int percent = getMode().getPercentPl();
+		getServersByType().entrySet().forEach(e -> {
+			ServerType key = e.getKey();
+			Set<Server> srvs = e.getValue();
+			int trigg = SPhantom.getInstance().getSphantomConfig().getInstances().get(key).getPlayersBeforeOpenNewInstance();
+		});
 		setProcess(false);
-	}
-
-	public void growServers(ServerType type, int nbr) {
-
 	}
 
 	private void deployProxy() {
@@ -119,14 +145,24 @@ public class Core implements Scheduled {
 		}
 		SPhantomConfig conf = SPhantom.getInstance().getSphantomConfig();
 		McServerConfigObject obj = conf.getInstances().get(type);
-		
-		SPhantom.getInstance().getIphantom().createServer(type, obj.getMaxPlayers(), /*ip*/, type.getPack(), type.getKeys());
+		Server.fromScratch(type, maxPlayers, ip, pack, destinationKeys)
+		// SPhantom.getInstance().getIphantom().createServer(type, obj.getMaxPlayers(), /*ip*/, type.getPack(), type.getKeys());
 	}
 
 	public static enum OperatingMode {
-		Eco,
-		Normal,
-		NoLag
+		Eco(10),
+		Normal(20),
+		NoLag(40);
+
+		private int percentPl;
+
+		private OperatingMode(int percent) {
+			this.percentPl = percent;
+		}
+
+		public int getPercentPl() {
+			return percentPl;
+		}
 	}
 
 }

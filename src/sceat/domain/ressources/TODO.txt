@@ -1,7 +1,0 @@
-actuel:
-
-map des servers via un label
-set d'uuid des joueurs connéctés
-map avec les listes de joueurs en fonction de leur grades
-map avec les liste de serveurs en fonction de leur type
-

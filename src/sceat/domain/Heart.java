@@ -70,12 +70,15 @@ public class Heart implements Scheduled {
 	 */
 	public void transfuse(String json) {
 		DAO_HeartBeat dao = DAO_HeartBeat.fromJson(json);
-		for (DAO_HeartBeat d : getReplicas())
-			if (d.correspond(dao)) d.handshake();
+		getReplicas().stream().filter(d -> d.correspond(dao)).forEach(this::handShake);
 	}
 
 	public boolean isAlive() {
 		return this.alive;
+	}
+
+	private void handShake(DAO_HeartBeat bt) {
+		bt.handshake();
 	}
 
 	/**

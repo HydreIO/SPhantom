@@ -10,12 +10,32 @@ import sceat.domain.utils.ServerLabel;
 import sceat.domain.utils.UtilGson;
 
 public class PacketPhantomPlayer extends PacketPhantom {
+	
+	public static final byte ID = 1;
 
 	private UUID player;
 	private Grades grade;
 	private Grades newGrade;
 	private PlayerAction action;
 	private String serverLabel;
+
+	@Override
+	public void serialize() {
+		writeString(this.player.toString());
+		writeInt(this.grade.getValue());
+		writeInt(this.newGrade.getValue());
+		writeString(this.action.name());
+		writeString(this.serverLabel);
+	}
+
+	@Override
+	public void deserialize() {
+		this.player = UUID.fromString(readString());
+		this.grade = Grades.fromValue(readInt(), true);
+		this.newGrade = Grades.fromValue(readInt(), true);
+		this.action = PlayerAction.valueOf(readString());
+		this.serverLabel = readString();
+	}
 
 	public PacketPhantomPlayer(UUID uid, Grades grade, PlayerAction action, String serverLabel) {
 		this.player = uid;
@@ -64,11 +84,6 @@ public class PacketPhantomPlayer extends PacketPhantom {
 		return action;
 	}
 
-	@Override
-	public String toJson() {
-		return UtilGson.serialize(this);
-	}
-
 	public static PacketPhantomPlayer fromJson(String json) {
 		return UtilGson.deserialize(json, PacketPhantomPlayer.class);
 	}
@@ -78,4 +93,5 @@ public class PacketPhantomPlayer extends PacketPhantom {
 		Disconnect,
 		Grade_Update
 	}
+
 }

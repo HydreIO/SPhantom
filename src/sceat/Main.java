@@ -3,7 +3,6 @@ package sceat;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.net.InetAddress;
 import java.util.UUID;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
@@ -31,9 +30,6 @@ public class Main {
 
 	public static boolean GUImode = false;
 	public static boolean LocalMode = false;
-	public static InetAddress IpOvh;
-	public static String userOvh;
-	public static String passOvh;
 
 	public static void main(String[] args) {
 		assert false;
@@ -42,9 +38,9 @@ public class Main {
 		Options opt = new Options();
 		CommandLine cmd = setupOptions(opt, args);
 		if (cmd == null) throw new NullPointerException("Unable to setup the commandLine.. Aborting..");
-		Constant.startingText().forEach(SPhantom::print);
-		if (cmd.hasOption("gui")) GUImode = true;
-		if (cmd.hasOption("local")) LocalMode = true;
+		Constant.bootPrint().forEach(SPhantom::print);
+		GUImode = cmd.hasOption("gui");
+		LocalMode = cmd.hasOption("local");
 		ClassLoader loader = ClassLoader.getSystemClassLoader();
 		loader.setDefaultAssertionStatus(true);
 		try {

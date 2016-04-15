@@ -43,7 +43,7 @@ public class RabbitMqReceiver {
 	}
 
 	/**
-	 * Iï¿½i on "bind" un type de message sur une destination
+	 * içi on "bind" un type de message sur une destination
 	 *
 	 * @param msg
 	 *            le type de message
@@ -51,8 +51,14 @@ public class RabbitMqReceiver {
 	 *            la destination
 	 */
 	private void bind(messagesType msg) {
+		bind(destinationKey.SPHANTOM, msg.getName());
+		bind(destinationKey.HUBS_PROXY_SPHANTOM_SYMBIOTE, msg.getName());
+		bind(destinationKey.HUBS_PROXY_SPHANTOM, msg.getName());
+	}
+
+	private void bind(String dek, String msg) {
 		try {
-			getChannel().queueBind(qname, msg.getName(), destinationKey.SPHANTOM);
+			getChannel().queueBind(qname, msg, dek);
 		} catch (IOException e) {
 			Main.printStackTrace(e);
 		}

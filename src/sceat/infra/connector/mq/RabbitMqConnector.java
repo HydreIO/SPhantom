@@ -44,6 +44,7 @@ public class RabbitMqConnector implements IMessaging {
 		Update_Server("exchange_server"),
 		Update_PlayerAction("exchange_playerAction"),
 		HeartBeat("exchange_heartbeat"),
+		Symbiote("exchange_symbiote"),
 		TakeLead("exchange_takelead");
 
 		private String exchangeName;
@@ -162,10 +163,18 @@ public class RabbitMqConnector implements IMessaging {
 		}
 	}
 
+	public void basicPublich(messagesType msg, String key, byte[] array) {
+		try {
+			getChannel().basicPublish(msg.getName(), routing_enabled ? key : "", null, array);
+		} catch (IOException e) {
+			Main.printStackTrace(e);
+		}
+	}
+
 	@Override
-	public void sendServer(String json) {
+	public void sendServer(byte[] array) {
 		if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketServer |to:HUBS_AND_PROXY");
-		basicPublich(messagesType.Update_Server, destinationKey.HUBS_AND_PROXY, json);
+		basicPublich(messagesType.Update_Server, destinationKey.HUBS_AND_PROXY, array);
 	}
 
 	// @Override
@@ -188,9 +197,9 @@ public class RabbitMqConnector implements IMessaging {
 	}
 
 	@Override
-	public void sendPlayer(String json) {
+	public void sendPlayer(byte[] array) {
 		if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketPlayer |to:HUBS_AND_PROXY");
-		basicPublich(messagesType.Update_PlayerAction, destinationKey.HUBS_AND_PROXY, json);
+		basicPublich(messagesType.Update_PlayerAction, destinationKey.HUBS_AND_PROXY, array);
 	}
 
 }

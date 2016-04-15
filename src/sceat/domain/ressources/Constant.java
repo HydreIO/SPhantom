@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Constant {
 
-	public static List<String> startingText() {
+	public static List<String> bootPrint() {
 		List<String> lis = new ArrayList<String>();
 		lis.add(" ");
 		lis.add("███████╗██████╗ ██╗  ██╗ █████╗ ███╗   ██╗████████╗ ██████╗ ███╗   ███╗");

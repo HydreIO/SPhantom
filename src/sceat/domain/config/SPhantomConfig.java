@@ -40,8 +40,8 @@ public class SPhantomConfig {
 			Main.printStackTrace(e3);
 		}
 		if (mkdir) {
-			this.servers.add(new VpsConfigObject("Ovh_001", "127.0.0.1", "user", "pass", 25565, true));
-			this.servers.add(new VpsConfigObject("Vultr_001", "127.0.0.2", "user", "pass", 25566, false));
+			this.servers.add(new VpsConfigObject("Ovh_001", "127.0.0.1", "user", "pass", 21, 16));
+			this.servers.add(new VpsConfigObject("Vultr_001", "127.0.0.2", "user", "pass", 21, 8));
 			Arrays.stream(ServerType.values()).forEach(v -> this.instances.put(v, new McServerConfigObject(75, 50, 2)));
 			getConfig().set("Broker.User", RabbitUser);
 			getConfig().set("Broker.Pass", RabbitPassword);
@@ -111,12 +111,10 @@ public class SPhantomConfig {
 			this.instances.clear();
 			Configuration cc = getConfig().getSection("Instances.Servers");
 			SPhantom.print("Servers list filling..");
-			cc.getKeys().forEach(
-					k -> {
-						Configuration section = cc.getSection(k);
-						this.servers.add(new VpsConfigObject(k, section.getString("ip"), section.getString("user"), section.getString("pass"), section.getInt("port"), section
-								.getBoolean("allowMultiInstance")));
-					});
+			cc.getKeys().forEach(k -> {
+				Configuration section = cc.getSection(k);
+				this.servers.add(new VpsConfigObject(k, section.getString("ip"), section.getString("user"), section.getString("pass"), section.getInt("port"), section.getInt("ram")));
+			});
 			SPhantom.print("Servers list [ok]");
 			SPhantom.print("Instances config map filling");
 			Configuration cc2 = getConfig().getSection("Instances.Types");
@@ -168,23 +166,20 @@ public class SPhantomConfig {
 		private String ip;
 		private String user;
 		private String pass;
-		/**
-		 * If this vps can support multiple mc servers
-		 */
-		private boolean allowMultiInstance;
+		private int ram;
 		private int port;
 
-		public VpsConfigObject(String name, String ip, String user, String pass, int port, boolean multi) {
+		public VpsConfigObject(String name, String ip, String user, String pass, int port, int ram) {
 			this.ip = ip;
 			this.user = user;
 			this.pass = pass;
 			this.name = name;
 			this.port = port;
-			this.allowMultiInstance = multi;
+			this.ram = ram;
 		}
 
-		public boolean allowMultiInstances() {
-			return this.allowMultiInstance;
+		public int getRam() {
+			return ram;
 		}
 
 		public String getName() {
@@ -216,7 +211,7 @@ public class SPhantomConfig {
 			write(c, getPath() + "user", getUser());
 			write(c, getPath() + "pass", getPass());
 			write(c, getPath() + "port", getPort());
-			write(c, getPath() + "allowMultiInstance", allowMultiInstances());
+			write(c, getPath() + "ram", getRam());
 		}
 
 	}

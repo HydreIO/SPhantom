@@ -2,13 +2,16 @@ package sceat.domain.protocol;
 
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import sceat.SPhantom;
 import sceat.domain.Heart;
 import sceat.domain.Manager;
 import sceat.domain.minecraft.Statut;
 import sceat.domain.network.Core;
+import sceat.domain.network.ServerProvider;
 import sceat.domain.network.server.Server;
+import sceat.domain.network.server.Vps;
 import sceat.domain.protocol.packets.PacketPhantomPlayer;
 import sceat.domain.protocol.packets.PacketPhantomPlayer.PlayerAction;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
@@ -58,16 +61,34 @@ public class PacketHandler {
 				if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketTakeLead []");
 				Heart.getInstance().transplant(msg);
 				break;
+			case Symbiote:
+				// le packet symbiote doit contenir le label du vps, son statut et sa ram 
+				break;
 			case Update_Server:
 				PacketPhantomServerInfo var1 = PacketPhantomServerInfo.fromJson(msg);
 				if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketServer [" + var1.getLabel() + "|" + var1.getState().name() + "|players(" + var1.getPlayers().size() + ")]");
-				Server srvf = Server.fromPacket(var1);
-				if (var1.getState() == Statut.CREATING || var1.getState() == Statut.BOOTING) srvf.setStatus(Statut.OPEN); // on met le statut ouvert car si on reçoi ce packet c'est que le serveur est pret
-				m.getServersByLabel().put(var1.getLabel(), srvf);
+				Server srv = Server.fromPacket(var1);
+				if (var1.getState() == Statut.CLOSING) {
+					if (srv == null) {
+						SPhantom.print("PacketPhantomServerInfo : State Closing | the server is not registered ! break");
+						break;
+					}
+					Set<Server> ss = Core.getInstance().getServersByType().get(var1.getType());
+					Set<Vps> sv = Core.getInstance().getVps().g
+					ConcurrentHashMap<String, Vps> ci = ServerProvider.getInstance().getConfigInstances();
+					if(ci.containsKey(key))
+					if (ss.contains(srv)) ss.remove(srv);
+					m.getServersByLabel().remove(var1.getLabel());
+					break;
+				}
+				srv.heartBeat();
+				m.getServersByLabel().put(var1.getLabel(), srv);
+				Core.getInstance().getServersByType().get(var1.getType()).add(srv);
 				Set<UUID> players = var1.getPlayers();
 				m.getPlayersOnNetwork().addAll(players);
 				m.getPlayersPerGrade().entrySet().forEach(e -> e.getValue().addAll(var1.getPlayersPerGrade().get(e.getKey())));
 				Core.getInstance().getPlayersByType().get(var1.getType()).addAll(players);
+				PacketSender.getInstance().sendServer(PacketPhantomServerInfo.fromServer(srvf));
 				break;
 			case Update_PlayerAction:
 				PacketPhantomPlayer var2 = PacketPhantomPlayer.fromJson(msg);
@@ -89,6 +110,7 @@ public class PacketHandler {
 					var2.getServer().getPlayers().removeIf(e -> e == var2.getPlayer());
 					Core.getInstance().getPlayersByType().get(var2.getServerType()).removeIf(e -> e == var2.getPlayer());
 				}
+				PacketSender.getInstance().sendPlayer(var2);
 				break;
 			default:
 				break;

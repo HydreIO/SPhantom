@@ -2,35 +2,76 @@ package sceat.domain.protocol.packets;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import sceat.domain.minecraft.Grades;
 import sceat.domain.minecraft.Statut;
+import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Server.ServerType;
-import sceat.domain.utils.UtilGson;
 
 public class PacketPhantomServerInfo extends PacketPhantom {
 
+	public static final byte ID = 2;
+
 	private String label;
+	private String vpsLabel;
 	private ServerType type;
 	private int maxp;
 	private String ip;
 	private Map<Grades, Set<UUID>> players = new HashMap<Grades, Set<UUID>>();
-	private Collection<String> keys = new ArrayList<String>();
+	private Set<String> keys = new HashSet<String>();
 	private Statut state;
+	private boolean fromSymbiote = false; // if the packet came from symbiote, then we must get from the map like a closing server and not from "Server.fromPacket"
 
-	public PacketPhantomServerInfo(Statut state, InetAddress ip, ServerType type, int maxp, Map<Grades, Set<UUID>> pl, Collection<String> keys) {
+	@Override
+	public void serialize() {
+		writeString(getLabel());
+		writeString(this.vpsLabel);
+		writeString(getType().name());
+		writeInt(getMaxp());
+		writeString(this.ip);
+		writeObject(this.players);
+		writeObject(this.keys);
+		writeString(getState().name());
+		writeBoolean(isFromSymbiote());
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void deserialize() {
+		this.label = readString();
+		this.vpsLabel = readString();
+		this.type = ServerType.valueOf(readString());
+		this.maxp = readInt();
+		this.ip = readString();
+		this.players = (Map<Grades, Set<UUID>>) readObject();
+		this.keys = (Set<String>) readObject();
+		this.state = Statut.valueOf(readString());
+		this.fromSymbiote = readBoolean();
+	}
+
+	public static PacketPhantomServerInfo fromServer(Server srv) {
+		return new PacketPhantomServerInfo(srv.getStatus(), srv.getLabel(), srv.getVps().getLabel(), srv.getIpadress(), srv.getType(), srv.getMaxPlayers(), srv.getPlayersMap(), srv.getKeys(), false);
+	}
+
+	public PacketPhantomServerInfo(Statut state, String label, String vpsLabel, InetAddress ip, ServerType type, int maxp, Map<Grades, Set<UUID>> pl, Set<String> keys, boolean fromSymbiote) {
 		this.ip = ip.getHostAddress();
+		this.vpsLabel = vpsLabel;
+		this.label = label;
 		this.keys = keys;
 		this.type = type;
 		this.players = pl;
 		this.maxp = maxp;
 		this.state = state;
+	}
+
+	public boolean isFromSymbiote() {
+		return this.fromSymbiote;
 	}
 
 	public Statut getState() {
@@ -39,6 +80,10 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 
 	public Collection<String> getKeys() {
 		return keys;
+	}
+
+	public String getVpsLabel() {
+		return vpsLabel;
 	}
 
 	public int getMaxp() {
@@ -71,15 +116,6 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 			s1.addAll(s2);
 			return s1;
 		}).get();
-	}
-
-	@Override
-	public String toJson() {
-		return UtilGson.serialize(this);
-	}
-
-	public static PacketPhantomServerInfo fromJson(String json) {
-		return UtilGson.deserialize(json, PacketPhantomServerInfo.class);
 	}
 
 }
