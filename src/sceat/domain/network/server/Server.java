@@ -158,12 +158,16 @@ public class Server {
 		return pack;
 	}
 
+	public Set<UUID> getPlayers(Grades gr) {
+		return getPlayersMap().get(gr);
+	}
+
 	public Map<Grades, Set<UUID>> getPlayersMap() {
 		return players;
 	}
 
-	public Set<UUID> getPlayers(Grades gr) {
-		return getPlayersMap().get(gr);
+	public int countPlayers() {
+		return getPlayersMap().entrySet().stream().mapToInt(e -> e.getValue().size()).reduce((a, b) -> a + b).getAsInt();
 	}
 
 	public Set<UUID> getPlayers() {

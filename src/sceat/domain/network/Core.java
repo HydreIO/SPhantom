@@ -11,6 +11,8 @@ import sceat.SPhantom;
 import sceat.domain.Manager;
 import sceat.domain.config.SPhantomConfig;
 import sceat.domain.config.SPhantomConfig.McServerConfigObject;
+import sceat.domain.minecraft.Statut;
+import sceat.domain.network.ServerProvider.Defqon;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.network.server.Vps;
@@ -19,6 +21,7 @@ import sceat.domain.schedule.Scheduled;
 import sceat.domain.schedule.Scheduler;
 import sceat.domain.schedule.TimeUnit;
 import sceat.domain.utils.New;
+import sceat.domain.utils.ServerLabel;
 
 /**
  * This is where the magic happens
@@ -34,7 +37,9 @@ public class Core implements Scheduled {
 	private static Core instance;
 
 	/**
-	 * a quoi sert cte map ? rip jsai plus on verra
+	 * pour gerer l'offre de vps je doit connaitre la marge qu'il reste par serverType, moins il y a de marge plus je vais incrementer la priorité du server provider
+	 * <p>
+	 * plus il y en a plus je decrement
 	 */
 	private ConcurrentHashMap<ServerType, Set<UUID>> playersByType = new ConcurrentHashMap<Server.ServerType, Set<UUID>>();
 
@@ -50,9 +55,49 @@ public class Core implements Scheduled {
 
 	public Core() {
 		instance = this;
-		Arrays.stream(ServerType.values()).forEach(t -> playersByType.put(t, new HashSet<UUID>()));
+		Arrays.stream(ServerType.values()).forEach(t -> {
+			serversByType.put(t, new HashSet<Server>());
+			playersByType.put(t, new HashSet<UUID>());
+		});
 		Scheduler.getScheduler().register(this);
 		call();
+	}
+
+	@Schedule(rate = 10, unit = TimeUnit.SECONDS)
+	public void checkFreeSpace() {
+		boolean decrem = true;
+		for (ServerType v : ServerType.values()) {
+			int playersCount = playersByType.get(v).size();
+			int totspace = SPhantom.getInstance().getSphantomConfig().getInstances().get(v).getMaxPlayers() * serversByType.get(v).size();
+			int availableSpace = totspace - playersCount;
+			if (totspace * getMode().getPercentPl() <= playersCount) {
+				ServerProvider.getInstance().incrementPriority();
+				decrem = false;
+			}
+		}
+		if (decrem) ServerProvider.getInstance().decrementPriority();
+	}
+
+	/**
+	 * on verifie içi si la map playersByType servant pour l'overspan est bien a jour ! si le nombre de joueurs n'est pas egal au nombre trouvé via la reduction directement efféctuée sur les serveurs
+	 * <p>
+	 * alors on remap manuellement la hashmap
+	 */
+	@Schedule(rate = 1, unit = TimeUnit.MINUTES)
+	public void repairMap() {
+		Arrays.stream(ServerType.values()).forEach(v -> {
+			int totplayers = serversByType.get(v).stream().filter(s -> (s.getStatus() == Statut.OPEN)).mapToInt(ss -> ss.countPlayers()).reduce((a, b) -> a + b).getAsInt();
+			if (totplayers != playersByType.get(v).size()) Core.this.remapPlayersByType();
+		});
+	}
+
+	private void remapPlayersByType() {
+		Arrays.stream(ServerType.values()).forEach(v -> {
+			playersByType.put(v, serversByType.get(v).stream().filter(s -> (s.getStatus() == Statut.OPEN)).map(s -> s.getPlayers()).reduce((a, b) -> {
+				a.addAll(b);
+				return a;
+			}).orElse(New.set()));
+		});
 	}
 
 	public ConcurrentHashMap<String, Vps> getVps() {
@@ -125,17 +170,39 @@ public class Core implements Scheduled {
 		if (isProcessing() || !this.initialised || !SPhantom.getInstance().isLeading() || SPhantom.getInstance().isLocal()) return;
 		setProcess(true);
 		Manager m = Manager.getInstance();
-		int percent = getMode().getPercentPl();
-		getServersByType().entrySet().forEach(e -> {
-			ServerType key = e.getKey();
-			Set<Server> srvs = e.getValue();
-			int trigg = SPhantom.getInstance().getSphantomConfig().getInstances().get(key).getPlayersBeforeOpenNewInstance();
-		});
+		Defqon defqon = ServerProvider.getInstance().getDefqon();
+		switch (defqon) {
+			case FOUR:
+				
+				break;
+			case THREE:
+
+				break;
+			case TWO:
+
+				break;
+			case ONE:
+
+				break;
+			default:
+				break;
+		}
 		setProcess(false);
 	}
 
 	private void deployProxy() {
 
+	}
+
+	private Vps deployInstance() {
+		return SPhantom.getInstance().getIphantom().deployInstance(ServerLabel.newVpsLabel(), 8).register();
+	}
+
+	private Set<Vps> deployInstances(int nbr) {
+		Set<Vps> vp = new HashSet<Vps>();
+		for (int i = 0; i < nbr; i++)
+			vp.add(deployInstance());
+		return vp;
 	}
 
 	private void deployServer(ServerType type) {
@@ -150,17 +217,17 @@ public class Core implements Scheduled {
 	}
 
 	public static enum OperatingMode {
-		Eco(10),
-		Normal(20),
-		NoLag(40);
+		Eco(0.8F),
+		Normal(0.6F),
+		NoLag(0.4F);
 
-		private int percentPl;
+		private float percentPl;
 
-		private OperatingMode(int percent) {
+		private OperatingMode(float percent) {
 			this.percentPl = percent;
 		}
 
-		public int getPercentPl() {
+		public float getPercentPl() {
 			return percentPl;
 		}
 	}

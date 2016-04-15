@@ -5,13 +5,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 import sceat.Main;
 import sceat.SPhantom;
-
-import com.jcraft.jsch.Packet;
 
 public abstract class PacketPhantom {
 
@@ -26,8 +25,52 @@ public abstract class PacketPhantom {
 
 	public static void init() {
 		SPhantom.print("Initialising packets...");
-		registerPacket(PacketPhantomPlayer.ID, PacketPhantomPlayer.class);
-		registerPacket(PacketPhantomServerInfo.ID, PacketPhantomServerInfo.class);
+		try {
+			registerPacket(PacketPhantomPlayer.ID, PacketPhantomPlayer.class);
+			registerPacket(PacketPhantomServerInfo.ID, PacketPhantomServerInfo.class);
+		} catch (PacketIdAlrealyUsedException e) {
+			Main.printStackTrace(e);
+		}
+	}
+
+	@FunctionalInterface
+	public interface Deserializer<T> {
+		T deserialize();
+	}
+
+	@FunctionalInterface
+	public interface Serializer<T> {
+		void serialize(T value);
+	}
+
+	public <U, V> Map<U, V> readMap(Deserializer<U> ud, Deserializer<V> vd) {
+		int size = readInt();
+		Map<U, V> map = new HashMap<>();
+		for (int i = 0; i < size; i++)
+			map.put(ud.deserialize(), vd.deserialize());
+		return map;
+	}
+
+	public <U, V> void writeMap(Map<U, V> map, Serializer<U> ud, Serializer<V> vd) {
+		writeInt(map.size());
+		for (Map.Entry<U, V> e : map.entrySet()) {
+			ud.serialize(e.getKey());
+			vd.serialize(e.getValue());
+		}
+	}
+
+	public <C extends Collection<T>, T> C readCollection(C collection, Deserializer<T> deserializer) {
+		int size = readInt();
+		for (int i = 0; i < size; i++)
+			collection.add(deserializer.deserialize());
+		return collection;
+	}
+
+	public <T> void writeCollection(Collection<T> collection, Serializer<T> serializer) {
+		writeInt(collection.size());
+		for (T t : collection)
+			serializer.serialize(t);
+
 	}
 
 	public static Byte getPacketId(Class<? extends PacketPhantom> packet) {
@@ -248,11 +291,57 @@ public abstract class PacketPhantom {
 		return buffer[0];
 	}
 
-	public static Packet fromByteArray(byte[] bytes) throws IllegalAccessException, InstantiationException, PacketNotRegistredException {
+	public static PacketPhantom fromByteArray(byte[] bytes) throws IllegalAccessException, InstantiationException, PacketNotRegistredException {
 		if (!packets.containsKey(bytes[0])) throw new PacketNotRegistredException(bytes[0]);
 		PacketPhantom p = getPacket(bytes[0]).newInstance();
 		p.buffer = bytes;
 		return p;
+	}
+
+	public static class PacketNotRegistredException extends Exception {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 7749347832074629409L;
+
+		public PacketNotRegistredException(byte id) {
+			super("The packet with id " + id + " is not registred");
+		}
+	}
+
+	public static class PacketIdAlrealyUsedException extends PacketException {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 6283626920744238599L;
+		private final byte id;
+
+		public PacketIdAlrealyUsedException(byte id, Class<? extends PacketPhantom> packet) {
+			super(packet, "Id :" + id + " is alrealy used by " + packet.getName());
+			this.id = id;
+		}
+
+		public byte getId() {
+			return id;
+		}
+	}
+
+	public static class PacketException extends Exception {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -6893575558054311557L;
+		private final Class<? extends PacketPhantom> packet;
+
+		PacketException(Class<? extends PacketPhantom> packet, String s) {
+			super(s);
+			this.packet = packet;
+		}
+
+		public Class<? extends PacketPhantom> getPacket() {
+			return packet;
+		}
 	}
 
 }

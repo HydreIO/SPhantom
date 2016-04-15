@@ -50,7 +50,7 @@ public class PacketHandler {
 	 * @param type
 	 * @param msg
 	 */
-	public synchronized void handle(messagesType type, String msg) {
+	public synchronized void handle(messagesType type, String msg,byte[] array) {
 		if (m == null) SPhantom.print("Le manager est null !");
 		switch (type) {
 			case HeartBeat:
@@ -62,10 +62,11 @@ public class PacketHandler {
 				Heart.getInstance().transplant(msg);
 				break;
 			case Symbiote:
-				// le packet symbiote doit contenir le label du vps, son statut et sa ram 
+				// le packet symbiote doit contenir le label du vps, son statut et sa ram
+				// si le vps existe on sync son statut sinon on le crée et on le vps.register
 				break;
 			case Update_Server:
-				PacketPhantomServerInfo var1 = PacketPhantomServerInfo.fromJson(msg);
+				PacketPhantomServerInfo var1 = (PacketPhantomServerInfo) PacketPhantomServerInfo.fromByteArray(array);
 				if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketServer [" + var1.getLabel() + "|" + var1.getState().name() + "|players(" + var1.getPlayers().size() + ")]");
 				Server srv = Server.fromPacket(var1);
 				if (var1.getState() == Statut.CLOSING) {

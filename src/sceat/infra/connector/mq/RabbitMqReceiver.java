@@ -82,7 +82,7 @@ public class RabbitMqReceiver {
 			public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
 				String message = new String(body, "UTF-8");
 				messagesType messageType = messagesType.fromString(envelope.getExchange(), true);
-				PacketHandler.getInstance().handle(messageType, message);
+				PacketHandler.getInstance().handle(messageType, message,body);
 			}
 		});
 	}

@@ -15,6 +15,8 @@ import sceat.domain.utils.New;
 public class ServerProvider {
 
 	private static ServerProvider instance;
+	private int priority = 0;
+	private Defqon defqon = Defqon.FIVE;
 
 	/**
 	 * Map des instances préenregistré dans la config (généralement les gros dédié de base pour les joueurs constants)
@@ -31,6 +33,45 @@ public class ServerProvider {
 		instance = this;
 		SPhantom.getInstance().getSphantomConfig().getServers().stream().map(vs -> new Vps(vs.getName(), vs.getRam(), getByName(vs.getIp()), New.set()))
 				.forEach(v -> configInstances.put(v.getLabel(), v));
+	}
+
+	public void incrementPriority() {
+		this.priority++;
+		checkDefqon();
+	}
+
+	private void checkDefqon() {
+		if (getPriority() > 29) setDefqon(Defqon.ONE);
+		else if (getPriority() > 19) setDefqon(Defqon.TWO);
+		else if (getPriority() > 10) setDefqon(Defqon.THREE);
+		else if (getPriority() > 2) setDefqon(Defqon.FOUR);
+		else setDefqon(Defqon.FIVE);
+	}
+
+	public void decrementPriority() {
+		if (this.priority <= 0) return;
+		this.priority--;
+		checkDefqon();
+	}
+
+	public void setDefqon(Defqon defqon) {
+		this.defqon = defqon;
+	}
+
+	public Defqon getDefqon() {
+		return defqon;
+	}
+
+	public int getPriority() {
+		return priority;
+	}
+
+	public static enum Defqon {
+		FIVE,
+		FOUR,
+		THREE,
+		TWO,
+		ONE
 	}
 
 	// internal use for bypass tryCatch block

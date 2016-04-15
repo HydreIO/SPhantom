@@ -7,10 +7,9 @@ import sceat.domain.minecraft.Grades;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.utils.ServerLabel;
-import sceat.domain.utils.UtilGson;
 
 public class PacketPhantomPlayer extends PacketPhantom {
-	
+
 	public static final byte ID = 1;
 
 	private UUID player;
@@ -82,10 +81,6 @@ public class PacketPhantomPlayer extends PacketPhantom {
 
 	public PlayerAction getAction() {
 		return action;
-	}
-
-	public static PacketPhantomPlayer fromJson(String json) {
-		return UtilGson.deserialize(json, PacketPhantomPlayer.class);
 	}
 
 	public static enum PlayerAction {

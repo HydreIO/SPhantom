@@ -35,13 +35,12 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		writeString(getType().name());
 		writeInt(getMaxp());
 		writeString(this.ip);
-		writeObject(this.players);
-		writeObject(this.keys);
+		writeMap(this.players, d -> writeString(d.name()), d -> writeCollection(d, e -> writeString(e.toString())));
+		writeCollection(this.keys, a -> writeString(a));
 		writeString(getState().name());
 		writeBoolean(isFromSymbiote());
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void deserialize() {
 		this.label = readString();
@@ -49,8 +48,8 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		this.type = ServerType.valueOf(readString());
 		this.maxp = readInt();
 		this.ip = readString();
-		this.players = (Map<Grades, Set<UUID>>) readObject();
-		this.keys = (Set<String>) readObject();
+		this.players = readMap(() -> Grades.valueOf(readString()), () -> readCollection(new HashSet<UUID>(), () -> UUID.fromString(readString())));
+		this.keys = readCollection(new HashSet<String>(), () -> readString());
 		this.state = Statut.valueOf(readString());
 		this.fromSymbiote = readBoolean();
 	}
