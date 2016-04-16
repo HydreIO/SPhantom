@@ -1,23 +1,13 @@
 package sceat.domain.protocol.packets;
 
+import sceat.domain.protocol.Security;
+
 public class PacketPhantomHeartBeat extends PacketPhantom {
 
 	private boolean running;
 	private long lastHandShake;
 
-	@Override
-	public void serialize() {
-		writeBoolean(isRunning());
-		writeLong(getLastHandShake());
-	}
-
-	@Override
-	public void deserialize() {
-		this.running = readBoolean();
-		this.lastHandShake = readLong();
-	}
-
-	public PacketPhantomHeartBeat(PacketPhantomSecurity sec) {
+	public PacketPhantomHeartBeat(Security sec) {
 		super(sec);
 		setRunning(true);
 	}
@@ -41,6 +31,24 @@ public class PacketPhantomHeartBeat extends PacketPhantom {
 
 	public boolean isRunning() {
 		return this.running;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T extends PacketPhantom> T serialize() {
+		writeBoolean(isRunning());
+		writeLong(getLastHandShake());
+		encodeSecurity();
+		return (T) this;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T extends PacketPhantom> T deserialize() {
+		this.running = readBoolean();
+		this.lastHandShake = readLong();
+		decodeSecurity();
+		return (T) this;
 	}
 
 }

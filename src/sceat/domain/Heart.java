@@ -6,8 +6,8 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import sceat.Main;
 import sceat.SPhantom;
 import sceat.domain.protocol.PacketSender;
+import sceat.domain.protocol.Security;
 import sceat.domain.protocol.packets.PacketPhantomHeartBeat;
-import sceat.domain.protocol.packets.PacketPhantomSecurity;
 import sceat.domain.schedule.Schedule;
 import sceat.domain.schedule.Scheduled;
 import sceat.domain.schedule.Scheduler;
@@ -27,7 +27,7 @@ public class Heart implements Scheduled {
 		this.alive = true;
 		if (local) SPhantom.print("Local mode ! No replicas service.");
 		else Scheduler.getScheduler().register(this);
-		this.localBeat = new PacketPhantomHeartBeat(new PacketPhantomSecurity(Main.serial.toString(), Main.security.toString()));
+		this.localBeat = new PacketPhantomHeartBeat(new Security(Main.serial.toString(), Main.security.toString()));
 	}
 
 	public static Heart getInstance() {
@@ -60,7 +60,7 @@ public class Heart implements Scheduled {
 		if (pkt.cameFromLocal()) return;
 		SPhantom.print("Another instance has taken the lead ! SPhantom is going to sleep");
 		SPhantom.getInstance().setLead(false);
-		getReplicas().addLast(dao);
+		getReplicas().addLast(pkt);
 	}
 
 	/**
@@ -69,7 +69,7 @@ public class Heart implements Scheduled {
 	 * @param json
 	 */
 	public void transfuse(PacketPhantomHeartBeat pkt) {
-		getReplicas().stream().filter(d -> d.getSecurity().correspond(pkt.getSecurity())).forEach(this::handShake);
+		getReplicas().stream().filter(d -> d.getSecu().correspond(pkt.getSecu())).forEach(this::handShake);
 	}
 
 	public boolean isAlive() {
@@ -96,12 +96,12 @@ public class Heart implements Scheduled {
 	public void murder() {
 		if (!isAlive() || getReplicas().isEmpty()) return;
 		PacketSender.getInstance().heartBeat(getLocalBeat().handshake());
-		Iterator<DAO_HeartBeat> it = getReplicas().iterator();
+		Iterator<PacketPhantomHeartBeat> it = getReplicas().iterator();
 		while (it.hasNext()) {
-			DAO_HeartBeat da = it.next();
-			if (da.isDead() && !da.isLocal()) it.remove();
+			PacketPhantomHeartBeat da = it.next();
+			if (da.isDead() && !da.getSecu().isLocal()) it.remove();
 		}
-		PacketSender.getInstance().pause(!getReplicas().peekLast().isLocal());
+		PacketSender.getInstance().pause(!getReplicas().peekLast().getSecu().isLocal());
 	}
 
 }

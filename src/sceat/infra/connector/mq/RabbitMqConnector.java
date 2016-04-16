@@ -7,7 +7,9 @@ import sceat.Main;
 import sceat.SPhantom;
 import sceat.domain.adapter.mq.IMessaging;
 import sceat.domain.protocol.destinationKey;
-import sceat.domain.protocol.dao.DAO_HeartBeat;
+import sceat.domain.protocol.packets.PacketPhantomHeartBeat;
+import sceat.domain.protocol.packets.PacketPhantomPlayer;
+import sceat.domain.protocol.packets.PacketPhantomServerInfo;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -152,17 +154,9 @@ public class RabbitMqConnector implements IMessaging {
 	 *            le type du message
 	 * @param key
 	 *            le ou les endroit qui vont recevoir le message
-	 * @param json
-	 *            le message
+	 * @param array
+	 *            le pkt
 	 */
-	public void basicPublich(messagesType msg, String key, String json) {
-		try {
-			getChannel().basicPublish(msg.getName(), routing_enabled ? key : "", null, json.getBytes());
-		} catch (IOException e) {
-			Main.printStackTrace(e);
-		}
-	}
-
 	public void basicPublich(messagesType msg, String key, byte[] array) {
 		try {
 			getChannel().basicPublish(msg.getName(), routing_enabled ? key : "", null, array);
@@ -172,9 +166,9 @@ public class RabbitMqConnector implements IMessaging {
 	}
 
 	@Override
-	public void sendServer(byte[] array) {
+	public void sendServer(PacketPhantomServerInfo pkt) {
 		if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketServer |to:HUBS_PROXY_SPHANTOM");
-		basicPublich(messagesType.Update_Server, destinationKey.HUBS_PROXY_SPHANTOM, array);
+		basicPublich(messagesType.Update_Server, destinationKey.HUBS_PROXY_SPHANTOM, pkt.toByteArray());
 	}
 
 	// @Override
@@ -185,21 +179,21 @@ public class RabbitMqConnector implements IMessaging {
 	// }
 
 	@Override
-	public void takeLead(DAO_HeartBeat json) {
+	public void takeLead(PacketPhantomHeartBeat pkt) {
 		if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketTakeLead |to:SPHANTOM");
-		basicPublich(messagesType.TakeLead, destinationKey.SPHANTOM, json.toJson());
+		basicPublich(messagesType.TakeLead, destinationKey.SPHANTOM, pkt.toByteArray());
 	}
 
 	@Override
-	public void heartBeat(DAO_HeartBeat json) {
+	public void heartBeat(PacketPhantomHeartBeat pkt) {
 		if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketHeartBeat |to:SPHANTOM");
-		basicPublich(messagesType.HeartBeat, destinationKey.SPHANTOM, json.toJson());
+		basicPublich(messagesType.HeartBeat, destinationKey.SPHANTOM, pkt.toByteArray());
 	}
 
 	@Override
-	public void sendPlayer(byte[] array) {
+	public void sendPlayer(PacketPhantomPlayer pkt) {
 		if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketPlayer |to:HUBS_PROXY_SPHANTOM");
-		basicPublich(messagesType.Update_PlayerAction, destinationKey.HUBS_PROXY_SPHANTOM, array);
+		basicPublich(messagesType.Update_PlayerAction, destinationKey.HUBS_PROXY_SPHANTOM, pkt.toByteArray());
 	}
 
 }

@@ -6,7 +6,6 @@ import sceat.domain.adapter.mq.IMessaging;
 import sceat.domain.protocol.packets.PacketPhantom;
 import sceat.domain.protocol.packets.PacketPhantomHeartBeat;
 import sceat.domain.protocol.packets.PacketPhantomPlayer;
-import sceat.domain.protocol.packets.PacketPhantomSecurity;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
 
 public class PacketSender {
@@ -40,7 +39,7 @@ public class PacketSender {
 	}
 
 	private void setSecurity(PacketPhantom pkt) {
-		pkt.setSecurity(new PacketPhantomSecurity(Main.serial.toString(), Main.security.toString()));
+		pkt.setSecurity(new Security(Main.serial.toString(), Main.security.toString()));
 	}
 
 	/**
@@ -48,22 +47,22 @@ public class PacketSender {
 	 */
 	public void sendServer(PacketPhantomServerInfo pkt) {
 		setSecurity(pkt);
-		if (allowed) getBroker().sendServer(pkt);
+		if (allowed) getBroker().sendServer(pkt.serialize());
 	}
 
 	public void takeLead(PacketPhantomHeartBeat pkt) {
 		setSecurity(pkt);
-		getBroker().takeLead(pkt);
+		getBroker().takeLead(pkt.serialize());
 	}
 
 	public void heartBeat(PacketPhantomHeartBeat pkt) {
 		setSecurity(pkt);
-		getBroker().heartBeat(pkt);
+		getBroker().heartBeat(pkt.serialize());
 	}
 
 	public void sendPlayer(PacketPhantomPlayer pkt) {
 		setSecurity(pkt);
-		if (allowed) getBroker().sendPlayer(pkt);
+		if (allowed) getBroker().sendPlayer(pkt.serialize());
 	}
 
 }

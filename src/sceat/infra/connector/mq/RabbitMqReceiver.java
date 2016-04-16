@@ -6,6 +6,7 @@ import java.util.Arrays;
 import sceat.Main;
 import sceat.domain.protocol.PacketHandler;
 import sceat.domain.protocol.destinationKey;
+import sceat.domain.protocol.packets.PacketPhantom.PacketNotRegistredException;
 import sceat.infra.connector.mq.RabbitMqConnector.messagesType;
 
 import com.rabbitmq.client.AMQP;
@@ -80,9 +81,12 @@ public class RabbitMqReceiver {
 		getChannel().basicConsume(qname, true, new DefaultConsumer(getChannel()) {
 			@Override
 			public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-				String message = new String(body, "UTF-8");
 				messagesType messageType = messagesType.fromString(envelope.getExchange(), true);
-				PacketHandler.getInstance().handle(messageType, message,body);
+				try {
+					PacketHandler.getInstance().handle(messageType, body);
+				} catch (IllegalAccessException | InstantiationException | PacketNotRegistredException e) {
+					Main.printStackTrace(e);
+				}
 			}
 		});
 	}

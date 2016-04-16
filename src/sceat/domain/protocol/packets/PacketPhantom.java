@@ -12,12 +12,13 @@ import java.util.Map;
 import sceat.Main;
 import sceat.SPhantom;
 import sceat.domain.Heart;
+import sceat.domain.protocol.Security;
 
 public abstract class PacketPhantom {
 
 	public static final int maxPacketSize = 512;
 	private static final HashMap<Byte, Class<? extends PacketPhantom>> packets = new HashMap<>();
-	PacketPhantomSecurity secu;
+	private Security secu;
 
 	private static void registerPacket(byte id, Class<? extends PacketPhantom> packet) throws PacketIdAlrealyUsedException {
 		if (packets.containsKey(id)) throw new PacketIdAlrealyUsedException(id, packets.get(id));
@@ -26,20 +27,20 @@ public abstract class PacketPhantom {
 	}
 
 	public void encodeSecurity() {
-		writePacket(getPktSecurity(), s -> writeString(((PacketPhantomSecurity) s).getSerial()).writeString(((PacketPhantomSecurity) s).getSecurity()));
+		writeString(getSecu().getSerial());
+		writeString(getSecu().getSecurity());
 	}
 
 	public void decodeSecurity() {
-		this.secu = readPacket(() -> new PacketPhantomSecurity(readString(), readString()));
+		this.secu = new Security(readString(), readString());
 	}
 
 	public static void init() {
 		SPhantom.print("Initialising packets...");
 		try {
-			registerPacket((byte) 1, PacketPhantomSecurity.class);
-			registerPacket((byte) 2, PacketPhantomServerInfo.class);
-			registerPacket((byte) 3, PacketPhantomHeartBeat.class);
-			registerPacket((byte) 4, PacketPhantomPlayer.class);
+			registerPacket((byte) 1, PacketPhantomServerInfo.class);
+			registerPacket((byte) 2, PacketPhantomHeartBeat.class);
+			registerPacket((byte) 3, PacketPhantomPlayer.class);
 		} catch (PacketIdAlrealyUsedException e) {
 			Main.printStackTrace(e);
 		}
@@ -112,7 +113,7 @@ public abstract class PacketPhantom {
 	private volatile int writePos = 1;
 	private volatile int readPos = 1;
 
-	protected PacketPhantom(PacketPhantomSecurity secu) {
+	protected PacketPhantom(Security secu) {
 		buffer[0] = getPacketId(this);
 		this.secu = secu;
 	}
@@ -372,14 +373,14 @@ public abstract class PacketPhantom {
 	 * @return true si c'est cet instance de sphantom qui à envoyé ce packet
 	 */
 	public boolean cameFromLocal() {
-		return getPktSecurity().correspond(Heart.getInstance().getLocalBeat().getPktSecurity());
+		return getSecu().correspond(Heart.getInstance().getLocalBeat().getSecu());
 	}
 
-	public PacketPhantomSecurity getPktSecurity() {
+	public Security getSecu() {
 		return secu;
 	}
 
-	public void setSecurity(PacketPhantomSecurity packetPhantomSecurity) {
+	public void setSecurity(Security packetPhantomSecurity) {
 		this.secu = packetPhantomSecurity;
 	}
 
