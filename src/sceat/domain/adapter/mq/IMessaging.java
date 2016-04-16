@@ -1,15 +1,17 @@
 package sceat.domain.adapter.mq;
 
-import sceat.domain.protocol.dao.DAO_HeartBeat;
+import sceat.domain.protocol.packets.PacketPhantomHeartBeat;
+import sceat.domain.protocol.packets.PacketPhantomPlayer;
+import sceat.domain.protocol.packets.PacketPhantomServerInfo;
 
 public interface IMessaging {
 
-	public void sendServer(byte[] array);
+	public void sendServer(PacketPhantomServerInfo pkt);
 
-	public void takeLead(DAO_HeartBeat json);
+	public void takeLead(PacketPhantomHeartBeat pkt);
 
-	public void heartBeat(DAO_HeartBeat json);
+	public void heartBeat(PacketPhantomHeartBeat pkt);
 
-	public void sendPlayer(byte[] array);
+	public void sendPlayer(PacketPhantomPlayer pkt);
 
 }

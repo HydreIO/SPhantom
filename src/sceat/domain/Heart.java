@@ -6,7 +6,8 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import sceat.Main;
 import sceat.SPhantom;
 import sceat.domain.protocol.PacketSender;
-import sceat.domain.protocol.dao.DAO_HeartBeat;
+import sceat.domain.protocol.packets.PacketPhantomHeartBeat;
+import sceat.domain.protocol.packets.PacketPhantomSecurity;
 import sceat.domain.schedule.Schedule;
 import sceat.domain.schedule.Scheduled;
 import sceat.domain.schedule.Scheduler;
@@ -15,8 +16,8 @@ import sceat.domain.schedule.TimeUnit;
 public class Heart implements Scheduled {
 
 	private static Heart instance;
-	private ConcurrentLinkedDeque<DAO_HeartBeat> replicas = new ConcurrentLinkedDeque<DAO_HeartBeat>();
-	private DAO_HeartBeat localBeat;
+	private ConcurrentLinkedDeque<PacketPhantomHeartBeat> replicas = new ConcurrentLinkedDeque<PacketPhantomHeartBeat>();
+	private PacketPhantomHeartBeat localBeat;
 	private boolean alive;
 	private boolean local;
 
@@ -26,18 +27,18 @@ public class Heart implements Scheduled {
 		this.alive = true;
 		if (local) SPhantom.print("Local mode ! No replicas service.");
 		else Scheduler.getScheduler().register(this);
-		this.localBeat = new DAO_HeartBeat(Main.serial, Main.security);
+		this.localBeat = new PacketPhantomHeartBeat(new PacketPhantomSecurity(Main.serial.toString(), Main.security.toString()));
 	}
 
 	public static Heart getInstance() {
 		return instance;
 	}
 
-	public ConcurrentLinkedDeque<DAO_HeartBeat> getReplicas() {
+	public ConcurrentLinkedDeque<PacketPhantomHeartBeat> getReplicas() {
 		return replicas;
 	}
 
-	public DAO_HeartBeat getLocalBeat() {
+	public PacketPhantomHeartBeat getLocalBeat() {
 		return localBeat;
 	}
 
@@ -55,9 +56,8 @@ public class Heart implements Scheduled {
 	 * 
 	 * @param json
 	 */
-	public void transplant(String json) {
-		DAO_HeartBeat dao = DAO_HeartBeat.fromJson(json);
-		if (dao.correspond(getLocalBeat())) return;
+	public void transplant(PacketPhantomHeartBeat pkt) {
+		if (pkt.cameFromLocal()) return;
 		SPhantom.print("Another instance has taken the lead ! SPhantom is going to sleep");
 		SPhantom.getInstance().setLead(false);
 		getReplicas().addLast(dao);
@@ -68,16 +68,15 @@ public class Heart implements Scheduled {
 	 * 
 	 * @param json
 	 */
-	public void transfuse(String json) {
-		DAO_HeartBeat dao = DAO_HeartBeat.fromJson(json);
-		getReplicas().stream().filter(d -> d.correspond(dao)).forEach(this::handShake);
+	public void transfuse(PacketPhantomHeartBeat pkt) {
+		getReplicas().stream().filter(d -> d.getSecurity().correspond(pkt.getSecurity())).forEach(this::handShake);
 	}
 
 	public boolean isAlive() {
 		return this.alive;
 	}
 
-	private void handShake(DAO_HeartBeat bt) {
+	private void handShake(PacketPhantomHeartBeat bt) {
 		bt.handshake();
 	}
 

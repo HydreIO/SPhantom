@@ -10,6 +10,7 @@ import sceat.domain.minecraft.Statut;
 import sceat.domain.network.Core;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Vps;
+import sceat.domain.protocol.packets.PacketPhantomHeartBeat;
 import sceat.domain.protocol.packets.PacketPhantomPlayer;
 import sceat.domain.protocol.packets.PacketPhantomPlayer.PlayerAction;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
@@ -48,12 +49,13 @@ public class PacketHandler {
 	 * @param type
 	 * @param msg
 	 */
-	public synchronized void handle(messagesType type, String msg, byte[] array) {
+	public synchronized void handle(messagesType type, byte[] array) {
 		if (m == null) SPhantom.print("Le manager est null !");
 		switch (type) {
 			case HeartBeat:
-				if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketHeartBeat []");
-				Heart.getInstance().transfuse(msg);
+				PacketPhantomHeartBeat pkt = PacketPhantomHeartBeat.fromByteArray(array);
+				if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketHeartBeat [Last " + new java.sql.Timestamp(pkt.getLastHandShake()).toString().substring(0, 16) + "]");
+				Heart.getInstance().transfuse(pkt);
 				break;
 			case TakeLead:
 				if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketTakeLead []");
@@ -90,6 +92,7 @@ public class PacketHandler {
 						break;
 					}
 					if (curr.getServers().contains(srv)) curr.getServers().remove(srv);
+					PacketSender.getInstance().sendServer(PacketPhantomServerInfo.fromServer(srv));
 					break;
 				}
 				Server srvf = Server.fromPacket(var1, false);

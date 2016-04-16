@@ -11,11 +11,13 @@ import java.util.Map;
 
 import sceat.Main;
 import sceat.SPhantom;
+import sceat.domain.Heart;
 
 public abstract class PacketPhantom {
 
 	public static final int maxPacketSize = 512;
 	private static final HashMap<Byte, Class<? extends PacketPhantom>> packets = new HashMap<>();
+	PacketPhantomSecurity secu;
 
 	private static void registerPacket(byte id, Class<? extends PacketPhantom> packet) throws PacketIdAlrealyUsedException {
 		if (packets.containsKey(id)) throw new PacketIdAlrealyUsedException(id, packets.get(id));
@@ -23,11 +25,21 @@ public abstract class PacketPhantom {
 		SPhantom.print(packet.getCanonicalName() + "[" + id + "] Registered");
 	}
 
+	public void encodeSecurity() {
+		writePacket(getPktSecurity(), s -> writeString(((PacketPhantomSecurity) s).getSerial()).writeString(((PacketPhantomSecurity) s).getSecurity()));
+	}
+
+	public void decodeSecurity() {
+		this.secu = readPacket(() -> new PacketPhantomSecurity(readString(), readString()));
+	}
+
 	public static void init() {
 		SPhantom.print("Initialising packets...");
 		try {
-			registerPacket(PacketPhantomPlayer.ID, PacketPhantomPlayer.class);
-			registerPacket(PacketPhantomServerInfo.ID, PacketPhantomServerInfo.class);
+			registerPacket((byte) 1, PacketPhantomSecurity.class);
+			registerPacket((byte) 2, PacketPhantomServerInfo.class);
+			registerPacket((byte) 3, PacketPhantomHeartBeat.class);
+			registerPacket((byte) 4, PacketPhantomPlayer.class);
 		} catch (PacketIdAlrealyUsedException e) {
 			Main.printStackTrace(e);
 		}
@@ -41,6 +53,14 @@ public abstract class PacketPhantom {
 	@FunctionalInterface
 	public interface Serializer<T> {
 		void serialize(T value);
+	}
+
+	public void writePacket(PacketPhantom pkt, Serializer<PacketPhantom> pktS) {
+		pktS.serialize(pkt);
+	}
+
+	public <P extends PacketPhantom> P readPacket(Deserializer<P> pkt) {
+		return pkt.deserialize();
 	}
 
 	public <U, V> Map<U, V> readMap(Deserializer<U> ud, Deserializer<V> vd) {
@@ -92,8 +112,9 @@ public abstract class PacketPhantom {
 	private volatile int writePos = 1;
 	private volatile int readPos = 1;
 
-	protected PacketPhantom() {
+	protected PacketPhantom(PacketPhantomSecurity secu) {
 		buffer[0] = getPacketId(this);
+		this.secu = secu;
 	}
 
 	/**
@@ -134,9 +155,9 @@ public abstract class PacketPhantom {
 		this.writePos = writePos;
 	}
 
-	public abstract void serialize();
+	public abstract <T extends PacketPhantom> T serialize();
 
-	public abstract void deserialize();
+	public abstract <T extends PacketPhantom> T deserialize();
 
 	// ////////////////////////////////////////
 	// Read //
@@ -291,11 +312,12 @@ public abstract class PacketPhantom {
 		return buffer[0];
 	}
 
-	public static PacketPhantom fromByteArray(byte[] bytes) throws IllegalAccessException, InstantiationException, PacketNotRegistredException {
+	@SuppressWarnings("unchecked")
+	public static <P extends PacketPhantom> P fromByteArray(byte[] bytes) throws IllegalAccessException, InstantiationException, PacketNotRegistredException {
 		if (!packets.containsKey(bytes[0])) throw new PacketNotRegistredException(bytes[0]);
 		PacketPhantom p = getPacket(bytes[0]).newInstance();
 		p.buffer = bytes;
-		return p;
+		return (P) p;
 	}
 
 	public static class PacketNotRegistredException extends Exception {
@@ -342,6 +364,23 @@ public abstract class PacketPhantom {
 		public Class<? extends PacketPhantom> getPacket() {
 			return packet;
 		}
+	}
+
+	/**
+	 * Interne a sphantom
+	 * 
+	 * @return true si c'est cet instance de sphantom qui à envoyé ce packet
+	 */
+	public boolean cameFromLocal() {
+		return getPktSecurity().correspond(Heart.getInstance().getLocalBeat().getPktSecurity());
+	}
+
+	public PacketPhantomSecurity getPktSecurity() {
+		return secu;
+	}
+
+	public void setSecurity(PacketPhantomSecurity packetPhantomSecurity) {
+		this.secu = packetPhantomSecurity;
 	}
 
 }

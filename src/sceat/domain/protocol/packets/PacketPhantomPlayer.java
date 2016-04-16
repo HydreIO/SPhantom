@@ -10,8 +10,6 @@ import sceat.domain.utils.ServerLabel;
 
 public class PacketPhantomPlayer extends PacketPhantom {
 
-	public static final byte ID = 1;
-
 	private UUID player;
 	private Grades grade;
 	private Grades newGrade;

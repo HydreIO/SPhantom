@@ -173,8 +173,8 @@ public class RabbitMqConnector implements IMessaging {
 
 	@Override
 	public void sendServer(byte[] array) {
-		if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketServer |to:HUBS_AND_PROXY");
-		basicPublich(messagesType.Update_Server, destinationKey.HUBS_AND_PROXY, array);
+		if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketServer |to:HUBS_PROXY_SPHANTOM");
+		basicPublich(messagesType.Update_Server, destinationKey.HUBS_PROXY_SPHANTOM, array);
 	}
 
 	// @Override
@@ -198,8 +198,8 @@ public class RabbitMqConnector implements IMessaging {
 
 	@Override
 	public void sendPlayer(byte[] array) {
-		if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketPlayer |to:HUBS_AND_PROXY");
-		basicPublich(messagesType.Update_PlayerAction, destinationKey.HUBS_AND_PROXY, array);
+		if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketPlayer |to:HUBS_PROXY_SPHANTOM");
+		basicPublich(messagesType.Update_PlayerAction, destinationKey.HUBS_PROXY_SPHANTOM, array);
 	}
 
 }

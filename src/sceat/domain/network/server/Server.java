@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import sceat.domain.Manager;
 import sceat.domain.minecraft.Grades;
@@ -26,6 +27,7 @@ public class Server {
 	 * si le packet provient du symbiote on ne sync pas les joueurs
 	 * 
 	 * @param pkt
+	 *            le pkt
 	 * @param canBeNull
 	 *            false pour creer et enregistrer le serveur si jamais il n'est pas trouvé
 	 * @return
@@ -33,13 +35,14 @@ public class Server {
 	public static Server fromPacket(PacketPhantomServerInfo pkt, boolean canBeNull) {
 		Server sr = null; // je ne peut pas use la methode getOrDefault de la concurrentHashmap car je doit modif le serveur contenu dans la map :(
 		boolean neww = false;
-		if (Manager.getInstance().getServersByLabel().contains(pkt.getLabel())) {
-			sr = Manager.getInstance().getServersByLabel().get(pkt.getLabel()).setStatus(pkt.getState());
+		ConcurrentHashMap<String, Server> sbl = Manager.getInstance().getServersByLabel();
+		if (sbl.contains(pkt.getLabel())) {
+			sr = sbl.get(pkt.getLabel()).setStatus(pkt.getState());
 			if (!pkt.isFromSymbiote()) sr.setPlayers(pkt.getPlayersPerGrade());
 		} else {
 			sr = canBeNull ? null : new Server(pkt.getLabel(), pkt.getType(), pkt.getState(), pkt.getMaxp(), pkt.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, pkt.getKeys().stream()
 					.toArray(String[]::new)).setPlayers(pkt.getPlayersPerGrade());
-			neww = true;
+			neww = true; // si on créé on a pas besoin de verifier si le pkt vient du symbiote car de tt façon la liste des joueurs (seul field que le symbiote ne connait pas) devra attendre de se sync later
 		}
 		if (sr != null) {
 			boolean hasvps = pkt.getVpsLabel() != null;
@@ -198,8 +201,20 @@ public class Server {
 	}
 
 	public static enum ServerType {
-		Proxy(RessourcePack.RESSOURCE_PACK_DEFAULT, destinationKey.PROXY, destinationKey.HUBS_AND_PROXY, destinationKey.ALL),
-		Lobby(RessourcePack.RESSOURCE_PACK_DEFAULT, destinationKey.ALL, destinationKey.HUBS, destinationKey.HUBS_AND_PROXY),
+		Proxy(
+				RessourcePack.RESSOURCE_PACK_DEFAULT,
+				destinationKey.PROXY,
+				destinationKey.HUBS_AND_PROXY,
+				destinationKey.HUBS_PROXY_SPHANTOM,
+				destinationKey.HUBS_PROXY_SPHANTOM_SYMBIOTE,
+				destinationKey.ALL),
+		Lobby(
+				RessourcePack.RESSOURCE_PACK_DEFAULT,
+				destinationKey.ALL,
+				destinationKey.HUBS,
+				destinationKey.HUBS_AND_PROXY,
+				destinationKey.HUBS_PROXY_SPHANTOM,
+				destinationKey.HUBS_PROXY_SPHANTOM_SYMBIOTE),
 		Agares(RessourcePack.AGARES, destinationKey.ALL, destinationKey.SERVEURS, destinationKey.SRV_AGARES),
 		AresRpg(RessourcePack.ARESRPG, destinationKey.ALL, destinationKey.SERVEURS, destinationKey.SRV_ARES),
 		Iron(RessourcePack.IRON, destinationKey.ALL, destinationKey.SERVEURS, destinationKey.SRV_IRON);

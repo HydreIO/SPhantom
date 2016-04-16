@@ -16,8 +16,6 @@ import sceat.domain.network.server.Server.ServerType;
 
 public class PacketPhantomServerInfo extends PacketPhantom {
 
-	public static final byte ID = 2;
-
 	private String label;
 	private String vpsLabel;
 	private ServerType type;
@@ -55,16 +53,19 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 	}
 
 	public static PacketPhantomServerInfo fromServer(Server srv) {
-		return new PacketPhantomServerInfo(srv.getStatus(), srv.getLabel(), srv.getVps().getLabel(), srv.getIpadress(), srv.getType(), srv.getMaxPlayers(), srv.getPlayersMap(), srv.getKeys(), false);
+		return new PacketPhantomServerInfo(srv.getStatus(), srv.getLabel(), srv.getVps().getLabel(), srv.getIpadress(), srv.getType(), srv.getMaxPlayers(), srv.getPlayersMap(), srv.getKeys(), false,
+				PacketPhantomSecurity.generateNull());
 	}
 
-	public PacketPhantomServerInfo(Statut state, String label, String vpsLabel, InetAddress ip, ServerType type, int maxp, Map<Grades, Set<UUID>> pl, Set<String> keys, boolean fromSymbiote) {
+	public PacketPhantomServerInfo(Statut state, String label, String vpsLabel, InetAddress ip, ServerType type, int maxp, Map<Grades, Set<UUID>> pl, Set<String> keys, boolean fromSymbiote,
+			PacketPhantomSecurity security) {
+		super(security);
 		this.ip = ip.getHostAddress();
 		this.vpsLabel = vpsLabel;
 		this.label = label;
-		this.keys = keys;
+		this.keys = keys == null ? new HashSet<String>() : keys;
 		this.type = type;
-		this.players = pl;
+		this.players = pl == null ? new HashMap<Grades, Set<UUID>>() : pl;
 		this.maxp = maxp;
 		this.state = state;
 	}

@@ -1,9 +1,12 @@
 package sceat.domain.protocol;
 
+import sceat.Main;
 import sceat.SPhantom;
 import sceat.domain.adapter.mq.IMessaging;
-import sceat.domain.protocol.dao.DAO_HeartBeat;
+import sceat.domain.protocol.packets.PacketPhantom;
+import sceat.domain.protocol.packets.PacketPhantomHeartBeat;
 import sceat.domain.protocol.packets.PacketPhantomPlayer;
+import sceat.domain.protocol.packets.PacketPhantomSecurity;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
 
 public class PacketSender {
@@ -36,23 +39,31 @@ public class PacketSender {
 		return broker;
 	}
 
+	private void setSecurity(PacketPhantom pkt) {
+		pkt.setSecurity(new PacketPhantomSecurity(Main.serial.toString(), Main.security.toString()));
+	}
+
 	/**
 	 * Tout ce qui n'est pas interne comme le heartbeat doit verifier d'être sur le bon replica avant de pouvoir envoyer le packet, si cet instance de Sphantom est en pause alors on n'envoie rien
 	 */
 	public void sendServer(PacketPhantomServerInfo pkt) {
-		if (allowed) getBroker().sendServer(pkt.toByteArray());
+		setSecurity(pkt);
+		if (allowed) getBroker().sendServer(pkt);
 	}
 
-	public void takeLead(DAO_HeartBeat json) {
-		getBroker().takeLead(json);
+	public void takeLead(PacketPhantomHeartBeat pkt) {
+		setSecurity(pkt);
+		getBroker().takeLead(pkt);
 	}
 
-	public void heartBeat(DAO_HeartBeat json) {
-		getBroker().heartBeat(json);
+	public void heartBeat(PacketPhantomHeartBeat pkt) {
+		setSecurity(pkt);
+		getBroker().heartBeat(pkt);
 	}
 
 	public void sendPlayer(PacketPhantomPlayer pkt) {
-		if (allowed) getBroker().sendPlayer(pkt.toByteArray());
+		setSecurity(pkt);
+		if (allowed) getBroker().sendPlayer(pkt);
 	}
 
 }
