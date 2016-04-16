@@ -26,18 +26,28 @@ public class Server {
 	 * si le packet provient du symbiote on ne sync pas les joueurs
 	 * 
 	 * @param pkt
+	 * @param canBeNull
+	 *            false pour creer et enregistrer le serveur si jamais il n'est pas trouvé
 	 * @return
 	 */
-	public static Server fromPacket(PacketPhantomServerInfo pkt) {
+	public static Server fromPacket(PacketPhantomServerInfo pkt, boolean canBeNull) {
 		Server sr = null; // je ne peut pas use la methode getOrDefault de la concurrentHashmap car je doit modif le serveur contenu dans la map :(
+		boolean neww = false;
 		if (Manager.getInstance().getServersByLabel().contains(pkt.getLabel())) {
 			sr = Manager.getInstance().getServersByLabel().get(pkt.getLabel()).setStatus(pkt.getState());
 			if (!pkt.isFromSymbiote()) sr.setPlayers(pkt.getPlayersPerGrade());
-		} else sr = new Server(pkt.getLabel(), pkt.getType(), pkt.getState(), pkt.getMaxp(), pkt.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, pkt.getKeys().stream().toArray(String[]::new))
-				.setPlayers(pkt.getPlayersPerGrade());
-		if (pkt.getVpsLabel() != null) {
-			Core.getInstance().checkVps(pkt.getVpsLabel()); // verification de l'existance du vps, instanciation en cas de NULL (des qu'un packet symbiote arrivera il sera update)
-			sr.setVps(Core.getInstance().getVps().get(pkt.getVpsLabel()));
+		} else {
+			sr = canBeNull ? null : new Server(pkt.getLabel(), pkt.getType(), pkt.getState(), pkt.getMaxp(), pkt.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, pkt.getKeys().stream()
+					.toArray(String[]::new)).setPlayers(pkt.getPlayersPerGrade());
+			neww = true;
+		}
+		if (sr != null) {
+			boolean hasvps = pkt.getVpsLabel() != null;
+			if (hasvps) {
+				Core.getInstance().checkVps(pkt.getVpsLabel()); // verification de l'existance du vps, instanciation en cas de NULL (des qu'un packet symbiote arrivera il sera update)
+				sr.setVpsLabel(pkt.getVpsLabel());
+			}
+			if (neww) sr.PhantomRegister(hasvps);
 		}
 		return sr;
 	}
@@ -47,6 +57,7 @@ public class Server {
 	}
 
 	private String label;
+	private String vpsLabel;
 	private ServerType type;
 	private int maxPlayers;
 	private Statut status;
@@ -55,7 +66,6 @@ public class Server {
 	private Set<String> keys = new HashSet<String>();
 	private InetAddress ipadress;
 	private long timeout;
-	private Vps vps;
 
 	/**
 	 * Lors de la gestion, sphantom decide en fonction du nombre de joueurs combien d'instance de ce type de serveur sont requise
@@ -74,13 +84,19 @@ public class Server {
 		Arrays.stream(destinationKeys).forEach(keys::add);
 	}
 
-	public Server setVps(Vps vps) {
-		this.vps = vps;
+	public void PhantomRegister(boolean registerVps) {
+		Manager.getInstance().getServersByLabel().put(getLabel(), this);
+		Core.getInstance().getServersByType().get(getType()).add(this);
+		if (registerVps) Core.getInstance().getVps().get(getVpsLabel()).getServers().add(this);
+	}
+
+	public Server setVpsLabel(String label) {
+		this.vpsLabel = label;
 		return this;
 	}
 
-	public Vps getVps() {
-		return vps;
+	public String getVpsLabel() {
+		return vpsLabel;
 	}
 
 	public void heartBeat() {
@@ -175,6 +191,10 @@ public class Server {
 			t.addAll(u);
 			return t;
 		}).get();
+	}
+
+	public Vps getVps() {
+		return Core.getInstance().getVps().getOrDefault(getVpsLabel(), null);
 	}
 
 	public static enum ServerType {

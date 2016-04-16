@@ -2,14 +2,12 @@ package sceat.domain.protocol;
 
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 import sceat.SPhantom;
 import sceat.domain.Heart;
 import sceat.domain.Manager;
 import sceat.domain.minecraft.Statut;
 import sceat.domain.network.Core;
-import sceat.domain.network.ServerProvider;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Vps;
 import sceat.domain.protocol.packets.PacketPhantomPlayer;
@@ -50,7 +48,7 @@ public class PacketHandler {
 	 * @param type
 	 * @param msg
 	 */
-	public synchronized void handle(messagesType type, String msg,byte[] array) {
+	public synchronized void handle(messagesType type, String msg, byte[] array) {
 		if (m == null) SPhantom.print("Le manager est null !");
 		switch (type) {
 			case HeartBeat:
@@ -68,23 +66,36 @@ public class PacketHandler {
 			case Update_Server:
 				PacketPhantomServerInfo var1 = (PacketPhantomServerInfo) PacketPhantomServerInfo.fromByteArray(array);
 				if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketServer [" + var1.getLabel() + "|" + var1.getState().name() + "|players(" + var1.getPlayers().size() + ")]");
-				Server srv = Server.fromPacket(var1);
 				if (var1.getState() == Statut.CLOSING) {
+					Server srv = Server.fromPacket(var1, true);
+					Vps curr = null;
 					if (srv == null) {
-						SPhantom.print("PacketPhantomServerInfo : State Closing | the server is not registered ! break");
+						SPhantom.print("PacketPhantomServerInfo : State Closing | the server " + var1.getLabel() + " is not registered | Ignoring ! break");
 						break;
-					}
+					} else if (var1.getVpsLabel() == null) {
+						bite: for (Vps vps : Core.getInstance().getVps().values()) {
+							for (Server s : vps.getServers())
+								if (s.getLabel().equalsIgnoreCase(var1.getLabel())) {
+									curr = vps;
+									break bite;
+								}
+						}
+					} else curr = srv.getVps();
 					Set<Server> ss = Core.getInstance().getServersByType().get(var1.getType());
-					Set<Vps> sv = Core.getInstance().getVps().g
-					ConcurrentHashMap<String, Vps> ci = ServerProvider.getInstance().getConfigInstances();
-					if(ci.containsKey(key))
 					if (ss.contains(srv)) ss.remove(srv);
 					m.getServersByLabel().remove(var1.getLabel());
+					if (curr == null) {
+						// vps not found osef car tt façon on le vire
+						SPhantom.print("PacketPhantomServerInfo : State Closing | the server " + var1.getLabel() + " is registered but not in a Vps object | Info ! break");
+						break;
+					}
+					if (curr.getServers().contains(srv)) curr.getServers().remove(srv);
 					break;
 				}
-				srv.heartBeat();
-				m.getServersByLabel().put(var1.getLabel(), srv);
-				Core.getInstance().getServersByType().get(var1.getType()).add(srv);
+				Server srvf = Server.fromPacket(var1, false);
+				srvf.heartBeat();
+				m.getServersByLabel().put(var1.getLabel(), srvf);
+				Core.getInstance().getServersByType().get(var1.getType()).add(srvf);
 				Set<UUID> players = var1.getPlayers();
 				m.getPlayersOnNetwork().addAll(players);
 				m.getPlayersPerGrade().entrySet().forEach(e -> e.getValue().addAll(var1.getPlayersPerGrade().get(e.getKey())));
