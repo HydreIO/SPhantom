@@ -60,18 +60,19 @@ public class PacketHandler {
 				PacketPhantomHeartBeat pkt = PacketPhantomHeartBeat.fromByteArray(array).deserialize();
 				if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketHeartBeat [Last " + new java.sql.Timestamp(pkt.getLastHandShake()).toString().substring(0, 16) + "]");
 				Heart.getInstance().transfuse(pkt);
-				break;
+				return;
 			case TakeLead:
 				PacketPhantomHeartBeat var2 = PacketPhantomHeartBeat.fromByteArray(array).deserialize();
 				if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketTakeLead []");
 				Heart.getInstance().transplant(var2);
-				break;
+				return;
 			case Symbiote:
 				// le packet symbiote doit contenir le label du vps, son statut et sa ram
 				// si le vps existe on sync son statut sinon on le crée et on le vps.register
-				break;
+				return;
 			case Update_Server:
 				PacketPhantomServerInfo var1 = PacketPhantomServerInfo.fromByteArray(array).deserialize();
+				if (var1.cameFromLocal()) return;
 				if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketServer [" + var1.getLabel() + "|" + var1.getState().name() + "|players(" + var1.getPlayers().size() + ")]");
 				if (var1.getState() == Statut.CLOSING) {
 					Server srv = Server.fromPacket(var1, true);
@@ -98,7 +99,7 @@ public class PacketHandler {
 					}
 					if (curr.getServers().contains(srv)) curr.getServers().remove(srv);
 					PacketSender.getInstance().sendServer(PacketPhantomServerInfo.fromServer(srv));
-					break;
+					return;
 				}
 				Server srvf = Server.fromPacket(var1, false);
 				srvf.heartBeat();
@@ -109,9 +110,10 @@ public class PacketHandler {
 				m.getPlayersPerGrade().entrySet().forEach(e -> e.getValue().addAll(var1.getPlayersPerGrade().get(e.getKey())));
 				Core.getInstance().getPlayersByType().get(var1.getType()).addAll(players);
 				PacketSender.getInstance().sendServer(PacketPhantomServerInfo.fromServer(srvf));
-				break;
+				return;
 			case Update_PlayerAction:
 				PacketPhantomPlayer var3 = PacketPhantomPlayer.fromByteArray(array).deserialize();
+				if (var3.cameFromLocal()) return;
 				if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketPlayer [" + var3.getPlayer() + "|" + var3.getAction().name() + "|"
 						+ (var3.getAction() == PlayerAction.Grade_Update ? (var3.getGrade().name() + " to " + var3.getNewGrade().name()) : var3.getGrade().name()) + "]");
 				if (var3.getAction() == PlayerAction.Connect) {
@@ -131,9 +133,9 @@ public class PacketHandler {
 					Core.getInstance().getPlayersByType().get(var3.getServerType()).removeIf(e -> e == var3.getPlayer());
 				}
 				PacketSender.getInstance().sendPlayer(var3);
-				break;
+				return;
 			default:
-				break;
+				return;
 		}
 	}
 }
