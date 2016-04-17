@@ -7,15 +7,19 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import sceat.Main;
 import sceat.SPhantom;
 import sceat.domain.Manager;
 import sceat.domain.config.SPhantomConfig;
 import sceat.domain.config.SPhantomConfig.McServerConfigObject;
+import sceat.domain.minecraft.RessourcePack;
 import sceat.domain.minecraft.Statut;
 import sceat.domain.network.ServerProvider.Defqon;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.network.server.Vps;
+import sceat.domain.protocol.PacketSender;
+import sceat.domain.protocol.packets.PacketPhantomBootServer;
 import sceat.domain.schedule.Schedule;
 import sceat.domain.schedule.Scheduled;
 import sceat.domain.schedule.Scheduler;
@@ -35,6 +39,7 @@ public class Core implements Scheduled {
 	private boolean process = false;
 	private boolean initialised = false;
 	private static Core instance;
+	private int deployedInstances = -1;
 
 	/**
 	 * pour gerer l'offre de vps je doit connaitre la marge qu'il reste par serverType, moins il y a de marge plus je vais incrementer la priorité du server provider
@@ -63,7 +68,7 @@ public class Core implements Scheduled {
 		call();
 	}
 
-	@Schedule(rate = 10, unit = TimeUnit.SECONDS)
+	@Schedule(rate = 30, unit = TimeUnit.SECONDS)
 	public void checkFreeSpace() {
 		boolean decrem = true;
 		for (ServerType v : ServerType.values()) {
@@ -165,66 +170,89 @@ public class Core implements Scheduled {
 		if (SPhantom.getInstance().isTimeBetween(2, 8)) setMode(OperatingMode.Eco);
 	}
 
-	@Schedule(rate = 30, unit = TimeUnit.SECONDS)
+	private boolean pro = false;
+
+	@Schedule(rate = 45, unit = TimeUnit.SECONDS)
+	public void VpsCount() {
+		if (pro) return;
+		pro = true;
+		this.deployedInstances = SPhantom.getInstance().getIphantom().countDeployedInstance();
+		pro = false;
+	}
+
+	@Schedule(rate = 2, unit = TimeUnit.MINUTES)
 	public void coreUpdate() {
-		if (isProcessing() || !this.initialised || !SPhantom.getInstance().isLeading() || SPhantom.getInstance().isLocal()) return;
-		setProcess(true);
-		Manager m = Manager.getInstance();
-		Defqon defqon = ServerProvider.getInstance().getDefqon();
-		switch (defqon) {
-			case FOUR:
-				
-				break;
-			case THREE:
-
-				break;
-			case TWO:
-
-				break;
-			case ONE:
-
-				break;
-			default:
-				break;
+		try {
+			if (isProcessing() || !this.initialised || !SPhantom.getInstance().isLeading() || SPhantom.getInstance().isLocal()) return;
+			setProcess(true);
+			Manager m = Manager.getInstance();
+			Defqon defqon = ServerProvider.getInstance().getDefqon();
+			switch (defqon) {
+				case FOUR:
+					deployInstances(1 + getMode().getVar());
+					break;
+				case THREE:
+					deployInstances(3 + getMode().getVar());
+					break;
+				case TWO:
+					deployInstances(5 + getMode().getVar());
+					break;
+				case ONE:
+					deployInstances(8 + getMode().getVar());
+					break;
+				default:
+					// allow perform reduction operation (reduce the nomber of servers & instance if there is too much
+					break;
+			}
+			setProcess(false);
+		} catch (Exception e) {
+			Main.printStackTrace(e);
 		}
-		setProcess(false);
-	}
-
-	private void deployProxy() {
-
-	}
-
-	private Vps deployInstance() {
-		return SPhantom.getInstance().getIphantom().deployInstance(ServerLabel.newVpsLabel(), 8).register();
 	}
 
 	private Set<Vps> deployInstances(int nbr) {
 		Set<Vps> vp = new HashSet<Vps>();
-		for (int i = 0; i < nbr; i++)
-			vp.add(deployInstance());
+		int max = SPhantom.getInstance().getSphantomConfig().getMaxInstance();
+		int current = (int) (deployedInstances == -1 ? getVps().mappingCount() : deployedInstances);
+		for (int i = 0; i < nbr; i++) {
+			if (current >= max) {
+				SPhantom.print("[" + max + "] instances are already deployed ! For bypass this security please change the Sphantom config");
+				break;
+			}
+			vp.add(SPhantom.getInstance().getIphantom().deployInstance(ServerLabel.newVpsLabel(), 8).register());
+		}
 		return vp;
 	}
 
-	private void deployServer(ServerType type) {
-		if (type == ServerType.Proxy) {
-			deployProxy();
-			return;
-		}
+	private boolean deployServer(ServerType type) {
+		if (type == ServerType.Proxy) return deployProxy();
 		SPhantomConfig conf = SPhantom.getInstance().getSphantomConfig();
 		McServerConfigObject obj = conf.getInstances().get(type);
-		Server.fromScratch(type, maxPlayers, ip, pack, destinationKeys)
-		// SPhantom.getInstance().getIphantom().createServer(type, obj.getMaxPlayers(), /*ip*/, type.getPack(), type.getKeys());
+		Vps vp = ServerProvider.getInstance().getVps(type);
+		if (vp == null) return false;
+		PacketSender.getInstance().bootServer(new PacketPhantomBootServer(Server.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, type.getKeys())));
+		return true;
+	}
+
+	private boolean deployProxy() {
+		return false;
 	}
 
 	public static enum OperatingMode {
-		Eco(0.8F),
-		Normal(0.6F),
-		NoLag(0.4F);
+		Eco(0.8F, -1),
+		Normal(0.6F, 0),
+		NoLag(0.4F, 1);
 
 		private float percentPl;
+		private int var;
 
-		private OperatingMode(float percent) {
+		private OperatingMode(float percent, int var) {
 			this.percentPl = percent;
+			this.var = var;
+		}
+
+		public int getVar() {
+			return var;
 		}
 
 		public float getPercentPl() {

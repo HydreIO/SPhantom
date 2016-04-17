@@ -11,7 +11,6 @@ import java.util.Map;
 
 import sceat.Main;
 import sceat.SPhantom;
-import sceat.domain.Heart;
 import sceat.domain.protocol.Security;
 
 public abstract class PacketPhantom {
@@ -26,11 +25,17 @@ public abstract class PacketPhantom {
 		SPhantom.print(packet.getCanonicalName() + "[" + id + "] Registered");
 	}
 
+	/**
+	 * méthode apellé pendant pendant la serialization
+	 */
 	public void encodeSecurity() {
 		writeString(getSecu().getSerial());
 		writeString(getSecu().getSecurity());
 	}
 
+	/**
+	 * méthode apellé pendant pendant la deserialization
+	 */
 	public void decodeSecurity() {
 		this.secu = new Security(readString(), readString());
 	}
@@ -41,6 +46,7 @@ public abstract class PacketPhantom {
 			registerPacket((byte) 1, PacketPhantomServerInfo.class);
 			registerPacket((byte) 2, PacketPhantomHeartBeat.class);
 			registerPacket((byte) 3, PacketPhantomPlayer.class);
+			registerPacket((byte) 4, PacketPhantomBootServer.class);
 		} catch (PacketIdAlrealyUsedException e) {
 			Main.printStackTrace(e);
 		}
@@ -113,8 +119,16 @@ public abstract class PacketPhantom {
 	private volatile int writePos = 1;
 	private volatile int readPos = 1;
 
-	protected PacketPhantom(Security secu) {
+	protected PacketPhantom() {
 		buffer[0] = getPacketId(this);
+	}
+
+	/**
+	 * Methode apellé dans le packetSender avant d'envoyer le packet
+	 * 
+	 * @param secu
+	 */
+	public void setSecu(Security secu) {
 		this.secu = secu;
 	}
 
@@ -156,9 +170,23 @@ public abstract class PacketPhantom {
 		this.writePos = writePos;
 	}
 
-	public abstract <T extends PacketPhantom> T serialize();
+	@SuppressWarnings("unchecked")
+	public <T extends PacketPhantom> T serialize() {
+		encodeSecurity();
+		serialize_();
+		return (T) this;
+	}
 
-	public abstract <T extends PacketPhantom> T deserialize();
+	@SuppressWarnings("unchecked")
+	public <T extends PacketPhantom> T deserialize() {
+		decodeSecurity();
+		deserialize_();
+		return (T) this;
+	}
+
+	protected abstract <T extends PacketPhantom> T serialize_();
+
+	protected abstract <T extends PacketPhantom> T deserialize_();
 
 	// ////////////////////////////////////////
 	// Read //
@@ -373,15 +401,11 @@ public abstract class PacketPhantom {
 	 * @return true si c'est cet instance de sphantom qui à envoyé ce packet
 	 */
 	public boolean cameFromLocal() {
-		return getSecu().correspond(Heart.getInstance().getLocalBeat().getSecu());
+		return getSecu().correspond(SPhantom.getInstance().getSecurity());
 	}
 
 	public Security getSecu() {
 		return secu;
-	}
-
-	public void setSecurity(Security packetPhantomSecurity) {
-		this.secu = packetPhantomSecurity;
 	}
 
 }

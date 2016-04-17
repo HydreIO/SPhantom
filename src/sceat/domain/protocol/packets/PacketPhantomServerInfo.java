@@ -13,7 +13,6 @@ import sceat.domain.minecraft.Grades;
 import sceat.domain.minecraft.Statut;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Server.ServerType;
-import sceat.domain.protocol.Security;
 
 public class PacketPhantomServerInfo extends PacketPhantom {
 
@@ -29,7 +28,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends PacketPhantom> T serialize() {
+	protected <T extends PacketPhantom> T serialize_() {
 		writeString(getLabel());
 		writeString(this.vpsLabel);
 		writeString(getType().name());
@@ -39,13 +38,12 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		writeCollection(this.keys, a -> writeString(a));
 		writeString(getState().name());
 		writeBoolean(isFromSymbiote());
-		encodeSecurity();
 		return (T) this;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends PacketPhantom> T deserialize() {
+	protected <T extends PacketPhantom> T deserialize_() {
 		this.label = readString();
 		this.vpsLabel = readString();
 		this.type = ServerType.valueOf(readString());
@@ -55,18 +53,14 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		this.keys = readCollection(new HashSet<String>(), () -> readString());
 		this.state = Statut.valueOf(readString());
 		this.fromSymbiote = readBoolean();
-		decodeSecurity();
 		return (T) this;
 	}
 
 	public static PacketPhantomServerInfo fromServer(Server srv) {
-		return new PacketPhantomServerInfo(srv.getStatus(), srv.getLabel(), srv.getVps().getLabel(), srv.getIpadress(), srv.getType(), srv.getMaxPlayers(), srv.getPlayersMap(), srv.getKeys(), false,
-				Security.generateNull());
+		return new PacketPhantomServerInfo(srv.getStatus(), srv.getLabel(), srv.getVps().getLabel(), srv.getIpadress(), srv.getType(), srv.getMaxPlayers(), srv.getPlayersMap(), srv.getKeys(), false);
 	}
 
-	public PacketPhantomServerInfo(Statut state, String label, String vpsLabel, InetAddress ip, ServerType type, int maxp, Map<Grades, Set<UUID>> pl, Set<String> keys, boolean fromSymbiote,
-			Security security) {
-		super(security);
+	public PacketPhantomServerInfo(Statut state, String label, String vpsLabel, InetAddress ip, ServerType type, int maxp, Map<Grades, Set<UUID>> pl, Set<String> keys, boolean fromSymbiote) {
 		this.ip = ip.getHostAddress();
 		this.vpsLabel = vpsLabel;
 		this.label = label;

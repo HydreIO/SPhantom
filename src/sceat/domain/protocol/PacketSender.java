@@ -1,9 +1,9 @@
 package sceat.domain.protocol;
 
-import sceat.Main;
 import sceat.SPhantom;
 import sceat.domain.adapter.mq.IMessaging;
 import sceat.domain.protocol.packets.PacketPhantom;
+import sceat.domain.protocol.packets.PacketPhantomBootServer;
 import sceat.domain.protocol.packets.PacketPhantomHeartBeat;
 import sceat.domain.protocol.packets.PacketPhantomPlayer;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
@@ -39,7 +39,7 @@ public class PacketSender {
 	}
 
 	private void setSecurity(PacketPhantom pkt) {
-		pkt.setSecurity(new Security(Main.serial.toString(), Main.security.toString()));
+		pkt.setSecu(SPhantom.getInstance().getSecurity());
 	}
 
 	/**
@@ -52,17 +52,30 @@ public class PacketSender {
 
 	public void takeLead(PacketPhantomHeartBeat pkt) {
 		setSecurity(pkt);
+		if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketTakeLead |to:SPHANTOM");
 		getBroker().takeLead(pkt.serialize());
 	}
 
 	public void heartBeat(PacketPhantomHeartBeat pkt) {
 		setSecurity(pkt);
+		if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketHeartBeat |to:SPHANTOM");
 		getBroker().heartBeat(pkt.serialize());
 	}
 
 	public void sendPlayer(PacketPhantomPlayer pkt) {
 		setSecurity(pkt);
-		if (allowed) getBroker().sendPlayer(pkt.serialize());
+		if (allowed) {
+			if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketPlayer |to:HUBS_PROXY_SPHANTOM");
+			getBroker().sendPlayer(pkt.serialize());
+		}
+	}
+
+	public void bootServer(PacketPhantomBootServer pkt) {
+		setSecurity(pkt);
+		if (allowed) {
+			if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketPlayer |to:HUBS_PROXY_SPHANTOM_SYMBIOTE");
+			getBroker().bootServer(pkt.serialize());
+		}
 	}
 
 }

@@ -26,4 +26,9 @@ public class VultrConnector implements Iphantom {
 		}
 	}
 
+	@Override
+	public int countDeployedInstance() {
+		return 0;
+	}
+
 }

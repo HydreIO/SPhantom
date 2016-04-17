@@ -1,12 +1,14 @@
 package sceat.infra.connector.mq;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.concurrent.TimeoutException;
 
 import sceat.Main;
 import sceat.SPhantom;
 import sceat.domain.adapter.mq.IMessaging;
 import sceat.domain.protocol.destinationKey;
+import sceat.domain.protocol.packets.PacketPhantomBootServer;
 import sceat.domain.protocol.packets.PacketPhantomHeartBeat;
 import sceat.domain.protocol.packets.PacketPhantomPlayer;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
@@ -46,7 +48,8 @@ public class RabbitMqConnector implements IMessaging {
 		Update_Server("exchange_server"),
 		Update_PlayerAction("exchange_playerAction"),
 		HeartBeat("exchange_heartbeat"),
-		Symbiote("exchange_symbiote"),
+		BootServer("exchange_symbiote_bootServer"),
+		Symbiote_Infos("exchange_symbiote"),
 		TakeLead("exchange_takelead");
 
 		private String exchangeName;
@@ -95,10 +98,7 @@ public class RabbitMqConnector implements IMessaging {
 			return;
 		}
 		SPhantom.print("Sucessfully connected to broker RMQ");
-		exchangeDeclare(messagesType.Update_Server);
-		exchangeDeclare(messagesType.Update_PlayerAction);
-		exchangeDeclare(messagesType.HeartBeat);
-		exchangeDeclare(messagesType.TakeLead);
+		Arrays.stream(messagesType.values()).forEach(this::exchangeDeclare);
 		this.receiver = new RabbitMqReceiver();
 	}
 
@@ -180,20 +180,22 @@ public class RabbitMqConnector implements IMessaging {
 
 	@Override
 	public void takeLead(PacketPhantomHeartBeat pkt) {
-		if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketTakeLead |to:SPHANTOM");
 		basicPublich(messagesType.TakeLead, destinationKey.SPHANTOM, pkt.toByteArray());
 	}
 
 	@Override
 	public void heartBeat(PacketPhantomHeartBeat pkt) {
-		if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketHeartBeat |to:SPHANTOM");
 		basicPublich(messagesType.HeartBeat, destinationKey.SPHANTOM, pkt.toByteArray());
 	}
 
 	@Override
 	public void sendPlayer(PacketPhantomPlayer pkt) {
-		if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketPlayer |to:HUBS_PROXY_SPHANTOM");
 		basicPublich(messagesType.Update_PlayerAction, destinationKey.HUBS_PROXY_SPHANTOM, pkt.toByteArray());
+	}
+
+	@Override
+	public void bootServer(PacketPhantomBootServer pkt) {
+		basicPublich(messagesType.BootServer, destinationKey.HUBS_PROXY_SPHANTOM_SYMBIOTE, pkt.toByteArray());
 	}
 
 }

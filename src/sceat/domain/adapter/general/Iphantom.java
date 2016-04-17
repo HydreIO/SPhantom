@@ -4,7 +4,7 @@ import sceat.domain.network.server.Vps;
 
 public interface Iphantom {
 
-	// public Server createServer(ServerType type, int maxPlayers, InetAddress ip, RessourcePack pack, String... destinationKeys);
+	public int countDeployedInstance();
 
 	public void destroyServer(String label);
 

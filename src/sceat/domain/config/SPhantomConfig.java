@@ -24,6 +24,7 @@ public class SPhantomConfig {
 	private String VultrKey = "key";
 	private String VultrUser = "user";
 	private String VultrPass = "pass";
+	private int maxInstance = 10;
 	private List<VpsConfigObject> servers = new ArrayList<SPhantomConfig.VpsConfigObject>();
 	private Map<ServerType, McServerConfigObject> instances = new HashMap<Server.ServerType, SPhantomConfig.McServerConfigObject>();
 
@@ -47,6 +48,7 @@ public class SPhantomConfig {
 			getConfig().set("Broker.Pass", RabbitPassword);
 			getConfig().set("Broker.Adress", RabbitAdress);
 			getConfig().set("Broker.Port", RabbitPort);
+			getConfig().set("MaxDeployedInstances", this.maxInstance);
 			getConfig().set(Constant.CONFIG_Optional_var + ".Vultr_User", getVultrUser());
 			getConfig().set(Constant.CONFIG_Optional_var + ".Vultr_Pass", getVultrPass());
 			getConfig().set(Constant.CONFIG_Optional_var + ".Vultr_Api_Key", getVultrKey());
@@ -62,6 +64,10 @@ public class SPhantomConfig {
 
 	public int getRamFor(ServerType type) {
 		return instances.get(type).getRamNeeded();
+	}
+
+	public int getMaxInstance() {
+		return maxInstance;
 	}
 
 	public String getRabbitAdress() {
@@ -91,6 +97,7 @@ public class SPhantomConfig {
 			loadConfig();
 			SPhantom.print("Applying changes...");
 			isReloading = true;
+			this.maxInstance = getConfig().getInt("MaxDeployedInstances");
 			this.RabbitUser = getConfig().getString("Broker.User");
 			SPhantom.print("Broker_user [ok]");
 			this.RabbitPassword = getConfig().getString("Broker.Pass");

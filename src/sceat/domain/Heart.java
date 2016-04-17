@@ -3,10 +3,8 @@ package sceat.domain;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-import sceat.Main;
 import sceat.SPhantom;
 import sceat.domain.protocol.PacketSender;
-import sceat.domain.protocol.Security;
 import sceat.domain.protocol.packets.PacketPhantomHeartBeat;
 import sceat.domain.schedule.Schedule;
 import sceat.domain.schedule.Scheduled;
@@ -27,7 +25,8 @@ public class Heart implements Scheduled {
 		this.alive = true;
 		if (local) SPhantom.print("Local mode ! No replicas service.");
 		else Scheduler.getScheduler().register(this);
-		this.localBeat = new PacketPhantomHeartBeat(new Security(Main.serial.toString(), Main.security.toString()));
+		this.localBeat = new PacketPhantomHeartBeat();
+		this.localBeat.setSecu(SPhantom.getInstance().getSecurity());
 	}
 
 	public static Heart getInstance() {

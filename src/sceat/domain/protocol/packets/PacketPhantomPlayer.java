@@ -6,7 +6,6 @@ import sceat.domain.Manager;
 import sceat.domain.minecraft.Grades;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Server.ServerType;
-import sceat.domain.protocol.Security;
 import sceat.domain.utils.ServerLabel;
 
 @SuppressWarnings("unchecked")
@@ -19,29 +18,26 @@ public class PacketPhantomPlayer extends PacketPhantom {
 	private String serverLabel;
 
 	@Override
-	public <T extends PacketPhantom> T serialize() {
+	protected <T extends PacketPhantom> T serialize_() {
 		writeString(this.player.toString());
 		writeInt(this.grade.getValue());
 		writeInt(this.newGrade.getValue());
 		writeString(this.action.name());
 		writeString(this.serverLabel);
-		encodeSecurity();
 		return (T) this;
 	}
 
 	@Override
-	public <T extends PacketPhantom> T deserialize() {
+	protected <T extends PacketPhantom> T deserialize_() {
 		this.player = UUID.fromString(readString());
 		this.grade = Grades.fromValue(readInt(), true);
 		this.newGrade = Grades.fromValue(readInt(), true);
 		this.action = PlayerAction.valueOf(readString());
 		this.serverLabel = readString();
-		decodeSecurity();
 		return (T) this;
 	}
 
-	public PacketPhantomPlayer(UUID uid, Grades grade, PlayerAction action, String serverLabel, Security secu) {
-		super(secu);
+	public PacketPhantomPlayer(UUID uid, Grades grade, PlayerAction action, String serverLabel) {
 		this.player = uid;
 		this.grade = grade;
 		this.action = action;
@@ -49,8 +45,7 @@ public class PacketPhantomPlayer extends PacketPhantom {
 		this.serverLabel = serverLabel;
 	}
 
-	public PacketPhantomPlayer(UUID uid, Grades lastGrade, Grades newGrade, String serverlabel, Security secu) {
-		super(secu);
+	public PacketPhantomPlayer(UUID uid, Grades lastGrade, Grades newGrade, String serverlabel) {
 		this.player = uid;
 		this.grade = lastGrade;
 		this.action = PlayerAction.Grade_Update;

@@ -13,6 +13,7 @@ import sceat.domain.config.SPhantomConfig;
 import sceat.domain.network.Core;
 import sceat.domain.protocol.PacketHandler;
 import sceat.domain.protocol.PacketSender;
+import sceat.domain.protocol.Security;
 import sceat.domain.protocol.packets.PacketPhantom;
 import sceat.infra.connector.mq.RabbitMqConnector;
 
@@ -30,6 +31,7 @@ public class SPhantom {
 	private boolean logPkt = false;
 	public boolean logprovider = false;
 	private Iphantom iphantom;
+	private Security security;
 
 	/**
 	 * Init sphantom
@@ -39,6 +41,7 @@ public class SPhantom {
 	 */
 	public SPhantom(Boolean local) { // don't change the implementation order !
 		instance = this;
+		this.security = new Security(Main.serial, Main.security);
 		this.running = true;
 		this.local = local;
 		this.pinger = Executors.newSingleThreadExecutor();
@@ -75,6 +78,10 @@ public class SPhantom {
 		}
 		PacketSender.getInstance().pause(!lead);
 		this.lead = lead;
+	}
+
+	public Security getSecurity() {
+		return security;
 	}
 
 	public boolean isLeading() {

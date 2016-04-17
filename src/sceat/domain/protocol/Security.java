@@ -1,6 +1,8 @@
 package sceat.domain.protocol;
 
-import sceat.Main;
+import java.util.UUID;
+
+import sceat.SPhantom;
 
 public class Security {
 
@@ -14,6 +16,11 @@ public class Security {
 	public Security(String serial, String security) {
 		this.security = security;
 		this.serial = serial;
+	}
+
+	public Security(UUID serial, UUID security) {
+		this.security = security.toString();
+		this.serial = serial.toString();
 	}
 
 	public Security setSerial(String serial) {
@@ -31,7 +38,7 @@ public class Security {
 	}
 
 	public boolean isLocal() {
-		return getSerial().equals(Main.serial.toString()) && getSecurity().equals(Main.security.toString());
+		return correspond(SPhantom.getInstance().getSecurity());
 	}
 
 	public String getSecurity() {

@@ -41,10 +41,10 @@ public class ServerProvider {
 	}
 
 	private void checkDefqon() {
-		if (getPriority() > 29) setDefqon(Defqon.ONE);
-		else if (getPriority() > 19) setDefqon(Defqon.TWO);
-		else if (getPriority() > 10) setDefqon(Defqon.THREE);
-		else if (getPriority() > 2) setDefqon(Defqon.FOUR);
+		if (getPriority() >= 29) setDefqon(Defqon.ONE);
+		else if (getPriority() >= 19) setDefqon(Defqon.TWO);
+		else if (getPriority() >= 10) setDefqon(Defqon.THREE);
+		else if (getPriority() >= 3) setDefqon(Defqon.FOUR);
 		else setDefqon(Defqon.FIVE);
 	}
 

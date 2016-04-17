@@ -11,6 +11,7 @@ import sceat.domain.network.Core;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Vps;
 import sceat.domain.protocol.packets.PacketPhantom.PacketNotRegistredException;
+import sceat.domain.protocol.packets.PacketPhantomBootServer;
 import sceat.domain.protocol.packets.PacketPhantomHeartBeat;
 import sceat.domain.protocol.packets.PacketPhantomPlayer;
 import sceat.domain.protocol.packets.PacketPhantomPlayer.PlayerAction;
@@ -55,25 +56,32 @@ public class PacketHandler {
 	 */
 	public synchronized void handle(messagesType type, byte[] array) throws IllegalAccessException, InstantiationException, PacketNotRegistredException {
 		if (m == null) SPhantom.print("Le manager est null !");
+		boolean logPkt = SPhantom.getInstance().logPkt();
 		switch (type) {
 			case HeartBeat:
 				PacketPhantomHeartBeat pkt = PacketPhantomHeartBeat.fromByteArray(array).deserialize();
-				if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketHeartBeat [Last " + new java.sql.Timestamp(pkt.getLastHandShake()).toString().substring(0, 16) + "]");
+				if (logPkt) SPhantom.print("<<<<]RECV] PacketHeartBeat [Last " + new java.sql.Timestamp(pkt.getLastHandShake()).toString().substring(0, 16) + "]");
 				Heart.getInstance().transfuse(pkt);
 				return;
 			case TakeLead:
 				PacketPhantomHeartBeat var2 = PacketPhantomHeartBeat.fromByteArray(array).deserialize();
-				if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketTakeLead []");
+				if (logPkt) SPhantom.print("<<<<]RECV] PacketTakeLead []");
 				Heart.getInstance().transplant(var2);
 				return;
-			case Symbiote:
+			case BootServer:
+				PacketPhantomBootServer var = PacketPhantomBootServer.fromByteArray(array).deserialize();
+				if (var.cameFromLocal()) return;
+				if (logPkt) SPhantom.print("<<<<]RECV] PacketBootServer [" + var.getLabel() + "|MaxP(" + var.getMaxP() + ")|Ram(" + var.getRam() + ")]");
+				
+				return;
+			case Symbiote_Infos:
 				// le packet symbiote doit contenir le label du vps, son statut et sa ram
 				// si le vps existe on sync son statut sinon on le crée et on le vps.register
 				return;
 			case Update_Server:
 				PacketPhantomServerInfo var1 = PacketPhantomServerInfo.fromByteArray(array).deserialize();
 				if (var1.cameFromLocal()) return;
-				if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketServer [" + var1.getLabel() + "|" + var1.getState().name() + "|players(" + var1.getPlayers().size() + ")]");
+				if (logPkt) SPhantom.print("<<<<]RECV] PacketUpdateServer [" + var1.getLabel() + "|" + var1.getState().name() + "|players(" + var1.getPlayers().size() + ")]");
 				if (var1.getState() == Statut.CLOSING) {
 					Server srv = Server.fromPacket(var1, true);
 					Vps curr = null;
@@ -114,7 +122,7 @@ public class PacketHandler {
 			case Update_PlayerAction:
 				PacketPhantomPlayer var3 = PacketPhantomPlayer.fromByteArray(array).deserialize();
 				if (var3.cameFromLocal()) return;
-				if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketPlayer [" + var3.getPlayer() + "|" + var3.getAction().name() + "|"
+				if (logPkt) SPhantom.print("<<<<]RECV] PacketPlayer [" + var3.getPlayer() + "|" + var3.getAction().name() + "|"
 						+ (var3.getAction() == PlayerAction.Grade_Update ? (var3.getGrade().name() + " to " + var3.getNewGrade().name()) : var3.getGrade().name()) + "]");
 				if (var3.getAction() == PlayerAction.Connect) {
 					m.getPlayersOnNetwork().add(var3.getPlayer());
