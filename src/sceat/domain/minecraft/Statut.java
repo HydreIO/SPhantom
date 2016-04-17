@@ -4,8 +4,9 @@ public enum Statut {
 	CREATING(0),
 	BOOTING(1),
 	OPEN(2),
-	REBOOTING(3),
-	CLOSING(4);
+	REDUCTION(3),
+	REBOOTING(4),
+	CLOSING(5);
 	private int _value;
 
 	private Statut(int value) {

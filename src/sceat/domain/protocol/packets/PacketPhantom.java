@@ -47,6 +47,7 @@ public abstract class PacketPhantom {
 			registerPacket((byte) 2, PacketPhantomHeartBeat.class);
 			registerPacket((byte) 3, PacketPhantomPlayer.class);
 			registerPacket((byte) 4, PacketPhantomBootServer.class);
+			registerPacket((byte) 5, PacketPhantomSymbiote.class);
 		} catch (PacketIdAlrealyUsedException e) {
 			Main.printStackTrace(e);
 		}
@@ -184,9 +185,9 @@ public abstract class PacketPhantom {
 		return (T) this;
 	}
 
-	protected abstract <T extends PacketPhantom> T serialize_();
+	protected abstract PacketPhantom serialize_();
 
-	protected abstract <T extends PacketPhantom> T deserialize_();
+	protected abstract PacketPhantom deserialize_();
 
 	// ////////////////////////////////////////
 	// Read //

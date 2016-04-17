@@ -8,7 +8,6 @@ import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.utils.ServerLabel;
 
-@SuppressWarnings("unchecked")
 public class PacketPhantomPlayer extends PacketPhantom {
 
 	private UUID player;
@@ -18,23 +17,23 @@ public class PacketPhantomPlayer extends PacketPhantom {
 	private String serverLabel;
 
 	@Override
-	protected <T extends PacketPhantom> T serialize_() {
+	protected PacketPhantom serialize_() {
 		writeString(this.player.toString());
 		writeInt(this.grade.getValue());
 		writeInt(this.newGrade.getValue());
 		writeString(this.action.name());
 		writeString(this.serverLabel);
-		return (T) this;
+		return this;
 	}
 
 	@Override
-	protected <T extends PacketPhantom> T deserialize_() {
+	protected PacketPhantom deserialize_() {
 		this.player = UUID.fromString(readString());
 		this.grade = Grades.fromValue(readInt(), true);
 		this.newGrade = Grades.fromValue(readInt(), true);
 		this.action = PlayerAction.valueOf(readString());
 		this.serverLabel = readString();
-		return (T) this;
+		return this;
 	}
 
 	public PacketPhantomPlayer(UUID uid, Grades grade, PlayerAction action, String serverLabel) {

@@ -30,20 +30,18 @@ public class PacketPhantomHeartBeat extends PacketPhantom {
 		return this.running;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	protected <T extends PacketPhantom> T serialize_() {
+	protected PacketPhantom serialize_() {
 		writeBoolean(isRunning());
 		writeLong(getLastHandShake());
-		return (T) this;
+		return this;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	protected <T extends PacketPhantom> T deserialize_() {
+	protected PacketPhantom deserialize_() {
 		this.running = readBoolean();
 		this.lastHandShake = readLong();
-		return (T) this;
+		return this;
 	}
 
 }

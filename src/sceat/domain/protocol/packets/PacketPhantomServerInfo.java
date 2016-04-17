@@ -26,9 +26,8 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 	private Statut state;
 	private boolean fromSymbiote = false; // if the packet came from symbiote, then we must get from the map like a closing server and not from "Server.fromPacket"
 
-	@SuppressWarnings("unchecked")
 	@Override
-	protected <T extends PacketPhantom> T serialize_() {
+	protected PacketPhantom serialize_() {
 		writeString(getLabel());
 		writeString(this.vpsLabel);
 		writeString(getType().name());
@@ -38,12 +37,11 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		writeCollection(this.keys, a -> writeString(a));
 		writeString(getState().name());
 		writeBoolean(isFromSymbiote());
-		return (T) this;
+		return this;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	protected <T extends PacketPhantom> T deserialize_() {
+	protected PacketPhantom deserialize_() {
 		this.label = readString();
 		this.vpsLabel = readString();
 		this.type = ServerType.valueOf(readString());
@@ -53,7 +51,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		this.keys = readCollection(new HashSet<String>(), () -> readString());
 		this.state = Statut.valueOf(readString());
 		this.fromSymbiote = readBoolean();
-		return (T) this;
+		return this;
 	}
 
 	public static PacketPhantomServerInfo fromServer(Server srv) {

@@ -1,11 +1,15 @@
 package sceat.domain.protocol;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import sceat.SPhantom;
 import sceat.domain.Heart;
 import sceat.domain.Manager;
+import sceat.domain.minecraft.Grades;
 import sceat.domain.minecraft.Statut;
 import sceat.domain.network.Core;
 import sceat.domain.network.server.Server;
@@ -16,6 +20,7 @@ import sceat.domain.protocol.packets.PacketPhantomHeartBeat;
 import sceat.domain.protocol.packets.PacketPhantomPlayer;
 import sceat.domain.protocol.packets.PacketPhantomPlayer.PlayerAction;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
+import sceat.domain.protocol.packets.PacketPhantomSymbiote;
 import sceat.infra.connector.mq.RabbitMqConnector.messagesType;
 
 /**
@@ -68,15 +73,19 @@ public class PacketHandler {
 				if (logPkt) SPhantom.print("<<<<]RECV] PacketTakeLead []");
 				Heart.getInstance().transplant(var2);
 				return;
-			case BootServer:
+			case BootServer: // Les autres instances de sphantom vont recevoir ce packet tout comme le symbiote et elle pourront ainsi afficher un new srv en statut CREATING
 				PacketPhantomBootServer var = PacketPhantomBootServer.fromByteArray(array).deserialize();
 				if (var.cameFromLocal()) return;
 				if (logPkt) SPhantom.print("<<<<]RECV] PacketBootServer [" + var.getLabel() + "|MaxP(" + var.getMaxP() + ")|Ram(" + var.getRam() + ")]");
-				
+				Server.fromPacket(new PacketPhantomServerInfo(Statut.CREATING, var.getLabel(), var.getVpsLabel(), var.getIp(), var.getType(), var.getMaxP(), new HashMap<Grades, Set<UUID>>(), var
+						.getType().getKeysAsSet(), false), false);
 				return;
 			case Symbiote_Infos:
-				// le packet symbiote doit contenir le label du vps, son statut et sa ram
-				// si le vps existe on sync son statut sinon on le crée et on le vps.register
+				PacketPhantomSymbiote var4 = PacketPhantomSymbiote.fromByteArray(array).deserialize();
+				if (logPkt) SPhantom.print("<<<<]RECV] PacketSymbiote [" + var4.getVpsLabel() + "|" + var4.getState() + "|" + var4.getIp().getHostAddress() + "|Ram(" + var4.getRam() + ")]");
+				ConcurrentHashMap<String, Vps> varmap = Core.getInstance().getVps();
+				if (varmap.containsKey(var4.getVpsLabel())) varmap.get(var4.getVpsLabel()).setState(var4.getState());
+				else new Vps(var4.getVpsLabel(), var4.getRam(), var4.getIp(), new HashSet<Server>()).register();
 				return;
 			case Update_Server:
 				PacketPhantomServerInfo var1 = PacketPhantomServerInfo.fromByteArray(array).deserialize();

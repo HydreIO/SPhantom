@@ -11,6 +11,7 @@ import sceat.domain.adapter.general.Iphantom;
 import sceat.domain.adapter.mq.IMessaging;
 import sceat.domain.config.SPhantomConfig;
 import sceat.domain.network.Core;
+import sceat.domain.network.Core.OperatingMode;
 import sceat.domain.protocol.PacketHandler;
 import sceat.domain.protocol.PacketSender;
 import sceat.domain.protocol.Security;
@@ -120,6 +121,7 @@ public class SPhantom {
 			print("> forcelead [Cette instance deviendra le leader du replica]");
 			print("> logpkt [Active/desactive le logger des packets]");
 			print("> logProvider [Active/desactive le logger de l'overspan]");
+			print("> setMode <1|2|3> [Active/desactive le logger de l'overspan]");
 			print(".. >_");
 			String nex = scan.next();
 			switch (nex) {
@@ -131,9 +133,39 @@ public class SPhantom {
 					break;
 				case "logpkt":
 					this.logPkt = !this.logPkt;
+					print("Packet logger " + (this.logPkt ? "enabled" : "disabled") + " !");
 					break;
+				case "logprovider":
 				case "logProvider":
 					this.logprovider = !this.logprovider;
+					print("ServerProvider logger " + (this.logprovider ? "enabled" : "disabled") + " !");
+					break;
+				case "setmode 1": // olalala aucun parsing, pabo dutou !
+				case "setMode 1":
+					if (Core.getInstance().getMode() == OperatingMode.Eco) {
+						print("Eco mode already enabled !");
+						break;
+					}
+					Core.getInstance().setMode(OperatingMode.Eco);
+					print("Eco mode enabled");
+					break;
+				case "setmode 2":
+				case "setMode 2":
+					if (Core.getInstance().getMode() == OperatingMode.Normal) {
+						print("Normal mode already enabled !");
+						break;
+					}
+					Core.getInstance().setMode(OperatingMode.Normal);
+					print("Normal mode enabled");
+					break;
+				case "setmode 3":
+				case "setMode 3":
+					if (Core.getInstance().getMode() == OperatingMode.NoLag) {
+						print("NoLag mode already enabled !");
+						break;
+					}
+					Core.getInstance().setMode(OperatingMode.NoLag);
+					print("NoLag mode enabled");
 					break;
 				default:
 					break;

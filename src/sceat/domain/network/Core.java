@@ -167,7 +167,8 @@ public class Core implements Scheduled {
 	 */
 	@Schedule(rate = 20, unit = TimeUnit.MINUTES)
 	public void modeUpdate() {
-		if (SPhantom.getInstance().isTimeBetween(2, 8)) setMode(OperatingMode.Eco);
+		if (SPhantom.getInstance().isTimeBetween(2, 3) || SPhantom.getInstance().isTimeBetween(7, 8)) setMode(OperatingMode.Eco);
+		else if (SPhantom.getInstance().isTimeBetween(8, 9)) setMode(OperatingMode.Normal);
 	}
 
 	private boolean pro = false;
@@ -235,6 +236,7 @@ public class Core implements Scheduled {
 	}
 
 	private boolean deployProxy() {
+		SPhantom.print("[DEPLOY PROXY] Not implemented Yet !");
 		return false;
 	}
 

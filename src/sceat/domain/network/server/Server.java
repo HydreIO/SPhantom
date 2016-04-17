@@ -238,6 +238,10 @@ public class Server {
 		public List<String> getKeysAslist() {
 			return Arrays.asList(getKeys());
 		}
+		
+		public Set<String> getKeysAsSet() {
+			return new HashSet<String>(getKeysAslist());
+		}
 	}
 
 }
