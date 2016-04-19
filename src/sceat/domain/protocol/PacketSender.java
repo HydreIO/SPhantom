@@ -7,6 +7,7 @@ import sceat.domain.protocol.packets.PacketPhantomBootServer;
 import sceat.domain.protocol.packets.PacketPhantomDestroyInstance;
 import sceat.domain.protocol.packets.PacketPhantomHeartBeat;
 import sceat.domain.protocol.packets.PacketPhantomPlayer;
+import sceat.domain.protocol.packets.PacketPhantomReduceServer;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
 
 public class PacketSender {
@@ -80,6 +81,14 @@ public class PacketSender {
 		setSecurity(pkt);
 		if (allowed) {
 			if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketDestroyInstance |to:SPHANTOM");
+			getBroker().destroyInstance(pkt.serialize());
+		}
+	}
+	
+	public void reduceServer(PacketPhantomReduceServer pkt) {
+		setSecurity(pkt);
+		if(allowed) {
+			if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketReduceServer |to:ALL_AND_SPHANTOM");
 			getBroker().destroyInstance(pkt.serialize());
 		}
 	}

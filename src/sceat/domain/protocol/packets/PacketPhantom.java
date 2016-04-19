@@ -49,6 +49,7 @@ public abstract class PacketPhantom {
 			registerPacket((byte) 4, PacketPhantomBootServer.class);
 			registerPacket((byte) 5, PacketPhantomSymbiote.class);
 			registerPacket((byte) 6, PacketPhantomDestroyInstance.class);
+			registerPacket((byte) 7, PacketPhantomReduceServer.class);
 		} catch (PacketIdAlrealyUsedException e) {
 			Main.printStackTrace(e);
 		}

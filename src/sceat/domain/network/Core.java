@@ -5,6 +5,7 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -70,10 +71,13 @@ public class Core implements Scheduled {
 		Scheduler.getScheduler().register(this);
 	}
 
+	private boolean procc = false;
+
 	@Schedule(rate = 30, unit = TimeUnit.SECONDS)
 	public void checkFreeSpace() {
 		try {
-			if (!this.initialised || !SPhantom.getInstance().isLeading() || SPhantom.getInstance().isLocal()) return;
+			if (procc || !this.initialised || !SPhantom.getInstance().isLeading() || SPhantom.getInstance().isLocal()) return;
+			procc = true;
 			boolean decrem = true;
 			int plTot = Manager.getInstance().getPlayersOnNetwork().size();
 			for (ServerType v : ServerType.values()) {
@@ -93,15 +97,17 @@ public class Core implements Scheduled {
 					else if (plTot < 1000) nbr = 2;
 					deployServer(v, nbr);
 					decrem = false;
-				}
+				} else if (totspace * (getMode().getPercentPl() / 2) > playersCount && serversByType.get(v).stream().filter(sr -> sr.getStatus() == Statut.OPEN).count() > 1) reduceServer(v);
 			}
 			if (decrem) {
 				ServerProvider.getInstance().decrementPriority();
 				if (SPhantom.logDiv()) SPhantom.print("Core.checkFreeSpace() |decrementPriority(); /Yup/");
 			}
 		} catch (Exception e) {
+			procc = false;
 			Main.printStackTrace(e);
 		}
+		procc = false;
 	}
 
 	/**
@@ -238,10 +244,11 @@ public class Core implements Scheduled {
 					break;
 			}
 
-			setProcess(false);
 		} catch (Exception e) {
+			setProcess(false);
 			Main.printStackTrace(e);
 		}
+		setProcess(false);
 	}
 
 	private Set<Vps> deployInstances(int nbr) {
@@ -275,6 +282,20 @@ public class Core implements Scheduled {
 			PacketSender.getInstance().bootServer(new PacketPhantomBootServer(srv));
 		}
 		return set;
+	}
+
+	private void reduceServer(ServerType type) {
+		if (type == ServerType.Proxy) {
+			reduceProxy();
+			return;
+		}
+		Optional<Server> s = getServersByType().get(type).stream().filter(sr -> sr.getStatus() == Statut.OPEN).findAny();
+		if(!s.isPresent()) return;
+		
+	}
+
+	private void reduceProxy() {
+
 	}
 
 	private Set<Server> deployProxy(int nbr) {
