@@ -88,7 +88,7 @@ public class ServerProvider {
 		return instance;
 	}
 
-	private ConcurrentHashMap<ServerType, Vps> getOrdered() {
+	public ConcurrentHashMap<ServerType, Vps> getOrdered() {
 		return ordered;
 	}
 

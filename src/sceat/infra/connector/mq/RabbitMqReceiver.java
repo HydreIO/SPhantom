@@ -52,6 +52,7 @@ public class RabbitMqReceiver {
 	 *            la destination
 	 */
 	private void bind(messagesType msg) {
+		bind(destinationKey.ALL_SPHANTOM, msg.getName());
 		bind(destinationKey.SPHANTOM, msg.getName());
 		bind(destinationKey.HUBS_PROXY_SPHANTOM_SYMBIOTE, msg.getName());
 		bind(destinationKey.HUBS_PROXY_SPHANTOM, msg.getName());

@@ -31,17 +31,15 @@ public class PacketPhantomHeartBeat extends PacketPhantom {
 	}
 
 	@Override
-	protected PacketPhantom serialize_() {
+	protected void serialize_() {
 		writeBoolean(isRunning());
 		writeLong(getLastHandShake());
-		return this;
 	}
 
 	@Override
-	protected PacketPhantom deserialize_() {
+	protected void deserialize_() {
 		this.running = readBoolean();
 		this.lastHandShake = readLong();
-		return this;
 	}
 
 }

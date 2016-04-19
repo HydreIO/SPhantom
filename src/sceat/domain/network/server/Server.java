@@ -207,17 +207,19 @@ public class Server {
 				destinationKey.HUBS_AND_PROXY,
 				destinationKey.HUBS_PROXY_SPHANTOM,
 				destinationKey.HUBS_PROXY_SPHANTOM_SYMBIOTE,
-				destinationKey.ALL),
+				destinationKey.ALL,
+				destinationKey.ALL_SPHANTOM),
 		Lobby(
 				RessourcePack.RESSOURCE_PACK_DEFAULT,
 				destinationKey.ALL,
 				destinationKey.HUBS,
 				destinationKey.HUBS_AND_PROXY,
 				destinationKey.HUBS_PROXY_SPHANTOM,
-				destinationKey.HUBS_PROXY_SPHANTOM_SYMBIOTE),
-		Agares(RessourcePack.AGARES, destinationKey.ALL, destinationKey.SERVEURS, destinationKey.SRV_AGARES),
-		AresRpg(RessourcePack.ARESRPG, destinationKey.ALL, destinationKey.SERVEURS, destinationKey.SRV_ARES),
-		Iron(RessourcePack.IRON, destinationKey.ALL, destinationKey.SERVEURS, destinationKey.SRV_IRON);
+				destinationKey.HUBS_PROXY_SPHANTOM_SYMBIOTE,
+				destinationKey.ALL_SPHANTOM),
+		Agares(RessourcePack.AGARES, destinationKey.ALL, destinationKey.SERVEURS, destinationKey.SRV_AGARES, destinationKey.ALL_SPHANTOM),
+		AresRpg(RessourcePack.ARESRPG, destinationKey.ALL, destinationKey.SERVEURS, destinationKey.SRV_ARES, destinationKey.ALL_SPHANTOM),
+		Iron(RessourcePack.IRON, destinationKey.ALL, destinationKey.SERVEURS, destinationKey.SRV_IRON, destinationKey.ALL_SPHANTOM);
 
 		private String[] keys;
 		private RessourcePack pack;
@@ -238,7 +240,7 @@ public class Server {
 		public List<String> getKeysAslist() {
 			return Arrays.asList(getKeys());
 		}
-		
+
 		public Set<String> getKeysAsSet() {
 			return new HashSet<String>(getKeysAslist());
 		}

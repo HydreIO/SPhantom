@@ -2,6 +2,7 @@ package sceat.domain.protocol;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,10 +13,13 @@ import sceat.domain.Manager;
 import sceat.domain.minecraft.Grades;
 import sceat.domain.minecraft.Statut;
 import sceat.domain.network.Core;
+import sceat.domain.network.ServerProvider;
 import sceat.domain.network.server.Server;
+import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.network.server.Vps;
 import sceat.domain.protocol.packets.PacketPhantom.PacketNotRegistredException;
 import sceat.domain.protocol.packets.PacketPhantomBootServer;
+import sceat.domain.protocol.packets.PacketPhantomDestroyInstance;
 import sceat.domain.protocol.packets.PacketPhantomHeartBeat;
 import sceat.domain.protocol.packets.PacketPhantomPlayer;
 import sceat.domain.protocol.packets.PacketPhantomPlayer.PlayerAction;
@@ -73,6 +77,16 @@ public class PacketHandler {
 				if (logPkt) SPhantom.print("<<<<]RECV] PacketTakeLead []");
 				Heart.getInstance().transplant(var2);
 				return;
+			case Destroy_Instance:
+				PacketPhantomDestroyInstance var5 = PacketPhantomDestroyInstance.fromByteArray(array).deserialize();
+				if (var5.cameFromLocal()) return;
+				if (logPkt) SPhantom.print("<<<<]RECV] PacketDestroyInstance [" + var5.getLabels().stream().reduce((a, b) -> a + " " + b) + "]");
+				var5.getLabels().forEach(s -> {
+					Core.getInstance().getVps().remove(s);
+					for (Entry<ServerType, Vps> e : ServerProvider.getInstance().getOrdered().entrySet())
+						if (e.getValue().getLabel().equals(s)) ServerProvider.getInstance().getOrdered().put(e.getKey(), null);
+				});
+				break;
 			case BootServer: // Les autres instances de sphantom vont recevoir ce packet tout comme le symbiote et elle pourront ainsi afficher un new srv en statut CREATING
 				PacketPhantomBootServer var = PacketPhantomBootServer.fromByteArray(array).deserialize();
 				if (var.cameFromLocal()) return;

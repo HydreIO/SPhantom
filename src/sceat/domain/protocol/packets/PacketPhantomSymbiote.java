@@ -9,16 +9,15 @@ import sceat.domain.network.server.Vps.VpsState;
 public class PacketPhantomSymbiote extends PacketPhantom {
 
 	@Override
-	protected PacketPhantom serialize_() {
+	protected void serialize_() {
 		writeString(getVpsLabel());
 		writeString(getState().name());
 		writeInt(getRam());
 		writeString(getIp().getHostAddress());
-		return this;
 	}
 
 	@Override
-	protected PacketPhantom deserialize_() {
+	protected void deserialize_() {
 		this.vpsLabel = readString();
 		this.state = VpsState.valueOf(readString());
 		this.ram = readInt();
@@ -27,7 +26,6 @@ public class PacketPhantomSymbiote extends PacketPhantom {
 		} catch (UnknownHostException e) {
 			Main.printStackTrace(e);
 		}
-		return this;
 	}
 
 	private String vpsLabel;

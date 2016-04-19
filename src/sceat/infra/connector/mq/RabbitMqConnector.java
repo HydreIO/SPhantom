@@ -9,6 +9,7 @@ import sceat.SPhantom;
 import sceat.domain.adapter.mq.IMessaging;
 import sceat.domain.protocol.destinationKey;
 import sceat.domain.protocol.packets.PacketPhantomBootServer;
+import sceat.domain.protocol.packets.PacketPhantomDestroyInstance;
 import sceat.domain.protocol.packets.PacketPhantomHeartBeat;
 import sceat.domain.protocol.packets.PacketPhantomPlayer;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
@@ -50,6 +51,7 @@ public class RabbitMqConnector implements IMessaging {
 		HeartBeat("exchange_heartbeat"),
 		BootServer("exchange_symbiote_bootServer"),
 		Symbiote_Infos("exchange_symbiote"),
+		Destroy_Instance("exchange_destroyVps"),
 		TakeLead("exchange_takelead");
 
 		private String exchangeName;
@@ -190,12 +192,17 @@ public class RabbitMqConnector implements IMessaging {
 
 	@Override
 	public void sendPlayer(PacketPhantomPlayer pkt) {
-		basicPublich(messagesType.Update_PlayerAction, destinationKey.ALL, pkt.toByteArray());
+		basicPublich(messagesType.Update_PlayerAction, destinationKey.ALL_SPHANTOM, pkt.toByteArray());
 	}
 
 	@Override
 	public void bootServer(PacketPhantomBootServer pkt) {
 		basicPublich(messagesType.BootServer, destinationKey.HUBS_PROXY_SPHANTOM_SYMBIOTE, pkt.toByteArray());
+	}
+
+	@Override
+	public void destroyInstance(PacketPhantomDestroyInstance pkt) {
+		basicPublich(messagesType.Destroy_Instance, destinationKey.SPHANTOM, pkt.toByteArray());
 	}
 
 }

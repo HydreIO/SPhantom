@@ -4,6 +4,7 @@ import sceat.SPhantom;
 import sceat.domain.adapter.mq.IMessaging;
 import sceat.domain.protocol.packets.PacketPhantom;
 import sceat.domain.protocol.packets.PacketPhantomBootServer;
+import sceat.domain.protocol.packets.PacketPhantomDestroyInstance;
 import sceat.domain.protocol.packets.PacketPhantomHeartBeat;
 import sceat.domain.protocol.packets.PacketPhantomPlayer;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
@@ -70,10 +71,23 @@ public class PacketSender {
 		}
 	}
 
+	/**
+	 * Only for get up to date other sphantom instances
+	 * 
+	 * @param pkt
+	 */
+	public void triggerDestroyInstance(PacketPhantomDestroyInstance pkt) {
+		setSecurity(pkt);
+		if (allowed) {
+			if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketDestroyInstance |to:SPHANTOM");
+			getBroker().destroyInstance(pkt.serialize());
+		}
+	}
+
 	public void bootServer(PacketPhantomBootServer pkt) {
 		setSecurity(pkt);
 		if (allowed) {
-			if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketPlayer |to:HUBS_PROXY_SPHANTOM_SYMBIOTE");
+			if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketBootServer |to:HUBS_PROXY_SPHANTOM_SYMBIOTE");
 			getBroker().bootServer(pkt.serialize());
 		}
 	}

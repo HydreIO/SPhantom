@@ -9,6 +9,7 @@ package sceat.domain.protocol;
 public class destinationKey {
 
 	public static final String ALL = "all";
+	public static final String ALL_SPHANTOM = "all_sphantom";
 	public static final String HUBS = "hubs";
 	public static final String PROXY = "proxy";
 	public static final String BUILD = "build";

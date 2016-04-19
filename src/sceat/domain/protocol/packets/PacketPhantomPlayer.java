@@ -17,23 +17,21 @@ public class PacketPhantomPlayer extends PacketPhantom {
 	private String serverLabel;
 
 	@Override
-	protected PacketPhantom serialize_() {
+	protected void serialize_() {
 		writeString(this.player.toString());
 		writeInt(this.grade.getValue());
 		writeInt(this.newGrade.getValue());
 		writeString(this.action.name());
 		writeString(this.serverLabel);
-		return this;
 	}
 
 	@Override
-	protected PacketPhantom deserialize_() {
+	protected void deserialize_() {
 		this.player = UUID.fromString(readString());
 		this.grade = Grades.fromValue(readInt(), true);
 		this.newGrade = Grades.fromValue(readInt(), true);
 		this.action = PlayerAction.valueOf(readString());
 		this.serverLabel = readString();
-		return this;
 	}
 
 	public PacketPhantomPlayer(UUID uid, Grades grade, PlayerAction action, String serverLabel) {

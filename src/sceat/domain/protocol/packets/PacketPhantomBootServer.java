@@ -27,18 +27,17 @@ public class PacketPhantomBootServer extends PacketPhantom {
 	}
 
 	@Override
-	protected PacketPhantom serialize_() {
+	protected void serialize_() {
 		writeString(getLabel());
 		writeString(getVpsLabel());
 		writeString(getType().name());
 		writeString(getIp().getHostAddress());
 		writeInt(getRam());
 		writeInt(getMaxP());
-		return this;
 	}
 
 	@Override
-	protected PacketPhantom deserialize_() {
+	protected void deserialize_() {
 		this.label = readString();
 		this.vpsLabel = readString();
 		this.type = ServerType.valueOf(readString());
@@ -49,7 +48,6 @@ public class PacketPhantomBootServer extends PacketPhantom {
 		}
 		this.ram = readInt();
 		this.maxP = readInt();
-		return this;
 	}
 
 	public InetAddress getIp() {

@@ -4,6 +4,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,6 +22,7 @@ import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.network.server.Vps;
 import sceat.domain.protocol.PacketSender;
 import sceat.domain.protocol.packets.PacketPhantomBootServer;
+import sceat.domain.protocol.packets.PacketPhantomDestroyInstance;
 import sceat.domain.schedule.Schedule;
 import sceat.domain.schedule.Scheduled;
 import sceat.domain.schedule.Scheduler;
@@ -219,7 +221,20 @@ public class Core implements Scheduled {
 					deployInstances(8 + getMode().getVar());
 					break;
 				default:
-					// allow perform reduction operation (reduce the nomber of servers & instance if there is too much
+					Set<String> torm = new HashSet<String>();
+					getVps().forEach((k, v) -> {
+						if (v.getServers().isEmpty() && !ServerProvider.getInstance().getConfigInstances().containsKey(k)) {
+							if (SPhantom.logDiv()) SPhantom.print("Vps reduction |Destroying instance : " + k);
+							SPhantom.getInstance().getIphantom().destroyServer(k);
+							torm.add(k);
+						}
+					});
+					torm.forEach(s -> {
+						getVps().remove(s);
+						for (Entry<ServerType, Vps> e : ServerProvider.getInstance().getOrdered().entrySet())
+							if (e.getValue().getLabel().equals(s)) ServerProvider.getInstance().getOrdered().put(e.getKey(), null);
+					});
+					PacketSender.getInstance().triggerDestroyInstance(new PacketPhantomDestroyInstance(torm));
 					break;
 			}
 
