@@ -31,6 +31,7 @@ public class SPhantom {
 	private boolean local = false;
 	private boolean logPkt = false;
 	public boolean logprovider = false;
+	public boolean logDiv = false;
 	private Iphantom iphantom;
 	private Security security;
 
@@ -67,6 +68,10 @@ public class SPhantom {
 
 	public Iphantom getIphantom() {
 		return iphantom;
+	}
+
+	public static boolean logDiv() {
+		return SPhantom.getInstance().logDiv;
 	}
 
 	public void setLead(boolean lead) {
@@ -116,15 +121,24 @@ public class SPhantom {
 		@SuppressWarnings("resource")
 		Scanner scan = new Scanner(System.in);
 		while (isRunning()) {
-			print("Actual Input :");
-			print("> shutdown [Close l'instance de Sphantom]");
-			print("> forcelead [Cette instance deviendra le leader du replica]");
-			print("> logpkt [Active/desactive le logger des packets]");
-			print("> logProvider [Active/desactive le logger de l'overspan]");
-			print("> setMode <1|2|3> [Active/desactive le logger de l'overspan]");
+			print("Send Input (type help for show cmds) :");
 			print(".. >_");
 			String nex = scan.next();
 			switch (nex) {
+				case "help":
+				case "Help":
+					print("> shutdown [Close this Sphantom instance]");
+					print("> forcelead [This instance will become the replica leader]");
+					print("> logpkt [Enable/Disable the packet logger]");
+					print("> logProvider [Enable/Disable the overspan logger]");
+					print("> setMode <1|2|3> [Set operating mode Eco|Normal|NoLag]");
+					print("> logDiv [Enable/Disable the global logger]");
+					break;
+				case "logdiv":
+				case "logDiv":
+					this.logDiv = !this.logDiv;
+					print("Diver logger " + (this.logDiv ? "enabled" : "disabled") + " !");
+					break;
 				case "shutdown":
 					Main.shutDown();
 					break;
@@ -146,7 +160,7 @@ public class SPhantom {
 						print("Eco mode already enabled !");
 						break;
 					}
-					Core.getInstance().setMode(OperatingMode.Eco);
+					Core.getInstance().setMode(OperatingMode.Eco, false);
 					print("Eco mode enabled");
 					break;
 				case "setmode 2":
@@ -155,7 +169,7 @@ public class SPhantom {
 						print("Normal mode already enabled !");
 						break;
 					}
-					Core.getInstance().setMode(OperatingMode.Normal);
+					Core.getInstance().setMode(OperatingMode.Normal, false);
 					print("Normal mode enabled");
 					break;
 				case "setmode 3":
@@ -164,10 +178,11 @@ public class SPhantom {
 						print("NoLag mode already enabled !");
 						break;
 					}
-					Core.getInstance().setMode(OperatingMode.NoLag);
+					Core.getInstance().setMode(OperatingMode.NoLag, false);
 					print("NoLag mode enabled");
 					break;
 				default:
+					print("Unknow command!");
 					break;
 			}
 		}

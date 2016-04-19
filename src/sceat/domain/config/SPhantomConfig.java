@@ -234,12 +234,12 @@ public class SPhantomConfig {
 
 		private ServerType type;
 		private int maxPlayers;
-		private int playersBeforeOpenNewInstance;
+		private int PercentplayersBeforeNewInstance;
 		private int ramNeeded;
 
 		public McServerConfigObject(int maxplayer, int playerbeforOpennew, int ramMax) {
 			this.maxPlayers = maxplayer;
-			this.playersBeforeOpenNewInstance = playerbeforOpennew;
+			this.PercentplayersBeforeNewInstance = playerbeforOpennew;
 			this.ramNeeded = ramMax;
 		}
 
@@ -252,8 +252,8 @@ public class SPhantomConfig {
 			return maxPlayers;
 		}
 
-		public int getPlayersBeforeOpenNewInstance() {
-			return playersBeforeOpenNewInstance;
+		public int getPercentPlayersBeforeOpenNewInstance() {
+			return PercentplayersBeforeNewInstance;
 		}
 
 		public int getRamNeeded() {
@@ -270,7 +270,7 @@ public class SPhantomConfig {
 
 		public void write(Configuration c) {
 			write(c, getPath() + "maxPlayers", getMaxPlayers());
-			write(c, getPath() + "playersBeforeNewInstance", getPlayersBeforeOpenNewInstance());
+			write(c, getPath() + "PercentplayersBeforeNewInstance", getPercentPlayersBeforeOpenNewInstance());
 			write(c, getPath() + "ram", getRamNeeded());
 		}
 	}

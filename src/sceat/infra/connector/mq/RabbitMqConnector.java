@@ -190,7 +190,7 @@ public class RabbitMqConnector implements IMessaging {
 
 	@Override
 	public void sendPlayer(PacketPhantomPlayer pkt) {
-		basicPublich(messagesType.Update_PlayerAction, destinationKey.HUBS_PROXY_SPHANTOM, pkt.toByteArray());
+		basicPublich(messagesType.Update_PlayerAction, destinationKey.ALL, pkt.toByteArray());
 	}
 
 	@Override

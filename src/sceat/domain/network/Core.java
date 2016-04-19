@@ -1,6 +1,7 @@
 package sceat.domain.network;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -65,22 +66,40 @@ public class Core implements Scheduled {
 			playersByType.put(t, new HashSet<UUID>());
 		});
 		Scheduler.getScheduler().register(this);
-		call();
 	}
 
 	@Schedule(rate = 30, unit = TimeUnit.SECONDS)
 	public void checkFreeSpace() {
-		boolean decrem = true;
-		for (ServerType v : ServerType.values()) {
-			int playersCount = playersByType.get(v).size();
-			int totspace = SPhantom.getInstance().getSphantomConfig().getInstances().get(v).getMaxPlayers() * serversByType.get(v).size();
-			int availableSpace = totspace - playersCount;
-			if (totspace * getMode().getPercentPl() <= playersCount) {
-				ServerProvider.getInstance().incrementPriority();
-				decrem = false;
+		try {
+			if (!this.initialised || !SPhantom.getInstance().isLeading() || SPhantom.getInstance().isLocal()) return;
+			boolean decrem = true;
+			int plTot = Manager.getInstance().getPlayersOnNetwork().size();
+			for (ServerType v : ServerType.values()) {
+				if (v == ServerType.Proxy) continue;
+				int playersCount = playersByType.get(v).size();
+				int totspace = SPhantom.getInstance().getSphantomConfig().getInstances().get(v).getMaxPlayers() * serversByType.get(v).size();
+				if (SPhantom.logDiv()) SPhantom.print("Core.checkFreeSpace() |" + v + "|pl(" + playersCount + ")|totspace(" + totspace + ")");
+				if (totspace <= 0) {
+					if (SPhantom.logDiv()) SPhantom.print("Core.checkFreeSpace() |No server found for " + v + "|continue;");
+					continue;
+				}
+				if (totspace * getMode().getPercentPl() <= playersCount) {
+					ServerProvider.getInstance().incrementPriority();
+					if (SPhantom.logDiv()) SPhantom.print("Core.checkFreeSpace() |incrementPriority();");
+					int nbr = 3;
+					if (plTot < 200) nbr = 1;
+					else if (plTot < 1000) nbr = 2;
+					deployServer(v, nbr);
+					decrem = false;
+				}
 			}
+			if (decrem) {
+				ServerProvider.getInstance().decrementPriority();
+				if (SPhantom.logDiv()) SPhantom.print("Core.checkFreeSpace() |decrementPriority(); /Yup/");
+			}
+		} catch (Exception e) {
+			Main.printStackTrace(e);
 		}
-		if (decrem) ServerProvider.getInstance().decrementPriority();
 	}
 
 	/**
@@ -97,6 +116,7 @@ public class Core implements Scheduled {
 	}
 
 	private void remapPlayersByType() {
+		if (SPhantom.logDiv()) SPhantom.print("Core.repairMap() | /!\\ Remaping players /!\\ !");
 		Arrays.stream(ServerType.values()).forEach(v -> {
 			playersByType.put(v, serversByType.get(v).stream().filter(s -> (s.getStatus() == Statut.OPEN)).map(s -> s.getPlayers()).reduce((a, b) -> {
 				a.addAll(b);
@@ -115,23 +135,11 @@ public class Core implements Scheduled {
 
 	public void checkVps(String label) {
 		if (getVps().contains(label)) return;
-		new Vps(label, 0, InetAddress.getByName("127.0.0.1"), New.set()).register();
-	}
-
-	/**
-	 * on récup les instances
-	 */
-	private void call() {
-		// changer pour l'ecoute continue via rabbit des msg des symbiotes pour mettre a jour la map donc virer cette methode et réécrire
-		SPhantom.print("Initialising Core...");
-		SPhantom.getInstance().getExecutor().execute(() -> {
-			SPhantom.print("Retrieving online existing instances from ETCD (vps/dedicated/...)");
-			long cur = System.currentTimeMillis();
-			Vps[] instances = SPhantom.getInstance().getIphantom().retrieveOnlineInstances();
-			Arrays.stream(instances).forEach(vps::add);
-			Core.this.initialised = true;
-			SPhantom.print("Core initialised ! (" + (System.currentTimeMillis() - cur) + "ms)");
-		});
+		try {
+			new Vps(label, 0, InetAddress.getByName("127.0.0.1"), New.set()).register();
+		} catch (UnknownHostException e) {
+			Main.printStackTrace(e);
+		}
 	}
 
 	public static Core getInstance() {
@@ -158,7 +166,15 @@ public class Core implements Scheduled {
 		this.process = var;
 	}
 
-	public void setMode(OperatingMode mode) {
+	/**
+	 * Change le mode
+	 * 
+	 * @param mode
+	 * @param auto
+	 *            true via sphantom, false via cmd
+	 */
+	public void setMode(OperatingMode mode, boolean auto) {
+		if (SPhantom.logDiv()) SPhantom.print("Setting mode " + mode + " [" + (auto ? "AUTO" : "MANUAL") + "]");
 		this.mode = mode;
 	}
 
@@ -167,8 +183,8 @@ public class Core implements Scheduled {
 	 */
 	@Schedule(rate = 20, unit = TimeUnit.MINUTES)
 	public void modeUpdate() {
-		if (SPhantom.getInstance().isTimeBetween(2, 3) || SPhantom.getInstance().isTimeBetween(7, 8)) setMode(OperatingMode.Eco);
-		else if (SPhantom.getInstance().isTimeBetween(8, 9)) setMode(OperatingMode.Normal);
+		if (SPhantom.getInstance().isTimeBetween(2, 3) || SPhantom.getInstance().isTimeBetween(7, 8)) setMode(OperatingMode.Eco, true);
+		else if (SPhantom.getInstance().isTimeBetween(8, 9)) setMode(OperatingMode.Normal, true);
 	}
 
 	private boolean pro = false;
@@ -178,6 +194,7 @@ public class Core implements Scheduled {
 		if (pro) return;
 		pro = true;
 		this.deployedInstances = SPhantom.getInstance().getIphantom().countDeployedInstance();
+		if (SPhantom.logDiv()) SPhantom.print("Iphantom custom deployed instances = " + deployedInstances);
 		pro = false;
 	}
 
@@ -186,8 +203,8 @@ public class Core implements Scheduled {
 		try {
 			if (isProcessing() || !this.initialised || !SPhantom.getInstance().isLeading() || SPhantom.getInstance().isLocal()) return;
 			setProcess(true);
-			Manager m = Manager.getInstance();
 			Defqon defqon = ServerProvider.getInstance().getDefqon();
+			if (SPhantom.logDiv()) SPhantom.print("coreUpdate() | Actual defqon : " + defqon);
 			switch (defqon) {
 				case FOUR:
 					deployInstances(1 + getMode().getVar());
@@ -205,6 +222,7 @@ public class Core implements Scheduled {
 					// allow perform reduction operation (reduce the nomber of servers & instance if there is too much
 					break;
 			}
+
 			setProcess(false);
 		} catch (Exception e) {
 			Main.printStackTrace(e);
@@ -225,19 +243,28 @@ public class Core implements Scheduled {
 		return vp;
 	}
 
-	private boolean deployServer(ServerType type) {
-		if (type == ServerType.Proxy) return deployProxy();
+	private Set<Server> deployServer(ServerType type, int nbr) {
+		if (type == ServerType.Proxy) return deployProxy(nbr);
+		if (SPhantom.logDiv()) SPhantom.print("Deploy Server |Type_" + type + "|Nbr(" + nbr + ")");
 		SPhantomConfig conf = SPhantom.getInstance().getSphantomConfig();
 		McServerConfigObject obj = conf.getInstances().get(type);
-		Vps vp = ServerProvider.getInstance().getVps(type);
-		if (vp == null) return false;
-		PacketSender.getInstance().bootServer(new PacketPhantomBootServer(Server.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, type.getKeys())));
-		return true;
+		Set<Server> set = new HashSet<Server>();
+		for (int i = 0; i < nbr; i++) {
+			Vps vp = ServerProvider.getInstance().getVps(type);
+			if (vp == null) break;
+			Server srv = Server.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, type.getKeys());
+			set.add(srv);
+			serversByType.get(type).add(srv);
+			Manager.getInstance().getServersByLabel().put(srv.getLabel(), srv);
+			vp.getServers().add(srv);
+			PacketSender.getInstance().bootServer(new PacketPhantomBootServer(srv));
+		}
+		return set;
 	}
 
-	private boolean deployProxy() {
+	private Set<Server> deployProxy(int nbr) {
 		SPhantom.print("[DEPLOY PROXY] Not implemented Yet !");
-		return false;
+		return new HashSet<Server>();
 	}
 
 	public static enum OperatingMode {
