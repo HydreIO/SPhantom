@@ -2,9 +2,12 @@ package sceat.domain.network;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,6 +15,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import sceat.Main;
 import sceat.SPhantom;
 import sceat.domain.Manager;
+import sceat.domain.compute.Sequencer;
+import sceat.domain.compute.Sequencer.BoolBiConsumer;
+import sceat.domain.compute.Sequencer.Chainer;
 import sceat.domain.config.SPhantomConfig;
 import sceat.domain.config.SPhantomConfig.McServerConfigObject;
 import sceat.domain.minecraft.RessourcePack;
@@ -110,15 +116,33 @@ public class Core implements Scheduled {
 		procc = false;
 	}
 
-	@Schedule(rate = 15, unit = TimeUnit.MINUTES)
+	@Schedule(rate = 1, unit = TimeUnit.HOURS)
 	public void balk() {
-		getVps().entrySet().stream().filter(e -> e.getValue().getServers().size() == 1).forEach(en -> {
-			Server sr = en.getValue().getServers().stream().findFirst().orElse(null);
-			if (sr != null) {
-				ServerType tp = sr.getType();
-				ServerProvider.getInstance().getVps(tp, Optional.<Vps> of(en.getValue()));
-			}
-		});
+		Sequencer.<Vps, Server> compute(new ArrayList<Vps>(getVps().values()), v -> v.getServers(),
+				(t1, t2, t3, t4, t5, t6) -> t2.stream().filter(t3).map(s -> t4.add(t1, s, t5, t6)).reduce((a, b) -> (a && b)).get(), (s) -> s.getStatus() != Statut.CLOSING
+						&& s.getStatus() != Statut.REDUCTION, (v, s, predicate, consume) -> (predicate.test(v, s) && consume.accept(v, s)), (v, s) -> v.canAccept(s), (v1, v2) -> {
+					v2.setStatus(Statut.REDUCTION);
+					PacketSender.getInstance().reduceServer(new PacketPhantomReduceServer(v2.getLabel(), v1.getLabel()));
+					Core.getInstance().deployServerOnVps(v2.getType(), v1);
+					return true;
+				});
+	}
+
+	private void startSequencing() {
+		Sequencer<Vps, Server> phantomSequencer = (list,tk,dispatcher,worker,noClose,adder,canAccept,thenAdd)->{
+			Queue<Vps> queue = new LinkedList<Vps>();
+			list.sort((t1, t2) -> t1.compareTo(t2));
+			list.forEach(queue::add);
+			final int size = queue.size();
+			for (int i = 0; i < size; i++)
+				Chainer.<Queue<Vps>> of(q -> {
+					Vps v6 = q.poll();
+					q.forEach(e -> dispatcher.dispatch(e, tk.take(v6), q, worker, noClose, adder, canAccept, thenAdd));
+					return q;
+				});
+		};
+		boolean bool = 
+		phantomSequencer.compute(new ArrayList<Vps>(getVps().values()),takesupp -> takesupp.getServers() , (v6,v6coll,list,worker,noClose,adder,canAccept,thenAdd)->list.stream().map(v -> worker.transfert(v, v6coll, noClose, adder, canAccept, thenAdd)).reduce((a, b) -> (a && b)).get(), (v,collec,noclos,addr,canaccp,theadd)->collec.stream().filter(noclos).map(s -> addr.add(v, s, canaccp, theadd)).reduce((a, b) -> (a && b)).get(), (sz) -> sz.getStatus() != Statut.CLOSING && sz.getStatus() != Statut.REDUCTION, (vz, sr, predicate, consume) -> (predicate.test(vz, sr) && consume.accept(vz, sr)), (vt, st) -> vt.canAccept(st), BoolBiConsumer.<Vps, Server>of((uv,ud)->ud.setStatus(Statut.REDUCTION)).andThen((id,iv)->PacketSender.getInstance().reduceServer(new PacketPhantomReduceServer(iv.getLabel(), id.getLabel()))).andThen((pl,pls)->Core.getInstance().deployServerOnVps(pls.getType(), pl)).close());
 	}
 
 	/**

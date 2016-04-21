@@ -11,7 +11,7 @@ import sceat.domain.network.Core;
 import sceat.domain.network.ServerProvider;
 import sceat.domain.network.server.Server.ServerType;
 
-public class Vps {
+public class Vps implements Comparable<Vps> {
 
 	private String label;
 	private int ram;
@@ -40,8 +40,7 @@ public class Vps {
 	}
 
 	public boolean canAccept(Server srv) {
-		return getServers().stream().filter(s -> s.getStatus() != Statut.REDUCTION && s.getStatus() != Statut.CLOSING).mapToInt(t -> SPhantom.getInstance().getSphantomConfig().getRamFor(t.getType()))
-				.reduce((a, b) -> a + b).getAsInt() > 0;
+		return getAvailableRam(true) >= SPhantom.getInstance().getSphantomConfig().getRamFor(srv.getType());
 	}
 
 	/**
@@ -58,8 +57,10 @@ public class Vps {
 	 * 
 	 * @return
 	 */
-	public int getAvailableRam() {
-		return ram - getServers().stream().mapToInt(t -> SPhantom.getInstance().getSphantomConfig().getRamFor(t.getType())).reduce((a, b) -> a + b).getAsInt();
+	public int getAvailableRam(boolean excludeClosing) {
+		return ram
+				- getServers().stream().filter(s -> excludeClosing ? s.getStatus() != Statut.REDUCTION && s.getStatus() != Statut.CLOSING : true)
+						.mapToInt(t -> SPhantom.getInstance().getSphantomConfig().getRamFor(t.getType())).reduce((a, b) -> a + b).getAsInt();
 	}
 
 	public VpsState getState() {
@@ -91,6 +92,11 @@ public class Vps {
 		Deploying,
 		Online,
 		Destroying
+	}
+
+	@Override
+	public int compareTo(Vps o) {
+		return getAvailableRam(true) - o.getAvailableRam(true);
 	}
 
 }
