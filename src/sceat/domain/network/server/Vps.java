@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import sceat.SPhantom;
+import sceat.domain.minecraft.Statut;
 import sceat.domain.network.Core;
 import sceat.domain.network.ServerProvider;
 import sceat.domain.network.server.Server.ServerType;
@@ -36,6 +37,11 @@ public class Vps {
 	public Vps register() {
 		Core.getInstance().getVps().put(getLabel(), this);
 		return this;
+	}
+
+	public boolean canAccept(Server srv) {
+		return getServers().stream().filter(s -> s.getStatus() != Statut.REDUCTION && s.getStatus() != Statut.CLOSING).mapToInt(t -> SPhantom.getInstance().getSphantomConfig().getRamFor(t.getType()))
+				.reduce((a, b) -> a + b).getAsInt() > 0;
 	}
 
 	/**

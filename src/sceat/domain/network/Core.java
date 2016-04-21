@@ -279,7 +279,7 @@ public class Core implements Scheduled {
 		McServerConfigObject obj = conf.getInstances().get(type);
 		Set<Server> set = new HashSet<Server>();
 		for (int i = 0; i < nbr; i++) {
-			Vps vp = ServerProvider.getInstance().getVps(type);
+			Vps vp = ServerProvider.getInstance().getVps(type, Optional.empty());
 			if (vp == null) break;
 			Server srv = Server.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, type.getKeys());
 			set.add(srv);
@@ -289,6 +289,21 @@ public class Core implements Scheduled {
 			PacketSender.getInstance().bootServer(new PacketPhantomBootServer(srv));
 		}
 		return set;
+	}
+
+	public void deployServerOnVps(ServerType type, Vps v) {
+		if (type == ServerType.Proxy) {
+			deplyProxyOnVps(v);
+			return;
+		}
+		SPhantomConfig conf = SPhantom.getInstance().getSphantomConfig();
+		McServerConfigObject obj = conf.getInstances().get(type);
+		if (SPhantom.logDiv()) SPhantom.print("Deploy Server ON VPS (defragmantation) |Type_" + type + "|Vps = " + v.getLabel());
+		Server srv = Server.fromScratch(type, obj.getMaxPlayers(), v.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, type.getKeys());
+		serversByType.get(type).add(srv);
+		Manager.getInstance().getServersByLabel().put(srv.getLabel(), srv);
+		v.getServers().add(srv);
+		PacketSender.getInstance().bootServer(new PacketPhantomBootServer(srv));
 	}
 
 	private void reduceServer(ServerType type) {
@@ -309,6 +324,10 @@ public class Core implements Scheduled {
 	private Set<Server> deployProxy(int nbr) {
 		SPhantom.print("[DEPLOY PROXY] Not implemented Yet !");
 		return new HashSet<Server>();
+	}
+
+	private void deplyProxyOnVps(Vps v) {
+		SPhantom.print("[DEPLOY PROXY] Not implemented Yet !");
 	}
 
 	public static enum OperatingMode {
