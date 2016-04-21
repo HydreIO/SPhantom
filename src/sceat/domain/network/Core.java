@@ -118,18 +118,7 @@ public class Core implements Scheduled {
 
 	@Schedule(rate = 1, unit = TimeUnit.HOURS)
 	public void balk() {
-		Sequencer.<Vps, Server> compute(new ArrayList<Vps>(getVps().values()), v -> v.getServers(),
-				(t1, t2, t3, t4, t5, t6) -> t2.stream().filter(t3).map(s -> t4.add(t1, s, t5, t6)).reduce((a, b) -> (a && b)).get(), (s) -> s.getStatus() != Statut.CLOSING
-						&& s.getStatus() != Statut.REDUCTION, (v, s, predicate, consume) -> (predicate.test(v, s) && consume.accept(v, s)), (v, s) -> v.canAccept(s), (v1, v2) -> {
-					v2.setStatus(Statut.REDUCTION);
-					PacketSender.getInstance().reduceServer(new PacketPhantomReduceServer(v2.getLabel(), v1.getLabel()));
-					Core.getInstance().deployServerOnVps(v2.getType(), v1);
-					return true;
-				});
-	}
-
-	private void startSequencing() {
-		Sequencer<Vps, Server> phantomSequencer = (list,tk,dispatcher,worker,noClose,adder,canAccept,thenAdd)->{
+		Sequencer.<Vps, Server>phantomSequencing((list,tk,dispatcher,worker,noClose,adder,canAccept,thenAdd)->{
 			Queue<Vps> queue = new LinkedList<Vps>();
 			list.sort((t1, t2) -> t1.compareTo(t2));
 			list.forEach(queue::add);
@@ -140,10 +129,9 @@ public class Core implements Scheduled {
 					q.forEach(e -> dispatcher.dispatch(e, tk.take(v6), q, worker, noClose, adder, canAccept, thenAdd));
 					return q;
 				});
-		};
-		boolean bool = 
-		phantomSequencer.compute(new ArrayList<Vps>(getVps().values()),takesupp -> takesupp.getServers() , (v6,v6coll,list,worker,noClose,adder,canAccept,thenAdd)->list.stream().map(v -> worker.transfert(v, v6coll, noClose, adder, canAccept, thenAdd)).reduce((a, b) -> (a && b)).get(), (v,collec,noclos,addr,canaccp,theadd)->collec.stream().filter(noclos).map(s -> addr.add(v, s, canaccp, theadd)).reduce((a, b) -> (a && b)).get(), (sz) -> sz.getStatus() != Statut.CLOSING && sz.getStatus() != Statut.REDUCTION, (vz, sr, predicate, consume) -> (predicate.test(vz, sr) && consume.accept(vz, sr)), (vt, st) -> vt.canAccept(st), BoolBiConsumer.<Vps, Server>of((uv,ud)->ud.setStatus(Statut.REDUCTION)).andThen((id,iv)->PacketSender.getInstance().reduceServer(new PacketPhantomReduceServer(iv.getLabel(), id.getLabel()))).andThen((pl,pls)->Core.getInstance().deployServerOnVps(pls.getType(), pl)).close());
+		},new ArrayList<Vps>(getVps().values()),takesupp -> takesupp.getServers() , (v6,v6coll,list,worker,noClose,adder,canAccept,thenAdd)->list.stream().map(v -> worker.transfert(v, v6coll, noClose, adder, canAccept, thenAdd)).reduce((a, b) -> (a && b)).get(), (v,collec,noclos,addr,canaccp,theadd)->collec.stream().filter(noclos).map(s -> addr.add(v, s, canaccp, theadd)).reduce((a, b) -> (a && b)).get(), (sz) -> sz.getStatus() != Statut.CLOSING && sz.getStatus() != Statut.REDUCTION, (vz, sr, predicate, consume) -> (predicate.test(vz, sr) && consume.accept(vz, sr)), (vt, st) -> vt.canAccept(st), BoolBiConsumer.<Vps, Server>of((uv,ud)->{ud.setStatus(Statut.REDUCTION);PacketSender.getInstance().reduceServer(new PacketPhantomReduceServer(ud.getLabel(), uv.getLabel()));Core.getInstance().deployServerOnVps(ud.getType(), uv);return true;}));
 	}
+
 
 	/**
 	 * on verifie içi si la map playersByType servant pour l'overspan est bien a jour ! si le nombre de joueurs n'est pas egal au nombre trouvé via la reduction directement efféctuée sur les serveurs

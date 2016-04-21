@@ -1,24 +1,9 @@
 package sceat.domain.compute;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import sceat.domain.minecraft.Statut;
-import sceat.domain.network.Core;
-import sceat.domain.network.server.Server;
-import sceat.domain.network.server.Vps;
-import sceat.domain.protocol.PacketSender;
-import sceat.domain.protocol.packets.PacketPhantomReduceServer;
 
 @FunctionalInterface
 public interface Sequencer<V, S> {
@@ -26,85 +11,9 @@ public interface Sequencer<V, S> {
 	public void compute(List<V> list, TakeSupplier<V, Collection<S>> tk, Dispatcher<V, S> dispatcher, Worker<V, S> worker, Predicate<S> noClose, Adder<V, S> adder, BiPredicate<V, S> canAccept,
 			BoolBiConsumer<V, S> thenAdd);
 
-	// exemple
-	default boolean transfert(V v, Collection<S> collection, Predicate<S> noClose, Adder<V, S> adder, BiPredicate<V, S> canAccept, BoolBiConsumer<V, S> thenAdd) { // predicate = srv != Reduction srv != close
-		return collection.stream().filter(noClose).map(s -> adder.add(v, s, canAccept, thenAdd)).reduce((a, b) -> (a && b)).get();
-	}
-
-	// exemple
-	default boolean add(V v, S s, BiPredicate<V, S> canAccept, BoolBiConsumer<V, S> thenAdd) { // if(vps.canAccept then vps.add(s)
-		return (canAccept.test(v, s) && thenAdd.accept(v, s));
-	}
-
-	// exemple
-	default boolean dispatch(V v6, Collection<S> v6coll, Collection<V> x, Worker<V, S> worker, Predicate<S> noClose, Adder<V, S> adder, BiPredicate<V, S> canAccept, BoolBiConsumer<V, S> thenAdd) {
-		return x.stream().map(v -> worker.transfert(v, v6coll, noClose, adder, canAccept, thenAdd)).reduce((a, b) -> (a && b)).get();
-	}
-
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static void comppute(List<V> list, TakeSupplier<V, Collection<S>> tk, Dispatcher<V, S> dispatcher, Worker<V, S> worker, Predicate<S> noClose, Adder<V, S> adder,
-			BiPredicate<V, S> canAccept, BoolBiConsumer<V, S> thenAdd) {
-		Queue<V> queue = new LinkedList<V>();
-		list.sort((t1, t2) -> ((Comparable) t1).compareTo((Comparable) t2));
-		list.forEach(queue::add);
-		final int size = queue.size();
-		for (int i = 0; i < size; i++)
-			Chainer.<Queue<V>> of(q -> {
-				V v6 = q.poll();
-				q.forEach(e -> dispatcher.dispatch(e, tk.take(v6), q, worker, noClose, adder, canAccept, thenAdd));
-				return q;
-			});
-	}
-
-	public static <V, S> Sequencer<V, S> of(Sequencer<V, S> sequencer) {
-		return sequencer;
-	}
-
-	public static <V, S> void computez(Sequencer<V, S> sequencer, List<V> list, TakeSupplier<V, Collection<S>> tk, Dispatcher<V, S> dispatcher, Worker<V, S> worker, Predicate<S> noClose,
+	public static <V, S> void phantomSequencing(Sequencer<V, S> sequencer, List<V> list, TakeSupplier<V, Collection<S>> tk, Dispatcher<V, S> dispatcher, Worker<V, S> worker, Predicate<S> noClose,
 			Adder<V, S> adder, BiPredicate<V, S> canAccept, BoolBiConsumer<V, S> thenAdd) {
 		sequencer.compute(list, tk, dispatcher, worker, noClose, adder, canAccept, thenAdd);
-		Queue<V> queue = new LinkedList<V>();
-		list.sort((t1, t2) -> ((Comparable) t1).compareTo((Comparable) t2));
-		list.forEach(queue::add);
-		final int size = queue.size();
-		for (int i = 0; i < size; i++)
-			Chainer.<Queue<V>> of(q -> {
-				V v6 = q.poll();
-				q.forEach(e -> dispatcher.dispatch(e, tk.take(v6), q, worker, noClose, adder, canAccept, thenAdd));
-				return q;
-			});
-	}
-
-	default void sequensce(Collection<V> coll, Dispatcher<V, S> dispatcher) {
-
-		Set<Vps> vps = null;
-
-		List<Vps> l = new ArrayList<Vps>();
-
-		Queue<Vps> q = new LinkedList<Vps>();
-
-		// Il faut faire un petit test de securité et set le vps label sur tt les serveurs avant la sequence
-		vps.forEach(v -> v.getServers().forEach(s -> s.setVpsLabel(v.getLabel())));
-
-		Collection<V> clone = new ArrayList<V>();
-		Map<String, String> map = new HashMap<String, String>();
-		Set<String> empty = new HashSet<String>();
-		coll.forEach(clone::add);
-
-		Map<String, HashSet<String>> collected = vps.stream().collect(
-				Collectors.toMap(Vps::getLabel, v -> new HashSet<String>(v.getServers().stream().map(Server::getLabel).collect(Collectors.toList()))));
-
-		Vps vp = null;
-		Server sr = null;
-		Predicate<Server> reduclose = (s) -> s.getStatus() != Statut.CLOSING && s.getStatus() != Statut.REDUCTION;
-
-		Adder<Vps, Server> addtest = (v, s, predicate, consume) -> (predicate.test(v, s) && consume.accept(v, s));
-		addtest.add(vp, sr, (v, s) -> v.canAccept(s), (v1, v2) -> {
-			v2.setStatus(Statut.REDUCTION);
-			PacketSender.getInstance().reduceServer(new PacketPhantomReduceServer(v2.getLabel(), v1.getLabel()));
-			Core.getInstance().deployServerOnVps(v2.getType(), v1);
-			return true;
-		});
 	}
 
 	@FunctionalInterface
@@ -163,10 +72,6 @@ public interface Sequencer<V, S> {
 				other.accept(c1, c2);
 				return true;
 			};
-		}
-
-		default boolean close() {
-			return true;
 		}
 
 		public static <T, Y> BoolBiConsumer<T, Y> of(BoolBiConsumer<T, Y> other) {
