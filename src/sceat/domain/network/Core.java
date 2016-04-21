@@ -4,7 +4,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -24,6 +23,7 @@ import sceat.domain.network.server.Vps;
 import sceat.domain.protocol.PacketSender;
 import sceat.domain.protocol.packets.PacketPhantomBootServer;
 import sceat.domain.protocol.packets.PacketPhantomDestroyInstance;
+import sceat.domain.protocol.packets.PacketPhantomReduceServer;
 import sceat.domain.schedule.Schedule;
 import sceat.domain.schedule.Scheduled;
 import sceat.domain.schedule.Scheduler;
@@ -108,6 +108,17 @@ public class Core implements Scheduled {
 			Main.printStackTrace(e);
 		}
 		procc = false;
+	}
+
+	@Schedule(rate = 15, unit = TimeUnit.MINUTES)
+	public void balk() {
+		getVps().entrySet().stream().filter(e -> e.getValue().getServers().size() == 1).forEach(en -> {
+			Server sr = en.getValue().getServers().stream().findFirst().orElse(null);
+			if (sr != null) {
+				ServerType tp = sr.getType();
+				ServerProvider.getInstance().getVps(tp, Optional.<Vps> of(en.getValue()));
+			}
+		});
 	}
 
 	/**
@@ -235,11 +246,7 @@ public class Core implements Scheduled {
 							torm.add(k);
 						}
 					});
-					torm.forEach(s -> {
-						getVps().remove(s);
-						for (Entry<ServerType, Vps> e : ServerProvider.getInstance().getOrdered().entrySet())
-							if (e.getValue().getLabel().equals(s)) ServerProvider.getInstance().getOrdered().put(e.getKey(), null);
-					});
+					torm.forEach(SPhantom.getInstance().getIphantom()::destroyServer);
 					PacketSender.getInstance().triggerDestroyInstance(new PacketPhantomDestroyInstance(torm));
 					break;
 			}
@@ -290,8 +297,9 @@ public class Core implements Scheduled {
 			return;
 		}
 		Optional<Server> s = getServersByType().get(type).stream().filter(sr -> sr.getStatus() == Statut.OPEN).findAny();
-		if(!s.isPresent()) return;
-		
+		if (!s.isPresent()) return;
+		Server srv = s.get().setStatus(Statut.REDUCTION);
+		PacketSender.getInstance().reduceServer(new PacketPhantomReduceServer(srv.getLabel(), srv.getVpsLabel()));
 	}
 
 	private void reduceProxy() {

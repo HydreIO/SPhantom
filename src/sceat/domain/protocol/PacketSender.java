@@ -84,12 +84,12 @@ public class PacketSender {
 			getBroker().destroyInstance(pkt.serialize());
 		}
 	}
-	
+
 	public void reduceServer(PacketPhantomReduceServer pkt) {
 		setSecurity(pkt);
-		if(allowed) {
+		if (allowed) {
 			if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketReduceServer |to:ALL_AND_SPHANTOM");
-			getBroker().destroyInstance(pkt.serialize());
+			getBroker().reduceServer(pkt.serialize());
 		}
 	}
 

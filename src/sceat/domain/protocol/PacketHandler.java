@@ -23,6 +23,7 @@ import sceat.domain.protocol.packets.PacketPhantomDestroyInstance;
 import sceat.domain.protocol.packets.PacketPhantomHeartBeat;
 import sceat.domain.protocol.packets.PacketPhantomPlayer;
 import sceat.domain.protocol.packets.PacketPhantomPlayer.PlayerAction;
+import sceat.domain.protocol.packets.PacketPhantomReduceServer;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
 import sceat.domain.protocol.packets.PacketPhantomSymbiote;
 import sceat.infra.connector.mq.RabbitMqConnector.messagesType;
@@ -86,7 +87,13 @@ public class PacketHandler {
 					for (Entry<ServerType, Vps> e : ServerProvider.getInstance().getOrdered().entrySet())
 						if (e.getValue().getLabel().equals(s)) ServerProvider.getInstance().getOrdered().put(e.getKey(), null);
 				});
-				break;
+				return;
+			case Reduce_Server:
+				PacketPhantomReduceServer varpkt = PacketPhantomReduceServer.fromByteArray(array).deserialize();
+				if (varpkt.cameFromLocal()) return;
+				if (logPkt) SPhantom.print("<<<<]RECV] PacketReduceServer [Srv: " + varpkt.getLabel() + "|Vps: " + varpkt.getVpsLabel() + "]");
+				Manager.getInstance().getServersByLabel().get(varpkt.getLabel()).setStatus(Statut.REDUCTION);
+				return;
 			case BootServer: // Les autres instances de sphantom vont recevoir ce packet tout comme le symbiote et elle pourront ainsi afficher un new srv en statut CREATING
 				PacketPhantomBootServer var = PacketPhantomBootServer.fromByteArray(array).deserialize();
 				if (var.cameFromLocal()) return;

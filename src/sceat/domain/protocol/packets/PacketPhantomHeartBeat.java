@@ -2,6 +2,18 @@ package sceat.domain.protocol.packets;
 
 public class PacketPhantomHeartBeat extends PacketPhantom {
 
+	@Override
+	protected void serialize_() {
+		writeBoolean(isRunning());
+		writeLong(getLastHandShake());
+	}
+
+	@Override
+	protected void deserialize_() {
+		this.running = readBoolean();
+		this.lastHandShake = readLong();
+	}
+
 	private boolean running;
 	private long lastHandShake;
 
@@ -28,18 +40,6 @@ public class PacketPhantomHeartBeat extends PacketPhantom {
 
 	public boolean isRunning() {
 		return this.running;
-	}
-
-	@Override
-	protected void serialize_() {
-		writeBoolean(isRunning());
-		writeLong(getLastHandShake());
-	}
-
-	@Override
-	protected void deserialize_() {
-		this.running = readBoolean();
-		this.lastHandShake = readLong();
 	}
 
 }

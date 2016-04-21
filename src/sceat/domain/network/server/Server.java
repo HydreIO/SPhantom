@@ -37,8 +37,9 @@ public class Server {
 		boolean neww = false;
 		ConcurrentHashMap<String, Server> sbl = Manager.getInstance().getServersByLabel();
 		if (sbl.contains(pkt.getLabel())) {
-			sr = sbl.get(pkt.getLabel()).setStatus(pkt.getState());
-			if (!pkt.isFromSymbiote()) sr.setPlayers(pkt.getPlayersPerGrade());
+			sr = sbl.get(pkt.getLabel());
+			if (sr.getStatus() != Statut.REDUCTION) sr.setStatus(pkt.getState()); // si on connait le serv et qu'il est en reduction alors on ne change pas le statut 
+			if (!pkt.isFromSymbiote()) sr.setPlayers(pkt.getPlayersPerGrade()); // sa voudra dire qu'on a reçu un packet avant d'avoir pu informer le serveur qu'il devait se reduire
 		} else {
 			sr = canBeNull ? null : new Server(pkt.getLabel(), pkt.getType(), pkt.getState(), pkt.getMaxp(), pkt.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, pkt.getKeys().stream()
 					.toArray(String[]::new)).setPlayers(pkt.getPlayersPerGrade());

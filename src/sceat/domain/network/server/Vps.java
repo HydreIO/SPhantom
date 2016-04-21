@@ -2,10 +2,13 @@ package sceat.domain.network.server;
 
 import java.net.InetAddress;
 import java.util.HashSet;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import sceat.SPhantom;
 import sceat.domain.network.Core;
+import sceat.domain.network.ServerProvider;
+import sceat.domain.network.server.Server.ServerType;
 
 public class Vps {
 
@@ -33,6 +36,15 @@ public class Vps {
 	public Vps register() {
 		Core.getInstance().getVps().put(getLabel(), this);
 		return this;
+	}
+
+	/**
+	 * called in VultrConnector
+	 */
+	public void unregister() {
+		if (Core.getInstance().getVps().containsKey(getLabel())) Core.getInstance().getVps().remove(getLabel());
+		for (Entry<ServerType, Vps> e : ServerProvider.getInstance().getOrdered().entrySet())
+			if (e.getValue().getLabel().equals(getLabel())) ServerProvider.getInstance().getOrdered().put(e.getKey(), null);
 	}
 
 	/**

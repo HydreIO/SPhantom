@@ -2,8 +2,11 @@ package sceat.domain.network;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import sceat.SPhantom;
@@ -12,6 +15,7 @@ import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.network.server.Vps;
 import sceat.domain.utils.New;
 
+@SuppressWarnings("unchecked")
 public class ServerProvider {
 
 	private static ServerProvider instance;
@@ -102,9 +106,11 @@ public class ServerProvider {
 	 * synchronized pour que les opérations de remplacement ne soit pas baisées
 	 * 
 	 * @param type
+	 * @param exclude
+	 *            chercher un vps autre que celui en parametre
 	 * @return first proper vps for the serverType, null if no instance is found
 	 */
-	public synchronized Vps getVps(ServerType type) {
+	public synchronized Vps getVps(ServerType type, Optional<Vps> exclude) {
 		boolean log = SPhantom.getInstance().logprovider;
 		long time = System.currentTimeMillis();
 		if (log) SPhantom.print("Asking Vps for type : " + type.name());
@@ -113,12 +119,14 @@ public class ServerProvider {
 		for (Vps vss : getConfigInstances().values())
 			if (vss.getAvailableRam() >= sc.getRamFor(type)) { // recherche prioritaire dans les machines configurée (vps/dédié non loué a l'heure)
 				vp = vss;
+				if (exclude.isPresent() && vss == exclude.get()) continue;
 				break;
 			}
-		if (vp == null) vp = getOrdered().get(type);
+		Vps vf = getOrdered().get(type);
+		if (vp == null) vp = exclude.isPresent() ? vf == exclude.get() ? null : vf : vf;
 		if (log) SPhantom.print("Found vps : " + (vp == null ? "NULL :(" : vp.getLabel()));
 		if (vp == null) {
-			vp = searchFirst(sc.getRamFor(type), Optional.empty());
+			vp = searchFirst(sc.getRamFor(type), exclude);
 			if (SPhantom.getInstance().logprovider) SPhantom.print("Force found vps : " + (vp == null ? "Not found again.. Houston we have a problem" : vp.getLabel()));
 			if (vp == null) return null; // si on trouve vraiment pas de vps on return null et tant pis aucun serveur ne s'ouvrira il faudra attendre l'ouverture d'une instance automatiquement
 		}
@@ -130,7 +138,7 @@ public class ServerProvider {
 			int ramfor = sc.getRamFor(key);
 			int ramavail = value == null ? -1 : value == vp ? availableRam : value.getAvailableRam();
 			if (ramfor > ramavail) {
-				Vps neew = searchFirst(ramfor, Optional.<Vps> of(vp));
+				Vps neew = searchFirst(ramfor, Optional.<Vps> of(vp), exclude);
 				ordered.put(key, neew);
 			}
 		}
@@ -138,14 +146,10 @@ public class ServerProvider {
 		return vp;
 	}
 
-	private Vps searchFirst(int ramNeeded, Optional<Vps> exclude) {
-		Vps first = null;
-		for (Vps vp : Core.getInstance().getVps().values())
-			if (vp.getAvailableRam() >= ramNeeded && (!exclude.isPresent() || exclude.get() != vp)) {
-				first = vp;
-				break;
-			}
-		return first;
+	private Vps searchFirst(int ramNeeded, Optional<Vps>... exclude) {
+		Set<Vps> comp = new HashSet<Vps>();
+		Arrays.stream(exclude).filter(e -> e.isPresent()).forEach(o -> comp.add(o.get()));
+		return Core.getInstance().getVps().values().stream().filter(vp -> vp.getAvailableRam() >= ramNeeded && (comp.isEmpty() || !comp.contains(vp))).findFirst().orElse(null);
 	}
 
 }
