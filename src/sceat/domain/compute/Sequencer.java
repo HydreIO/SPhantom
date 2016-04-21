@@ -26,7 +26,7 @@ public interface Sequencer<V, S> {
 		public T chain(T t);
 
 		public static <T> Chainer<T> of(Chainer<T> chainer) {
-			return (T t) -> chainer.chain(t);
+			return chainer;
 		}
 	}
 

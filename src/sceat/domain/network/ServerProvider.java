@@ -117,7 +117,7 @@ public class ServerProvider {
 		SPhantomConfig sc = SPhantom.getInstance().getSphantomConfig();
 		Vps vp = null;
 		for (Vps vss : getConfigInstances().values())
-			if (vss.getAvailableRam() >= sc.getRamFor(type)) { // recherche prioritaire dans les machines configurée (vps/dédié non loué a l'heure)
+			if (vss.getAvailableRam(true) >= sc.getRamFor(type)) { // recherche prioritaire dans les machines configurée (vps/dédié non loué a l'heure)
 				vp = vss;
 				if (exclude.isPresent() && vss == exclude.get()) continue;
 				break;
@@ -130,13 +130,13 @@ public class ServerProvider {
 			if (SPhantom.getInstance().logprovider) SPhantom.print("Force found vps : " + (vp == null ? "Not found again.. Houston we have a problem" : vp.getLabel()));
 			if (vp == null) return null; // si on trouve vraiment pas de vps on return null et tant pis aucun serveur ne s'ouvrira il faudra attendre l'ouverture d'une instance automatiquement
 		}
-		int availableRam = vp.getAvailableRam() - sc.getRamFor(type);
+		int availableRam = vp.getAvailableRam(true) - sc.getRamFor(type);
 		if (log) SPhantom.print("Available ram : " + availableRam);
 		for (Entry<ServerType, Vps> e : ordered.entrySet()) {
 			Vps value = e.getValue();
 			ServerType key = e.getKey();
 			int ramfor = sc.getRamFor(key);
-			int ramavail = value == null ? -1 : value == vp ? availableRam : value.getAvailableRam();
+			int ramavail = value == null ? -1 : value == vp ? availableRam : value.getAvailableRam(true);
 			if (ramfor > ramavail) {
 				Vps neew = searchFirst(ramfor, Optional.<Vps> of(vp), exclude);
 				ordered.put(key, neew);
@@ -149,7 +149,7 @@ public class ServerProvider {
 	private Vps searchFirst(int ramNeeded, Optional<Vps>... exclude) {
 		Set<Vps> comp = new HashSet<Vps>();
 		Arrays.stream(exclude).filter(e -> e.isPresent()).forEach(o -> comp.add(o.get()));
-		return Core.getInstance().getVps().values().stream().filter(vp -> vp.getAvailableRam() >= ramNeeded && (comp.isEmpty() || !comp.contains(vp))).findFirst().orElse(null);
+		return Core.getInstance().getVps().values().stream().filter(vp -> vp.getAvailableRam(true) >= ramNeeded && (comp.isEmpty() || !comp.contains(vp))).findFirst().orElse(null);
 	}
 
 }

@@ -116,9 +116,14 @@ public class Core implements Scheduled {
 		procc = false;
 	}
 
+	/**
+	 * Cette methode du futur confectionnées par mes soins m'a pris 3 putain de jours !
+	 * <p>
+	 * Elle effectue une sorte de défragmentation pour regrouper un maximum les serveurs sur les vps et ainsi pouvoir fermer les instances en trop ! Economie d'argent morray !
+	 */
 	@Schedule(rate = 1, unit = TimeUnit.HOURS)
 	public void balk() {
-		Sequencer.<Vps, Server>phantomSequencing((list,tk,dispatcher,worker,noClose,adder,canAccept,thenAdd)->{
+		Sequencer.<Vps, Server> phantomSequencing((list, tk, dispatcher, worker, noClose, adder, canAccept, thenAdd) -> {
 			Queue<Vps> queue = new LinkedList<Vps>();
 			list.sort((t1, t2) -> t1.compareTo(t2));
 			list.forEach(queue::add);
@@ -129,9 +134,18 @@ public class Core implements Scheduled {
 					q.forEach(e -> dispatcher.dispatch(e, tk.take(v6), q, worker, noClose, adder, canAccept, thenAdd));
 					return q;
 				});
-		},new ArrayList<Vps>(getVps().values()),takesupp -> takesupp.getServers() , (v6,v6coll,list,worker,noClose,adder,canAccept,thenAdd)->list.stream().map(v -> worker.transfert(v, v6coll, noClose, adder, canAccept, thenAdd)).reduce((a, b) -> (a && b)).get(), (v,collec,noclos,addr,canaccp,theadd)->collec.stream().filter(noclos).map(s -> addr.add(v, s, canaccp, theadd)).reduce((a, b) -> (a && b)).get(), (sz) -> sz.getStatus() != Statut.CLOSING && sz.getStatus() != Statut.REDUCTION, (vz, sr, predicate, consume) -> (predicate.test(vz, sr) && consume.accept(vz, sr)), (vt, st) -> vt.canAccept(st), BoolBiConsumer.<Vps, Server>of((uv,ud)->{ud.setStatus(Statut.REDUCTION);PacketSender.getInstance().reduceServer(new PacketPhantomReduceServer(ud.getLabel(), uv.getLabel()));Core.getInstance().deployServerOnVps(ud.getType(), uv);return true;}));
+		}, new ArrayList<Vps>(getVps().values()), takesupp -> takesupp.getServers(),
+				(v6, v6coll, list, worker, noClose, adder, canAccept, thenAdd) -> list.stream().map(v -> worker.transfert(v, v6coll, noClose, adder, canAccept, thenAdd)).reduce((a, b) -> (a && b))
+						.get(), (v, collec, noclos, addr, canaccp, theadd) -> collec.stream().filter(noclos).map(s -> addr.add(v, s, canaccp, theadd)).reduce((a, b) -> (a && b)).get(),
+				(sz) -> sz.getStatus() != Statut.CLOSING && sz.getStatus() != Statut.REDUCTION, (vz, sr, predicate, consume) -> (predicate.test(vz, sr) && consume.accept(vz, sr)),
+				(vt, st) -> vt.canAccept(st), BoolBiConsumer.<Vps, Server> of((uv, ud) -> {
+					ud.setStatus(Statut.REDUCTION);
+					SPhantom.print("balk() [DEFRAGMENTATION SEQUENCING] | Reduction on " + ud.getLabel() + " |Actual Vps : " + ud.getVpsLabel());
+					PacketSender.getInstance().reduceServer(new PacketPhantomReduceServer(ud.getLabel(), uv.getLabel()));
+					Core.getInstance().deployServerOnVps(ud.getType(), uv, true);
+					return true;
+				}));
 	}
-
 
 	/**
 	 * on verifie içi si la map playersByType servant pour l'overspan est bien a jour ! si le nombre de joueurs n'est pas egal au nombre trouvé via la reduction directement efféctuée sur les serveurs
@@ -303,14 +317,15 @@ public class Core implements Scheduled {
 		return set;
 	}
 
-	public void deployServerOnVps(ServerType type, Vps v) {
+	public void deployServerOnVps(ServerType type, Vps v, boolean fromBalk) {
 		if (type == ServerType.Proxy) {
 			deplyProxyOnVps(v);
 			return;
 		}
 		SPhantomConfig conf = SPhantom.getInstance().getSphantomConfig();
 		McServerConfigObject obj = conf.getInstances().get(type);
-		if (SPhantom.logDiv()) SPhantom.print("Deploy Server ON VPS (defragmantation) |Type_" + type + "|Vps = " + v.getLabel());
+		if (fromBalk) SPhantom.print("deployServerOnVps() [DEFRAGMENTATION SEQUENCING] | Transfert on " + v.getLabel() + " |Type : " + type + "\n_______________________________________________]");
+		else if (SPhantom.logDiv()) SPhantom.print("Deploy Server ON VPS |Type_" + type + "|Vps = " + v.getLabel());
 		Server srv = Server.fromScratch(type, obj.getMaxPlayers(), v.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, type.getKeys());
 		serversByType.get(type).add(srv);
 		Manager.getInstance().getServersByLabel().put(srv.getLabel(), srv);
