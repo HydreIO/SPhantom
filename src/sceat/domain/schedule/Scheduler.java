@@ -14,7 +14,7 @@ public class Scheduler {
 		return instance;
 	}
 
-	private ScheduledExecutorService pool = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Scheduler pool - [Thrd: %d]").build());
+	private ScheduledExecutorService pool = Executors.newScheduledThreadPool(50, new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Scheduler pool - [Thrd: %d]").build());
 
 	private Scheduler() {
 	}
@@ -24,7 +24,7 @@ public class Scheduler {
 	}
 
 	public void register(Scheduled scheduled) {
-		Arrays.stream(scheduled.getClass().getMethods()).parallel().filter((m) -> m.isAnnotationPresent(Schedule.class)).forEach((m) -> {
+		Arrays.stream(scheduled.getClass().getMethods()).filter((m) -> m.isAnnotationPresent(Schedule.class)).forEach((m) -> {
 			Schedule s = m.getAnnotation(Schedule.class);
 			long ns = s.unit().toNanos(s.rate());
 			pool.scheduleAtFixedRate(() -> {

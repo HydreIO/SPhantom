@@ -123,28 +123,34 @@ public class Core implements Scheduled {
 	 */
 	@Schedule(rate = 1, unit = TimeUnit.HOURS)
 	public void balk() {
-		Sequencer.<Vps, Server> phantomSequencing((list, tk, dispatcher, worker, noClose, adder, canAccept, thenAdd) -> {
-			Queue<Vps> queue = new LinkedList<Vps>();
-			list.sort((t1, t2) -> t1.compareTo(t2));
-			list.forEach(queue::add);
-			final int size = queue.size();
-			for (int i = 0; i < size; i++)
-				Chainer.<Queue<Vps>> of(q -> {
-					Vps v6 = q.poll();
-					q.forEach(e -> dispatcher.dispatch(e, tk.take(v6), q, worker, noClose, adder, canAccept, thenAdd));
-					return q;
-				});
-		}, new ArrayList<Vps>(getVps().values()), takesupp -> takesupp.getServers(),
-				(v6, v6coll, list, worker, noClose, adder, canAccept, thenAdd) -> list.stream().map(v -> worker.transfert(v, v6coll, noClose, adder, canAccept, thenAdd)).reduce((a, b) -> (a && b))
-						.get(), (v, collec, noclos, addr, canaccp, theadd) -> collec.stream().filter(noclos).map(s -> addr.add(v, s, canaccp, theadd)).reduce((a, b) -> (a && b)).get(),
-				(sz) -> sz.getStatus() != Statut.CLOSING && sz.getStatus() != Statut.REDUCTION, (vz, sr, predicate, consume) -> (predicate.test(vz, sr) && consume.accept(vz, sr)),
-				(vt, st) -> vt.canAccept(st), BoolBiConsumer.<Vps, Server> of((uv, ud) -> {
-					ud.setStatus(Statut.REDUCTION);
-					SPhantom.print("balk() [DEFRAGMENTATION SEQUENCING] | Reduction on " + ud.getLabel() + " |Actual Vps : " + ud.getVpsLabel());
-					PacketSender.getInstance().reduceServer(new PacketPhantomReduceServer(ud.getLabel(), uv.getLabel()));
-					Core.getInstance().deployServerOnVps(ud.getType(), uv, true);
-					return true;
-				}));
+		try {
+			if (SPhantom.getInstance().isLocal()) return;
+			Sequencer.<Vps, Server> phantomSequencing((list, tk, dispatcher, worker, noClose, adder, canAccept, thenAdd) -> {
+				Queue<Vps> queue = new LinkedList<Vps>();
+				list.sort((t1, t2) -> t1.compareTo(t2));
+				list.forEach(queue::add);
+				final int size = queue.size();
+				for (int i = 0; i < size; i++)
+					Chainer.<Queue<Vps>> of(q -> {
+						Vps v6 = q.poll();
+						q.forEach(e -> dispatcher.dispatch(e, tk.take(v6), q, worker, noClose, adder, canAccept, thenAdd));
+						return q;
+					});
+			}, new ArrayList<Vps>(getVps().values()), takesupp -> takesupp.getServers(),
+					(v6, v6coll, list, worker, noClose, adder, canAccept, thenAdd) -> list.stream().map(v -> worker.transfert(v, v6coll, noClose, adder, canAccept, thenAdd))
+							.reduce((a, b) -> (a && b)).get(),
+					(v, collec, noclos, addr, canaccp, theadd) -> collec.stream().filter(noclos).map(s -> addr.add(v, s, canaccp, theadd)).reduce((a, b) -> (a && b)).get(),
+					(sz) -> sz.getStatus() != Statut.CLOSING && sz.getStatus() != Statut.REDUCTION, (vz, sr, predicate, consume) -> (predicate.test(vz, sr) && consume.accept(vz, sr)),
+					(vt, st) -> vt.canAccept(st), BoolBiConsumer.<Vps, Server> of((uv, ud) -> {
+						ud.setStatus(Statut.REDUCTION);
+						SPhantom.print("balk() [DEFRAGMENTATION SEQUENCING] | Reduction on " + ud.getLabel() + " |Actual Vps : " + ud.getVpsLabel());
+						PacketSender.getInstance().reduceServer(new PacketPhantomReduceServer(ud.getLabel(), uv.getLabel()));
+						Core.getInstance().deployServerOnVps(ud.getType(), uv, true);
+						return true;
+					}));
+		} catch (Exception e) {
+			Main.printStackTrace(e);
+		}
 	}
 
 	/**
@@ -155,8 +161,10 @@ public class Core implements Scheduled {
 	@Schedule(rate = 1, unit = TimeUnit.MINUTES)
 	public void repairMap() {
 		Arrays.stream(ServerType.values()).forEach(v -> {
-			int totplayers = serversByType.get(v).stream().filter(s -> (s.getStatus() == Statut.OPEN)).mapToInt(ss -> ss.countPlayers()).reduce((a, b) -> a + b).getAsInt();
-			if (totplayers != playersByType.get(v).size()) Core.this.remapPlayersByType();
+			if (!serversByType.get(v).isEmpty()) {
+				int totplayers = serversByType.get(v).stream().filter(s -> (s.getStatus() == Statut.OPEN)).mapToInt(ss -> ss.countPlayers()).reduce((a, b) -> a + b).getAsInt();
+				if (totplayers != playersByType.get(v).size()) Core.this.remapPlayersByType();
+			}
 		});
 	}
 
@@ -236,7 +244,7 @@ public class Core implements Scheduled {
 
 	@Schedule(rate = 45, unit = TimeUnit.SECONDS)
 	public void VpsCount() {
-		if (pro) return;
+		if (pro || SPhantom.getInstance().isLocal()) return;
 		pro = true;
 		this.deployedInstances = SPhantom.getInstance().getIphantom().countDeployedInstance();
 		if (SPhantom.logDiv()) SPhantom.print("Iphantom custom deployed instances = " + deployedInstances);

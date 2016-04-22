@@ -34,7 +34,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		writeInt(getMaxp());
 		writeString(this.ip);
 		writeMap(this.players, d -> writeString(d.name()), d -> writeCollection(d, e -> writeString(e.toString())));
-		writeCollection(this.keys, a -> writeString(a));
+		writeCollection(this.keys, this::writeString);
 		writeString(getState().name());
 		writeBoolean(isFromSymbiote());
 	}
@@ -47,7 +47,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		this.maxp = readInt();
 		this.ip = readString();
 		this.players = readMap(() -> Grades.valueOf(readString()), () -> readCollection(new HashSet<UUID>(), () -> UUID.fromString(readString())));
-		this.keys = readCollection(new HashSet<String>(), () -> readString());
+		this.keys = readCollection(new HashSet<String>(), this::readString);
 		this.state = Statut.valueOf(readString());
 		this.fromSymbiote = readBoolean();
 	}

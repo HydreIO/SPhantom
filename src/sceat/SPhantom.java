@@ -48,7 +48,7 @@ public class SPhantom {
 		this.local = local;
 		this.pinger = Executors.newSingleThreadExecutor();
 		this.peaceMaker = Executors.newSingleThreadExecutor();
-		this.executor = Executors.newFixedThreadPool(30);
+		this.executor = Executors.newFixedThreadPool(70);
 		this.config = new SPhantomConfig();
 		PacketPhantom.init();
 		new Manager();
@@ -154,8 +154,8 @@ public class SPhantom {
 					this.logprovider = !this.logprovider;
 					print("ServerProvider logger " + (this.logprovider ? "enabled" : "disabled") + " !");
 					break;
-				case "setmode 1": // olalala aucun parsing, pabo dutou !
-				case "setMode 1":
+				case "setmode1": // olalala aucun parsing, pabo dutou !
+				case "setMode1":
 					if (Core.getInstance().getMode() == OperatingMode.Eco) {
 						print("Eco mode already enabled !");
 						break;
@@ -163,8 +163,8 @@ public class SPhantom {
 					Core.getInstance().setMode(OperatingMode.Eco, false);
 					print("Eco mode enabled");
 					break;
-				case "setmode 2":
-				case "setMode 2":
+				case "setmode2":
+				case "setMode2":
 					if (Core.getInstance().getMode() == OperatingMode.Normal) {
 						print("Normal mode already enabled !");
 						break;
@@ -172,8 +172,8 @@ public class SPhantom {
 					Core.getInstance().setMode(OperatingMode.Normal, false);
 					print("Normal mode enabled");
 					break;
-				case "setmode 3":
-				case "setMode 3":
+				case "setmode3":
+				case "setMode3":
 					if (Core.getInstance().getMode() == OperatingMode.NoLag) {
 						print("NoLag mode already enabled !");
 						break;
