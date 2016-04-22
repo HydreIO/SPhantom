@@ -3,6 +3,7 @@ package sceat.domain.protocol.packets;
 import java.util.UUID;
 
 import sceat.domain.Manager;
+import sceat.domain.minecraft.Grades;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.utils.ServerLabel;
@@ -11,6 +12,7 @@ public class PacketPhantomPlayer extends PacketPhantom {
 
 	private UUID player;
 	private PlayerAction action;
+	private Grades grade;
 	private String serverLabel_last;
 	private String serverLabel_new;
 
@@ -20,6 +22,7 @@ public class PacketPhantomPlayer extends PacketPhantom {
 		writeString(this.action.name());
 		writeString(this.serverLabel_last);
 		writeString(this.serverLabel_new);
+		writeString(grade.name());
 	}
 
 	@Override
@@ -28,13 +31,19 @@ public class PacketPhantomPlayer extends PacketPhantom {
 		this.action = PlayerAction.valueOf(readString());
 		this.serverLabel_last = readString();
 		this.serverLabel_new = readString();
+		this.grade = Grades.valueOf(readString());
 	}
 
-	public PacketPhantomPlayer(UUID uid, PlayerAction action, String serverlabelLast, String serverLabelNew) {
+	public PacketPhantomPlayer(UUID uid, PlayerAction action, Grades gr, String serverlabelLast, String serverLabelNew) {
 		this.player = uid;
 		this.action = action;
+		this.grade = gr;
 		this.serverLabel_last = serverlabelLast;
 		this.serverLabel_new = serverLabelNew;
+	}
+
+	public Grades getGrade() {
+		return grade;
 	}
 
 	public ServerType getServerTypeLast() {

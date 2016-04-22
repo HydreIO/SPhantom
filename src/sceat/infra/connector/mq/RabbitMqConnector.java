@@ -49,6 +49,7 @@ public class RabbitMqConnector implements IMessaging {
 	public static enum messagesType {
 		Update_Server("exchange_server"),
 		Update_PlayerAction("exchange_playerAction"),
+		Update_PlayerGrade("exchange_playerGrade"),
 		HeartBeat("exchange_heartbeat"),
 		BootServer("exchange_symbiote_bootServer"),
 		Symbiote_Infos("exchange_symbiote"),

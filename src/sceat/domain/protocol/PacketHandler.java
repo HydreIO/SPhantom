@@ -20,6 +20,7 @@ import sceat.domain.network.server.Vps;
 import sceat.domain.protocol.packets.PacketPhantom.PacketNotRegistredException;
 import sceat.domain.protocol.packets.PacketPhantomBootServer;
 import sceat.domain.protocol.packets.PacketPhantomDestroyInstance;
+import sceat.domain.protocol.packets.PacketPhantomGradeUpdate;
 import sceat.domain.protocol.packets.PacketPhantomHeartBeat;
 import sceat.domain.protocol.packets.PacketPhantomPlayer;
 import sceat.domain.protocol.packets.PacketPhantomPlayer.PlayerAction;
@@ -152,25 +153,31 @@ public class PacketHandler {
 			case Update_PlayerAction:
 				PacketPhantomPlayer var3 = PacketPhantomPlayer.fromByteArray(array).deserialize();
 				if (var3.cameFromLocal()) return;
-				if (logPkt) SPhantom.print("<<<<]RECV] PacketPlayer [" + var3.getPlayer() + "|" + var3.getAction().name() + "|"
-						+ (var3.getAction() == PlayerAction.Grade_Update ? (var3.getGrade().name() + " to " + var3.getNewGrade().name()) : var3.getGrade().name()) + "]");
+				if (logPkt) SPhantom.print("<<<<]RECV] PacketPlayer [" + var3.getPlayer() + "|" + var3.getAction().name() + "|Last(" + var3.getServerLast() + ")|New(" + var3.getServerNew() + ")]");
 				if (var3.getAction() == PlayerAction.Connect) {
 					m.getPlayersOnNetwork().add(var3.getPlayer());
 					m.getPlayersPerGrade().get(var3.getGrade()).add(var3.getPlayer());
-					var3.getServer().getPlayersMap().get(var3.getGrade()).add(var3.getPlayer());
-					Core.getInstance().getPlayersByType().get(var3.getServerType()).add(var3.getPlayer());
-				} else if (var3.getAction() == PlayerAction.Grade_Update) {
-					m.getPlayersPerGrade().get(var3.getGrade()).removeIf(e -> e == var3.getPlayer());
-					m.getPlayersPerGrade().get(var3.getNewGrade()).add(var3.getPlayer());
-					var3.getServer().getPlayersMap().get(var3.getGrade()).removeIf(e -> e == var3.getPlayer());
-					var3.getServer().getPlayersMap().get(var3.getNewGrade()).add(var3.getPlayer());
+					var3.getServerNew().getPlayersMap().get(var3.getGrade()).add(var3.getPlayer());
+					Core.getInstance().getPlayersByType().get(var3.getServerTypeNew()).add(var3.getPlayer());
+				} else if (var3.getAction() == PlayerAction.Switch) {
+					var3.getServerLast().getPlayersMap().get(var3.getGrade()).removeIf(e -> e == var3.getPlayer());
+					var3.getServerNew().getPlayersMap().get(var3.getGrade()).add(var3.getPlayer());
 				} else {
 					m.getPlayersOnNetwork().removeIf(e -> e == var3.getPlayer());
 					m.getPlayersPerGrade().get(var3.getGrade()).removeIf(e -> e == var3.getPlayer());
-					var3.getServer().getPlayers().removeIf(e -> e == var3.getPlayer());
-					Core.getInstance().getPlayersByType().get(var3.getServerType()).removeIf(e -> e == var3.getPlayer());
+					var3.getServerLast().getPlayers().removeIf(e -> e == var3.getPlayer());
+					Core.getInstance().getPlayersByType().get(var3.getServerLast()).removeIf(e -> e == var3.getPlayer());
 				}
 				PacketSender.getInstance().sendPlayer(var3);
+				return;
+			case Update_PlayerGrade:
+				PacketPhantomGradeUpdate var6 = PacketPhantomGradeUpdate.fromByteArray(array).deserialize();
+				if (var6.cameFromLocal()) return;
+				if (logPkt) SPhantom.print("<<<<]RECV] PacketPlayerGrade [" + var6.getPlayer() + "|New(" + var6.getNew_().name() + ")|Last(" + var6.getLast().name() + ")]");
+				m.getPlayersPerGrade().get(var6.getLast()).removeIf(e -> e == var6.getPlayer());
+				m.getPlayersPerGrade().get(var6.getNew_()).add(var6.getPlayer());
+				var6.getServer().getPlayersMap().get(var6.getLast()).removeIf(e -> e == var6.getPlayer());
+				var6.getServer().getPlayersMap().get(var6.getNew_()).add(var6.getPlayer());
 				return;
 			default:
 				return;
