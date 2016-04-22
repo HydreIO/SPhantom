@@ -28,7 +28,7 @@ public class VultrConnector implements Iphantom {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				vp.unregister();
+				vp.unregister(); 
 			});
 		}
 	}

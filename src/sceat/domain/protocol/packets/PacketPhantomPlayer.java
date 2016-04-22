@@ -3,7 +3,6 @@ package sceat.domain.protocol.packets;
 import java.util.UUID;
 
 import sceat.domain.Manager;
-import sceat.domain.minecraft.Grades;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.utils.ServerLabel;
@@ -11,52 +10,41 @@ import sceat.domain.utils.ServerLabel;
 public class PacketPhantomPlayer extends PacketPhantom {
 
 	private UUID player;
-	private Grades grade;
-	private Grades newGrade;
 	private PlayerAction action;
-	private String serverLabel;
+	private String serverLabel_last;
+	private String serverLabel_new;
 
 	@Override
 	protected void serialize_() {
 		writeString(this.player.toString());
-		writeInt(this.grade.getValue());
-		writeInt(this.newGrade.getValue());
 		writeString(this.action.name());
-		writeString(this.serverLabel);
+		writeString(this.serverLabel_last);
+		writeString(this.serverLabel_new);
 	}
 
 	@Override
 	protected void deserialize_() {
 		this.player = UUID.fromString(readString());
-		this.grade = Grades.fromValue(readInt(), true);
-		this.newGrade = Grades.fromValue(readInt(), true);
 		this.action = PlayerAction.valueOf(readString());
-		this.serverLabel = readString();
+		this.serverLabel_last = readString();
+		this.serverLabel_new = readString();
 	}
 
-	public PacketPhantomPlayer(UUID uid, Grades grade, PlayerAction action, String serverLabel) {
+	public PacketPhantomPlayer(UUID uid, PlayerAction action, String serverlabelLast, String serverLabelNew) {
 		this.player = uid;
-		this.grade = grade;
 		this.action = action;
-		this.newGrade = null;
-		this.serverLabel = serverLabel;
+		this.serverLabel_last = serverlabelLast;
+		this.serverLabel_new = serverLabelNew;
 	}
 
-	public PacketPhantomPlayer(UUID uid, Grades lastGrade, Grades newGrade, String serverlabel) {
-		this.player = uid;
-		this.grade = lastGrade;
-		this.action = PlayerAction.Grade_Update;
-		this.newGrade = newGrade;
-		this.serverLabel = serverlabel;
+	public ServerType getServerTypeLast() {
+		if (getAction() == PlayerAction.Connect) throw new NullPointerException("Impossible de récuperer le type de serveurLast car le joueur vient de se connecter sur le network !");
+		return ServerLabel.getTypeWithLabel(this.serverLabel_last);
 	}
 
-	public Grades getNewGrade() {
-		return newGrade;
-	}
-
-	public ServerType getServerType() {
-		if (getAction() == PlayerAction.Disconnect) throw new NullPointerException("Impossible de récuperer le type de serveur car le joueur vient de se déconnecter !");
-		return ServerLabel.getTypeWithLabel(this.serverLabel);
+	public ServerType getServerTypeNew() {
+		if (getAction() == PlayerAction.Disconnect) throw new NullPointerException("Impossible de récuperer le type de serveurNew car le joueur vient de se déconnecter du network !");
+		return ServerLabel.getTypeWithLabel(this.serverLabel_new);
 	}
 
 	/**
@@ -64,17 +52,18 @@ public class PacketPhantomPlayer extends PacketPhantom {
 	 * 
 	 * @return le serveur via le manager grace au label
 	 */
-	public Server getServer() {
-		if (getAction() == PlayerAction.Disconnect) throw new NullPointerException("Impossible de récuperer le serveur car le joueur vient de se déconnecter !");
-		return Manager.getInstance().getServersByLabel().get(this.serverLabel);
+	public Server getServerLast() {
+		if (getAction() == PlayerAction.Connect) throw new NullPointerException("Impossible de récuperer le serveurLast car le joueur vient de se connecter sur le network !");
+		return Manager.getInstance().getServersByLabel().get(this.serverLabel_last);
+	}
+
+	public Server getServerNew() {
+		if (getAction() == PlayerAction.Disconnect) throw new NullPointerException("Impossible de récuperer le serveurNew car le joueur vient de se déconnecter du network !");
+		return Manager.getInstance().getServersByLabel().get(this.serverLabel_new);
 	}
 
 	public UUID getPlayer() {
 		return player;
-	}
-
-	public Grades getGrade() {
-		return grade;
 	}
 
 	public PlayerAction getAction() {
@@ -83,8 +72,8 @@ public class PacketPhantomPlayer extends PacketPhantom {
 
 	public static enum PlayerAction {
 		Connect,
+		Switch,
 		Disconnect,
-		Grade_Update
 	}
 
 }
