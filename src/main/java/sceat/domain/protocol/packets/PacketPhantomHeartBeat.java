@@ -2,7 +2,7 @@ package sceat.domain.protocol.packets;
 
 import sceat.SPhantom;
 import sceat.domain.Heart;
-import sceat.infra.connector.mq.RabbitMqConnector.MessagesType;
+import sceat.domain.protocol.MessagesType;
 
 public class PacketPhantomHeartBeat extends PacketPhantom {
 

@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import sceat.Main;
 import sceat.domain.protocol.DestinationKey;
+import sceat.domain.protocol.MessagesType;
 import sceat.domain.protocol.handler.PacketHandler;
 
 import com.rabbitmq.client.AMQP;
@@ -26,8 +27,7 @@ public class RabbitMqReceiver {
 		connector = RabbitMqConnector.getInstance();
 		try {
 			qname = getChannel().queueDeclare().getQueue();
-			if (RabbitMqConnector.routingEnabled)
-				bind();
+			if (RabbitMqConnector.routingEnabled) bind();
 			startReceiver();
 		} catch (IOException e) {
 			Main.printStackTrace(e);
@@ -50,7 +50,7 @@ public class RabbitMqReceiver {
 	 * @param key
 	 *            la destination
 	 */
-	private void bind(RabbitMqConnector.MessagesType msg) {
+	private void bind(MessagesType msg) {
 		bind(DestinationKey.ALL_SPHANTOM, msg.getName());
 		bind(DestinationKey.SPHANTOM, msg.getName());
 		bind(DestinationKey.HUBS_PROXY_SPHANTOM_SYMBIOTE, msg.getName());
@@ -69,7 +69,7 @@ public class RabbitMqReceiver {
 	 * On s'occupe de bind les message en fonction du serveur actuel
 	 */
 	private void bind() {
-		Arrays.stream(RabbitMqConnector.MessagesType.values()).forEach(this::bind);
+		Arrays.stream(MessagesType.values()).forEach(this::bind);
 	}
 
 	/**
@@ -81,7 +81,7 @@ public class RabbitMqReceiver {
 		getChannel().basicConsume(qname, true, new DefaultConsumer(getChannel()) {
 			@Override
 			public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-				RabbitMqConnector.MessagesType messageType = RabbitMqConnector.MessagesType.fromString(envelope.getExchange(), true);
+				MessagesType messageType = MessagesType.fromString(envelope.getExchange(), true);
 				PacketHandler.getInstance().handle(messageType, body);
 			}
 		});

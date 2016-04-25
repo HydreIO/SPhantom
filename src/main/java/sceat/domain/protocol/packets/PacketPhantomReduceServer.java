@@ -3,7 +3,7 @@ package sceat.domain.protocol.packets;
 import sceat.SPhantom;
 import sceat.domain.Manager;
 import sceat.domain.minecraft.Statut;
-import sceat.infra.connector.mq.RabbitMqConnector.MessagesType;
+import sceat.domain.protocol.MessagesType;
 
 public class PacketPhantomReduceServer extends PacketPhantom {
 

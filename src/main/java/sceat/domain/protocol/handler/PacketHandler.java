@@ -7,8 +7,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import sceat.Main;
+import sceat.domain.protocol.MessagesType;
 import sceat.domain.protocol.packets.PacketPhantom;
-import sceat.infra.connector.mq.RabbitMqConnector;
 
 /**
  * Le PacketSender peut se mettre en pause en cas de prise du lead par un autre replica,
@@ -20,17 +20,17 @@ import sceat.infra.connector.mq.RabbitMqConnector;
  */
 public class PacketHandler {
 
-	private class RawPacket{
-		private RabbitMqConnector.MessagesType type;
+	private class RawPacket {
+		private MessagesType type;
 		private byte[] data;
 
-		public RawPacket(RabbitMqConnector.MessagesType type, byte[] data) {
+		public RawPacket(MessagesType type, byte[] data) {
 			this.type = type;
 			this.data = data;
 		}
 	}
 
-	private class PacketDeserializer implements Runnable{
+	private class PacketDeserializer implements Runnable {
 		private RawPacket rawPacket;
 
 		@SuppressWarnings("unused")
@@ -50,11 +50,11 @@ public class PacketHandler {
 				Main.printStackTrace(e);
 			}
 			rawPackets.remove(rawPacket);
-			if(rawPackets.isEmpty())
-				watchDog.notifyEnd();
+			if (rawPackets.isEmpty()) watchDog.notifyEnd();
 
 		}
 	}
+
 	private static PacketHandler instance;
 
 	private List<RawPacket> rawPackets;
@@ -84,22 +84,21 @@ public class PacketHandler {
 	 * @param msg
 	 */
 
-	public void handle(RabbitMqConnector.MessagesType type, byte[] msg) {
-		RawPacket packet = new RawPacket(type , msg);
+	public void handle(MessagesType type, byte[] msg) {
+		RawPacket packet = new RawPacket(type, msg);
 		rawPackets.add(packet);
 		pool.execute(new PacketDeserializer(packet));
 		watchDog.notifyStart();
 	}
 
 	public void reorganisePackets() {
-		pool.shutdownNow();//Ignore runnables
-		pool = Executors.newFixedThreadPool(10);//Recreate
-		//Remove Packet can be dropped
+		pool.shutdownNow();// Ignore runnables
+		pool = Executors.newFixedThreadPool(10);// Recreate
+		// Remove Packet can be dropped
 		Iterator<RawPacket> packets = rawPackets.iterator();
 		while (packets.hasNext())
-			if(packets.next().type.canBeDropped())
-				packets.remove();
-		rawPackets.sort((i1 , i2) -> Integer.compare(i1.type.getPriority() , i2.type.getPriority()));
+			if (packets.next().type.canBeDropped()) packets.remove();
+		rawPackets.sort((i1, i2) -> Integer.compare(i1.type.getPriority(), i2.type.getPriority()));
 		rawPackets.forEach(e -> pool.execute(new PacketDeserializer(e)));
 	}
 }

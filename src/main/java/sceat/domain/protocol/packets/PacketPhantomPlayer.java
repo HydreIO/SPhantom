@@ -8,9 +8,9 @@ import sceat.domain.minecraft.Grades;
 import sceat.domain.network.Core;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Server.ServerType;
+import sceat.domain.protocol.MessagesType;
 import sceat.domain.protocol.PacketSender;
 import sceat.domain.utils.ServerLabel;
-import sceat.infra.connector.mq.RabbitMqConnector.MessagesType;
 
 public class PacketPhantomPlayer extends PacketPhantom {
 
@@ -82,12 +82,12 @@ public class PacketPhantomPlayer extends PacketPhantom {
 	}
 
 	public ServerType getServerTypeLast() {
-		if (getAction() == PlayerAction.CONNECT) throw new NullPointerException("Impossible de récuperer le type de serveurLast car le joueur vient de se connecter sur le network !");
+		if (getAction() == PlayerAction.CONNECT) throw new NullPointerException("Impossible de rï¿½cuperer le type de serveurLast car le joueur vient de se connecter sur le network !");
 		return ServerLabel.getTypeWithLabel(this.serverLabelLast);
 	}
 
 	public ServerType getServerTypeNew() {
-		if (getAction() == PlayerAction.DISCONNECT) throw new NullPointerException("Impossible de récuperer le type de serveurNew car le joueur vient de se déconnecter du network !");
+		if (getAction() == PlayerAction.DISCONNECT) throw new NullPointerException("Impossible de rï¿½cuperer le type de serveurNew car le joueur vient de se dï¿½connecter du network !");
 		return ServerLabel.getTypeWithLabel(this.serverLabelNew);
 	}
 
@@ -97,12 +97,12 @@ public class PacketPhantomPlayer extends PacketPhantom {
 	 * @return le serveur via le manager grace au label
 	 */
 	public Server getServerLast() {
-		if (getAction() == PlayerAction.CONNECT) throw new NullPointerException("Impossible de récuperer le serveurLast car le joueur vient de se connecter sur le network !");
+		if (getAction() == PlayerAction.CONNECT) throw new NullPointerException("Impossible de rï¿½cuperer le serveurLast car le joueur vient de se connecter sur le network !");
 		return Manager.getInstance().getServersByLabel().get(this.serverLabelLast);
 	}
 
 	public Server getServerNew() {
-		if (getAction() == PlayerAction.DISCONNECT) throw new NullPointerException("Impossible de récuperer le serveurNew car le joueur vient de se déconnecter du network !");
+		if (getAction() == PlayerAction.DISCONNECT) throw new NullPointerException("Impossible de rï¿½cuperer le serveurNew car le joueur vient de se dï¿½connecter du network !");
 		return Manager.getInstance().getServersByLabel().get(this.serverLabelNew);
 	}
 

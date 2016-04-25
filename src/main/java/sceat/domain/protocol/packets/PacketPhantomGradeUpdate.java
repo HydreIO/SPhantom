@@ -6,7 +6,7 @@ import sceat.SPhantom;
 import sceat.domain.Manager;
 import sceat.domain.minecraft.Grades;
 import sceat.domain.network.server.Server;
-import sceat.infra.connector.mq.RabbitMqConnector.MessagesType;
+import sceat.domain.protocol.MessagesType;
 
 public class PacketPhantomGradeUpdate extends PacketPhantom {
 	private UUID player;

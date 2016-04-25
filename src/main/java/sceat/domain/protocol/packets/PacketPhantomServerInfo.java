@@ -17,8 +17,8 @@ import sceat.domain.network.Core;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.network.server.Vps;
+import sceat.domain.protocol.MessagesType;
 import sceat.domain.protocol.PacketSender;
-import sceat.infra.connector.mq.RabbitMqConnector.MessagesType;
 
 public class PacketPhantomServerInfo extends PacketPhantom {
 
@@ -96,7 +96,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 			if (ss.contains(srv)) ss.remove(srv);
 			m.getServersByLabel().remove(getLabel());
 			if (curr == null) {
-				// vps not found osef car tt façon on le vire
+				// vps not found osef car tt faï¿½on on le vire
 				SPhantom.print("PacketPhantomServerInfo : State Closing | the server " + getLabel() + " is registered but not in a Vps object | Info ! break");
 				return;
 			}

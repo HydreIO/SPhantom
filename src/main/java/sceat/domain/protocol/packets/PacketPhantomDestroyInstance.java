@@ -6,7 +6,7 @@ import java.util.Set;
 import sceat.SPhantom;
 import sceat.domain.network.Core;
 import sceat.domain.network.ServerProvider;
-import sceat.infra.connector.mq.RabbitMqConnector.MessagesType;
+import sceat.domain.protocol.MessagesType;
 
 public class PacketPhantomDestroyInstance extends PacketPhantom {
 

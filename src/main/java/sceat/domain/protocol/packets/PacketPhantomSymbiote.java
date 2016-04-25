@@ -11,7 +11,7 @@ import sceat.domain.network.Core;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Vps;
 import sceat.domain.network.server.Vps.VpsState;
-import sceat.infra.connector.mq.RabbitMqConnector.MessagesType;
+import sceat.domain.protocol.MessagesType;
 
 public class PacketPhantomSymbiote extends PacketPhantom {
 	private String vpsLabel;

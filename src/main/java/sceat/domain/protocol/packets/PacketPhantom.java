@@ -11,8 +11,8 @@ import java.util.Map;
 
 import sceat.Main;
 import sceat.SPhantom;
+import sceat.domain.protocol.MessagesType;
 import sceat.domain.protocol.Security;
-import sceat.infra.connector.mq.RabbitMqConnector.MessagesType;
 
 public abstract class PacketPhantom {
 

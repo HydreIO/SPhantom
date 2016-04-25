@@ -9,7 +9,7 @@ import sceat.SPhantom;
 import sceat.domain.minecraft.Statut;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Server.ServerType;
-import sceat.infra.connector.mq.RabbitMqConnector.MessagesType;
+import sceat.domain.protocol.MessagesType;
 
 public class PacketPhantomBootServer extends PacketPhantom {
 
