@@ -8,7 +8,12 @@ import sceat.Main;
 import sceat.SPhantom;
 import sceat.domain.adapter.mq.IMessaging;
 import sceat.domain.protocol.DestinationKey;
-import sceat.domain.protocol.packets.*;
+import sceat.domain.protocol.packets.PacketPhantomBootServer;
+import sceat.domain.protocol.packets.PacketPhantomDestroyInstance;
+import sceat.domain.protocol.packets.PacketPhantomHeartBeat;
+import sceat.domain.protocol.packets.PacketPhantomPlayer;
+import sceat.domain.protocol.packets.PacketPhantomReduceServer;
+import sceat.domain.protocol.packets.PacketPhantomServerInfo;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -42,21 +47,21 @@ public class RabbitMqConnector implements IMessaging {
 	 * @author MrSceat
 	 */
 	public enum MessagesType {
-		UPDATE_SERVER("exchange_server" , false , 1),
-		UPDATE_PLAYER_ACTION("exchange_playerAction", false, 1),
-		UPDATE_PLAYER_GRADE("exchange_playerGrade", false, 1),
+		UPDATE_SERVER("exchange_server", true, 9),
+		UPDATE_PLAYER_ACTION("exchange_playerAction", false, 3),
+		UPDATE_PLAYER_GRADE("exchange_playerGrade", false, 8),
 		HEART_BEAT("exchange_heartbeat", false, 1),
-		BOOT_SERVER("exchange_symbiote_bootServer", false , 1),
-		SYMBIOTE_INFOS("exchange_symbiote", false, 1),
-		REDUCE_SERVER("exchange_reduceServer", false, 1),
-		DESTROY_INSTANCE("exchange_destroyVps", false, 1),
-		TAKE_LEAD("exchange_takelead", false, 1);
+		BOOT_SERVER("exchange_symbiote_bootServer", false, 6),
+		SYMBIOTE_INFOS("exchange_symbiote", false, 4),
+		REDUCE_SERVER("exchange_reduceServer", false, 7),
+		DESTROY_INSTANCE("exchange_destroyVps", false, 5),
+		TAKE_LEAD("exchange_takelead", false, 2);
 
 		private final boolean canBeDropped;
 		private String exchangeName;
 		private int priority;
 
-		MessagesType(String name , boolean canBeDropped , int priority) {
+		MessagesType(String name, boolean canBeDropped, int priority) {
 			this.exchangeName = name;
 			this.canBeDropped = canBeDropped;
 			this.priority = priority;
@@ -72,10 +77,8 @@ public class RabbitMqConnector implements IMessaging {
 
 		public static MessagesType fromString(String exchangeN, boolean notNull) {
 			for (MessagesType e : values())
-				if (e.getName().equals(exchangeN))
-					return e;
-			if (notNull)
-				throw new NullPointerException("Aucun type de message n'a pour valeur " + exchangeN);
+				if (e.getName().equals(exchangeN)) return e;
+			if (notNull) throw new NullPointerException("Aucun type de message n'a pour valeur " + exchangeN);
 			return null;
 		}
 
@@ -173,7 +176,7 @@ public class RabbitMqConnector implements IMessaging {
 	 */
 	public void basicPublich(MessagesType msg, String key, byte[] array) {
 		try {
-			getChannel().basicPublish(msg.getName() , routingEnabled ? key : "", null, array);
+			getChannel().basicPublish(msg.getName(), routingEnabled ? key : "", null, array);
 		} catch (IOException e) {
 			Main.printStackTrace(e);
 		}
