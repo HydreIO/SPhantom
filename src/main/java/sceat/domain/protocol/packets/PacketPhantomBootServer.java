@@ -3,15 +3,13 @@ package sceat.domain.protocol.packets;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
-import java.util.Set;
-import java.util.UUID;
 
 import sceat.Main;
 import sceat.SPhantom;
-import sceat.domain.minecraft.Grades;
 import sceat.domain.minecraft.Statut;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Server.ServerType;
+import sceat.infra.connector.mq.RabbitMqConnector.MessagesType;
 
 public class PacketPhantomBootServer extends PacketPhantom {
 
@@ -32,7 +30,7 @@ public class PacketPhantomBootServer extends PacketPhantom {
 	}
 
 	public PacketPhantomBootServer() {
-		//For deserialization
+		// For deserialization
 	}
 
 	@Override
@@ -60,9 +58,10 @@ public class PacketPhantomBootServer extends PacketPhantom {
 	}
 
 	@Override
-	public void handleData() {
-		Server.fromPacket(new PacketPhantomServerInfo(Statut.CREATING, label, vpsLabel,
-				ip, type, maxP, new HashMap<>(), type.getKeysAsSet(), false), false);
+	public void handleData(MessagesType te) {
+		if (cameFromLocal()) return;
+		if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketBootServer [" + getLabel() + "|MaxP(" + getMaxP() + ")|Ram(" + getRam() + ")]");
+		Server.fromPacket(new PacketPhantomServerInfo(Statut.CREATING, label, vpsLabel, ip, type, maxP, new HashMap<>(), type.getKeysAsSet(), false), false);
 	}
 
 	public InetAddress getIp() {

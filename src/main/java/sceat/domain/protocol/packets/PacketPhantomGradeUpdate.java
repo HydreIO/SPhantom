@@ -2,9 +2,11 @@ package sceat.domain.protocol.packets;
 
 import java.util.UUID;
 
+import sceat.SPhantom;
 import sceat.domain.Manager;
 import sceat.domain.minecraft.Grades;
 import sceat.domain.network.server.Server;
+import sceat.infra.connector.mq.RabbitMqConnector.MessagesType;
 
 public class PacketPhantomGradeUpdate extends PacketPhantom {
 	private UUID player;
@@ -12,7 +14,8 @@ public class PacketPhantomGradeUpdate extends PacketPhantom {
 	private Grades newGrade;
 	private String server;
 
-	public PacketPhantomGradeUpdate() {}
+	public PacketPhantomGradeUpdate() {
+	}
 
 	public PacketPhantomGradeUpdate(UUID player, String srv, Grades last, Grades neww) {
 		this.player = player;
@@ -38,9 +41,10 @@ public class PacketPhantomGradeUpdate extends PacketPhantom {
 	}
 
 	@Override
-	public void handleData() {
-		Manager.getInstance().getPlayersPerGrade().get(lastGrade)
-				.removeIf(e -> e.equals(player));
+	public void handleData(MessagesType tp) {
+		if (cameFromLocal()) return;
+		if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketPlayerGrade [" + getPlayer() + "|New(" + getNewGrade().name() + ")|Last(" + getLastGrade().name() + ")]");
+		Manager.getInstance().getPlayersPerGrade().get(lastGrade).removeIf(e -> e.equals(player));
 		Manager.getInstance().getPlayersPerGrade().get(newGrade).add(player);
 		getServer().getPlayersMap().get(lastGrade).removeIf(e -> e.equals(player));
 		getServer().getPlayersMap().get(newGrade).add(player);

@@ -18,6 +18,7 @@ import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.network.server.Vps;
 import sceat.domain.protocol.PacketSender;
+import sceat.infra.connector.mq.RabbitMqConnector.MessagesType;
 
 public class PacketPhantomServerInfo extends PacketPhantom {
 
@@ -72,18 +73,18 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 	}
 
 	@Override
-	public void handleData() {
-		if (cameFromLocal())
-			return;
-		if (state == Statut.CLOSING) {
+	public void handleData(MessagesType tp) {
+		if (cameFromLocal()) return;
+		if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketUpdateServer [" + getLabel() + "|" + getState().name() + "|players(" + getPlayers().size() + ")]");
+		Manager m = Manager.getInstance();
+		if (getState() == Statut.CLOSING) {
 			Server srv = Server.fromPacket(this, true);
 			Vps curr = null;
 			if (srv == null) {
-				SPhantom.print("PacketPhantomServerInfo : State Closing | the server " + label + " is not registered | Ignoring ! break");
+				SPhantom.print("PacketPhantomServerInfo : State Closing | the server " + getLabel() + " is not registered | Ignoring (cause closing) ! break");
 				return;
-			} else if (vpsLabel== null) {
-				bite:
-				for (Vps vps : Core.getInstance().getVps().values()) {
+			} else if (getVpsLabel() == null) {
+				bite: for (Vps vps : Core.getInstance().getVps().values()) {
 					for (Server s : vps.getServers())
 						if (s.getLabel().equalsIgnoreCase(getLabel())) {
 							curr = vps;
@@ -91,12 +92,12 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 						}
 				}
 			} else curr = srv.getVps();
-			Set<Server> ss = Core.getInstance().getServersByType().get(type);
+			Set<Server> ss = Core.getInstance().getServersByType().get(getType());
 			if (ss.contains(srv)) ss.remove(srv);
-			Manager.getInstance().getServersByLabel().remove(label);
+			m.getServersByLabel().remove(getLabel());
 			if (curr == null) {
-				// vps not found osef car tt fa?on on le vire
-				SPhantom.print("PacketPhantomServerInfo : State Closing | the server " + label + " is registered but not in a Vps object | Info ! break");
+				// vps not found osef car tt façon on le vire
+				SPhantom.print("PacketPhantomServerInfo : State Closing | the server " + getLabel() + " is registered but not in a Vps object | Info ! break");
 				return;
 			}
 			if (curr.getServers().contains(srv)) curr.getServers().remove(srv);
@@ -105,12 +106,12 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		}
 		Server srvf = Server.fromPacket(this, false);
 		srvf.heartBeat();
-		Manager.getInstance().getServersByLabel().put(label, srvf);
-		Core.getInstance().getServersByType().get(type).add(srvf);
-		Set<UUID> ps = getPlayers();
-		Manager.getInstance().getPlayersOnNetwork().addAll(ps);
-		Manager.getInstance().getPlayersPerGrade().entrySet().forEach(e -> e.getValue().addAll(getPlayersPerGrade().get(e.getKey())));
-		Core.getInstance().getPlayersByType().get(type).addAll(ps);
+		m.getServersByLabel().put(getLabel(), srvf);
+		Core.getInstance().getServersByType().get(getType()).add(srvf);
+		Set<UUID> players = getPlayers();
+		m.getPlayersOnNetwork().addAll(players);
+		m.getPlayersPerGrade().entrySet().forEach(e -> e.getValue().addAll(getPlayersPerGrade().get(e.getKey())));
+		Core.getInstance().getPlayersByType().get(getType()).addAll(players);
 		PacketSender.getInstance().sendServer(PacketPhantomServerInfo.fromServer(srvf));
 	}
 

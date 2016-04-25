@@ -12,6 +12,7 @@ import java.util.Map;
 import sceat.Main;
 import sceat.SPhantom;
 import sceat.domain.protocol.Security;
+import sceat.infra.connector.mq.RabbitMqConnector.MessagesType;
 
 public abstract class PacketPhantom {
 
@@ -36,8 +37,7 @@ public abstract class PacketPhantom {
 	private Security secu;
 
 	private static void registerPacket(byte id, Class<? extends PacketPhantom> packet) throws PacketIdAlrealyUsedException {
-		if (packets.containsKey(id))
-			throw new PacketIdAlrealyUsedException(id, packets.get(id));
+		if (packets.containsKey(id)) throw new PacketIdAlrealyUsedException(id, packets.get(id));
 		packets.put(id, packet);
 		SPhantom.print(packet.getCanonicalName() + "[" + id + "] Registered");
 	}
@@ -107,8 +107,7 @@ public abstract class PacketPhantom {
 
 	public static Byte getPacketId(Class<? extends PacketPhantom> packet) {
 		for (Map.Entry<Byte, Class<? extends PacketPhantom>> entry : packets.entrySet()) {
-			if (entry.getValue().equals(packet))
-				return entry.getKey();
+			if (entry.getValue().equals(packet)) return entry.getKey();
 		}
 		return null;
 	}
@@ -196,8 +195,10 @@ public abstract class PacketPhantom {
 
 	/**
 	 * Method called after deserialization
+	 * 
+	 * @param type
 	 */
-	public abstract void handleData();
+	public abstract void handleData(MessagesType type);
 
 	// ////////////////////////////////////////
 	// Read //

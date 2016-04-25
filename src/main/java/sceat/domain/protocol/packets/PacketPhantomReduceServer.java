@@ -1,7 +1,9 @@
 package sceat.domain.protocol.packets;
 
+import sceat.SPhantom;
 import sceat.domain.Manager;
 import sceat.domain.minecraft.Statut;
+import sceat.infra.connector.mq.RabbitMqConnector.MessagesType;
 
 public class PacketPhantomReduceServer extends PacketPhantom {
 
@@ -29,7 +31,9 @@ public class PacketPhantomReduceServer extends PacketPhantom {
 	}
 
 	@Override
-	public void handleData() {
+	public void handleData(MessagesType type) {
+		if (cameFromLocal()) return;
+		if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketReduceServer [Srv: " + getLabel() + "|Vps: " + getVpsLabel() + "]");
 		Manager.getInstance().getServersByLabel().get(label).setStatus(Statut.REDUCTION);
 	}
 

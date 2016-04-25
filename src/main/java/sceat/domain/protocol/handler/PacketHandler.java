@@ -33,6 +33,7 @@ public class PacketHandler {
 	private class PacketDeserializer implements Runnable{
 		private RawPacket rawPacket;
 
+		@SuppressWarnings("unused")
 		public PacketDeserializer(RawPacket rawPacket, PacketWatchDog watchDog) {
 			this.rawPacket = rawPacket;
 		}
@@ -44,7 +45,7 @@ public class PacketHandler {
 		@Override
 		public void run() {
 			try {
-				PacketPhantom.fromByteArray(rawPacket.data).handleData();
+				PacketPhantom.fromByteArray(rawPacket.data).handleData(rawPacket.type);
 			} catch (Exception e) {
 				Main.printStackTrace(e);
 			}

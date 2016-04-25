@@ -6,10 +6,12 @@ import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import sceat.Main;
+import sceat.SPhantom;
 import sceat.domain.network.Core;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Vps;
 import sceat.domain.network.server.Vps.VpsState;
+import sceat.infra.connector.mq.RabbitMqConnector.MessagesType;
 
 public class PacketPhantomSymbiote extends PacketPhantom {
 	private String vpsLabel;
@@ -24,7 +26,8 @@ public class PacketPhantomSymbiote extends PacketPhantom {
 		this.ram = ram;
 	}
 
-	public PacketPhantomSymbiote() {}
+	public PacketPhantomSymbiote() {
+	}
 
 	@Override
 	protected void serialize_() {
@@ -47,12 +50,11 @@ public class PacketPhantomSymbiote extends PacketPhantom {
 	}
 
 	@Override
-	public void handleData() {
-		ConcurrentHashMap<String, Vps> map = Core.getInstance().getVps();
-		if (map.containsKey(vpsLabel))
-			map.get(vpsLabel).setState(state);
-		else
-			new Vps(vpsLabel, ram, ip, new HashSet<>()).register();
+	public void handleData(MessagesType type) {
+		if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketSymbiote [" + getVpsLabel() + "|" + getState() + "|" + getIp().getHostAddress() + "|Ram(" + getRam() + ")]");
+		ConcurrentHashMap<String, Vps> varmap = Core.getInstance().getVps();
+		if (varmap.containsKey(getVpsLabel())) varmap.get(getVpsLabel()).setState(getState());
+		else new Vps(getVpsLabel(), getRam(), getIp(), new HashSet<Server>()).register();
 	}
 
 	public String getVpsLabel() {

@@ -1,13 +1,12 @@
 package sceat.domain.protocol.packets;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import sceat.SPhantom;
 import sceat.domain.network.Core;
 import sceat.domain.network.ServerProvider;
-import sceat.domain.network.server.Server;
-import sceat.domain.network.server.Vps;
-
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import sceat.infra.connector.mq.RabbitMqConnector.MessagesType;
 
 public class PacketPhantomDestroyInstance extends PacketPhantom {
 
@@ -17,7 +16,8 @@ public class PacketPhantomDestroyInstance extends PacketPhantom {
 		this.labels = label;
 	}
 
-	public PacketPhantomDestroyInstance() {}
+	public PacketPhantomDestroyInstance() {
+	}
 
 	@Override
 	protected void serialize_() {
@@ -30,13 +30,14 @@ public class PacketPhantomDestroyInstance extends PacketPhantom {
 	}
 
 	@Override
-	public void handleData() {
+	public void handleData(MessagesType tp) {
+		if (cameFromLocal()) return;
+		if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketDestroyInstance [" + getLabels().stream().reduce((a, b) -> a + " " + b) + "]");
 		labels.forEach(s -> {
 			Core.getInstance().getVps().remove(s);
 			ServerProvider.getInstance().getOrdered().entrySet().stream().filter(e -> e.getValue().getLabel().equals(s)).forEach(e -> ServerProvider.getInstance().getOrdered().put(e.getKey(), null));
 		});
 	}
-
 
 	public Set<String> getLabels() {
 		return labels;

@@ -1,6 +1,8 @@
 package sceat.domain.protocol.packets;
 
+import sceat.SPhantom;
 import sceat.domain.Heart;
+import sceat.infra.connector.mq.RabbitMqConnector.MessagesType;
 
 public class PacketPhantomHeartBeat extends PacketPhantom {
 
@@ -24,8 +26,14 @@ public class PacketPhantomHeartBeat extends PacketPhantom {
 	}
 
 	@Override
-	public void handleData() {
-		Heart.getInstance().transfuse(this);
+	public void handleData(MessagesType tp) {
+		if (tp == MessagesType.HEART_BEAT) {
+			if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketHeartBeat [Last " + new java.sql.Timestamp(getLastHandShake()).toString().substring(0, 16) + "]");
+			Heart.getInstance().transfuse(this);
+		} else if (tp == MessagesType.TAKE_LEAD) { // inutile mais en cas ou je rajoute un autre type pour ce pkt
+			if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketTakeLead []");
+			Heart.getInstance().transfuse(this);
+		}
 	}
 
 	public PacketPhantomHeartBeat handshake() {
