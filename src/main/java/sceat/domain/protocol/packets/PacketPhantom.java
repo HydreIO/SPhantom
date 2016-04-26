@@ -32,7 +32,7 @@ public abstract class PacketPhantom {
 		}
 	}
 
-	public static final int MAX_PACKET_SIZE = 512;
+	public static final int MAX_PACKET_SIZE = 1024;
 
 	private static final HashMap<Byte, Class<? extends PacketPhantom>> packets = new HashMap<>();
 	private Security secu;

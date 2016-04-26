@@ -31,6 +31,7 @@ public class PacketPhantomHeartBeat extends PacketPhantom {
 			if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketHeartBeat [Last " + new java.sql.Timestamp(getLastHandShake()).toString().substring(0, 16) + "]");
 			Heart.getInstance().transfuse(this);
 		} else if (tp == MessagesType.TAKE_LEAD) { // inutile mais en cas ou je rajoute un autre type pour ce pkt
+			if (cameFromLocal()) return;
 			if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketTakeLead []");
 			Heart.getInstance().transplant(this);
 		}
@@ -42,7 +43,7 @@ public class PacketPhantomHeartBeat extends PacketPhantom {
 	}
 
 	public boolean isDead() {
-		return System.currentTimeMillis() > getLastHandShake() + 5000;
+		return System.currentTimeMillis() > getLastHandShake() + 15000;
 	}
 
 	public long getLastHandShake() {

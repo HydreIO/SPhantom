@@ -3,6 +3,7 @@ package sceat.domain;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
+import sceat.Main;
 import sceat.SPhantom;
 import sceat.domain.protocol.PacketSender;
 import sceat.domain.protocol.packets.PacketPhantomHeartBeat;
@@ -56,7 +57,6 @@ public class Heart implements Scheduled {
 	 * @param json
 	 */
 	public void transplant(PacketPhantomHeartBeat pkt) {
-		if (pkt.cameFromLocal()) return;
 		SPhantom.print("Another instance has taken the lead ! SPhantom is going to sleep");
 		SPhantom.getInstance().setLead(false);
 		getReplicas().addLast(pkt);
@@ -76,7 +76,7 @@ public class Heart implements Scheduled {
 	}
 
 	private void handShake(PacketPhantomHeartBeat bt) {
-		bt.handshake();
+		bt = new PacketPhantomHeartBeat();
 	}
 
 	/**
@@ -91,16 +91,21 @@ public class Heart implements Scheduled {
 	/**
 	 * Remove other instance when they aren't reachable and update the lead
 	 */
-	@Schedule(rate = 1, unit = TimeUnit.SECONDS)
+	@Schedule(rate = 5, unit = TimeUnit.SECONDS)
 	public void murder() {
-		if (!isAlive() || getReplicas().isEmpty()) return;
-		PacketSender.getInstance().heartBeat(getLocalBeat().handshake());
-		Iterator<PacketPhantomHeartBeat> it = getReplicas().iterator();
-		while (it.hasNext()) {
-			PacketPhantomHeartBeat da = it.next();
-			if (da.isDead() && !da.getSecu().isLocal()) it.remove();
+		try {
+			if (!isAlive() || getReplicas().isEmpty()) return;
+			this.localBeat = new PacketPhantomHeartBeat();
+			PacketSender.getInstance().heartBeat(getLocalBeat());
+			Iterator<PacketPhantomHeartBeat> it = getReplicas().iterator();
+			while (it.hasNext()) {
+				PacketPhantomHeartBeat da = it.next();
+				if (da.isDead() && !da.getSecu().isLocal()) it.remove();
+			}
+			PacketSender.getInstance().pause(!getReplicas().peekLast().getSecu().isLocal());
+		} catch (Exception e) {
+			Main.printStackTrace(e);
 		}
-		PacketSender.getInstance().pause(!getReplicas().peekLast().getSecu().isLocal());
 	}
 
 }

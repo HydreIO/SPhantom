@@ -18,6 +18,7 @@ import sceat.domain.protocol.PacketSender;
 import sceat.domain.protocol.Security;
 import sceat.domain.protocol.handler.PacketHandler;
 import sceat.domain.protocol.packets.PacketPhantom;
+import sceat.infra.connector.general.VultrConnector;
 import sceat.infra.connector.mq.RabbitMqConnector;
 
 public class SPhantom {
@@ -32,9 +33,9 @@ public class SPhantom {
 	private boolean lead = false;
 	private boolean local = false;
 	private boolean logPkt = true;
-	public boolean logprovider = false;
+	public boolean logprovider = true;
 	public boolean logDiv = true;
-	private Iphantom iphantom;
+	private Iphantom iphantom = new VultrConnector();
 	private Security security;
 
 	/**
@@ -162,6 +163,11 @@ public class SPhantom {
 					print("> logProvider [Enable/Disable the overspan logger]");
 					print("> setMode <1|2|3> [Set operating mode Eco|Normal|NoLag]");
 					print("> logDiv [Enable/Disable the global logger]");
+					print("> vps [Show all vps]");
+					break;
+				case "vps":
+					print("Vps registered : ");
+					Core.getInstance().getVps().values().forEach(v -> print(v.toString() + "\n"));
 					break;
 				case "logdiv":
 				case "logDiv":

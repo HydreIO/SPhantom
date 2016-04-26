@@ -27,6 +27,11 @@ public class Vps implements Comparable<Vps> {
 		return new Vps(label, ram, ip, new HashSet<Server>()).setState(VpsState.Deploying);
 	}
 
+	@Override
+	public String toString() {
+		return "-< [Vps]: Label('" + label + "')|Ram(" + ram + ")|Ip('" + ip.getHostAddress() + "')|State('" + state + "')|Servers(" + servers.size() + ") >-";
+	}
+
 	public Vps(String label, int ram, InetAddress ip, Set<Server> srvs) {
 		this.label = label;
 		this.ram = ram;

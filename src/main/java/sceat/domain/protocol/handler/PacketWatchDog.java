@@ -19,7 +19,7 @@ public class PacketWatchDog implements Runnable {
 	}
 
 	public void notifyStart() {
-		if (!thread.isAlive())
+		if (!thread.isAlive())	
 			thread.start();
 	}
 
