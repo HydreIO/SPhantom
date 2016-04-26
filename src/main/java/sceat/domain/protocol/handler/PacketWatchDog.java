@@ -25,7 +25,6 @@ public class PacketWatchDog extends Thread {
 
 	public void stopThread() {
 		this.interrupt();
-		super.start();
 	}
 
 	@Override

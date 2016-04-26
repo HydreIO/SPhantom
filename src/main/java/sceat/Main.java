@@ -2,6 +2,8 @@ package sceat;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.UUID;
 import java.util.logging.ConsoleHandler;
@@ -56,11 +58,29 @@ public class Main {
 	}
 
 	public static void printStackTrace(Exception e) {
-		getLogger().log(Level.SEVERE, e.getMessage(), e);
+		getLogger().log(Level.SEVERE, "[Trace] > " + stackTrace(e));
 	}
 
 	public static void printStackTrace(Throwable e) {
-		getLogger().log(Level.SEVERE, e.getMessage(), e);
+		getLogger().log(Level.SEVERE, "[Trace] > " + stackTrace(e));
+	}
+
+	private static String stackTrace(Throwable cause) {
+		if (cause == null) return "";
+		StringWriter sw = new StringWriter(1024);
+		final PrintWriter pw = new PrintWriter(sw);
+		cause.printStackTrace(pw);
+		pw.flush();
+		return sw.toString();
+	}
+
+	private static String stackTrace(Exception cause) {
+		if (cause == null) return "";
+		StringWriter sw = new StringWriter(1024);
+		final PrintWriter pw = new PrintWriter(sw);
+		cause.printStackTrace(pw);
+		pw.flush();
+		return sw.toString();
 	}
 
 	private static void initLogger() {
@@ -99,8 +119,7 @@ public class Main {
 		SPhantom.print("Shutdown..");
 		SPhantom.getInstance().getExecutor().shutdown();
 		Scheduler.getScheduler().shutdown();
-		if (Heart.getInstance() != null)
-			Heart.getInstance().broke();
+		if (Heart.getInstance() != null) Heart.getInstance().broke();
 		SPhantom.print("Bye.");
 		SPhantom.getInstance().running = false;
 		System.exit(0);
@@ -120,4 +139,5 @@ public class Main {
 	public static File getFolder() {
 		return folder;
 	}
+
 }

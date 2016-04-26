@@ -43,7 +43,7 @@ public class PacketHandler {
 		@Override
 		public void run() {
 			try {
-				PacketPhantom.fromByteArray(rawPacket.data).handleData(rawPacket.type);
+				PacketPhantom.fromByteArray(rawPacket.data).deserialize().handleData(rawPacket.type);
 			} catch (Exception e) {
 				Main.printStackTrace(e);
 			}

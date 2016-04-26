@@ -7,7 +7,7 @@ import sceat.domain.protocol.MessagesType;
 public class PacketPhantomHeartBeat extends PacketPhantom {
 
 	private boolean running;
-	private long lastHandShake;
+	private long lastHandShake = System.currentTimeMillis();
 
 	public PacketPhantomHeartBeat() {
 		setRunning(true);
@@ -32,7 +32,7 @@ public class PacketPhantomHeartBeat extends PacketPhantom {
 			Heart.getInstance().transfuse(this);
 		} else if (tp == MessagesType.TAKE_LEAD) { // inutile mais en cas ou je rajoute un autre type pour ce pkt
 			if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketTakeLead []");
-			Heart.getInstance().transfuse(this);
+			Heart.getInstance().transplant(this);
 		}
 	}
 

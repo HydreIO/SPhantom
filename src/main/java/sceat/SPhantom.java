@@ -4,6 +4,8 @@ import java.util.Calendar;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import sceat.domain.Heart;
 import sceat.domain.Manager;
@@ -15,6 +17,7 @@ import sceat.domain.network.Core.OperatingMode;
 import sceat.domain.protocol.PacketSender;
 import sceat.domain.protocol.Security;
 import sceat.domain.protocol.handler.PacketHandler;
+import sceat.domain.protocol.packets.PacketPhantom;
 import sceat.infra.connector.mq.RabbitMqConnector;
 
 public class SPhantom {
@@ -28,9 +31,9 @@ public class SPhantom {
 	private SPhantomConfig config;
 	private boolean lead = false;
 	private boolean local = false;
-	private boolean logPkt = false;
+	private boolean logPkt = true;
 	public boolean logprovider = false;
-	public boolean logDiv = false;
+	public boolean logDiv = true;
 	private Iphantom iphantom;
 	private Security security;
 
@@ -43,11 +46,39 @@ public class SPhantom {
 	public SPhantom(Boolean local) { // don't change the implementation order !
 		instance = this;
 		this.security = new Security(Main.serial, Main.security);
+		PacketPhantom.registerPkts();
 		this.running = true;
 		this.local = local;
-		this.pinger = Executors.newSingleThreadExecutor();
-		this.peaceMaker = Executors.newSingleThreadExecutor();
-		this.executor = Executors.newFixedThreadPool(70);
+		this.pinger = Executors.newSingleThreadExecutor(new ThreadFactory() {
+			final AtomicInteger count = new AtomicInteger(0);
+
+			@Override
+			public Thread newThread(Runnable runnable) {
+				Thread thread = new Thread(runnable, "Pinger Pool - [Thrd: " + count + "]");
+				thread.setDaemon(true);
+				return thread;
+			}
+		});
+		this.peaceMaker = Executors.newSingleThreadExecutor(new ThreadFactory() {
+			final AtomicInteger count = new AtomicInteger(0);
+
+			@Override
+			public Thread newThread(Runnable runnable) {
+				Thread thread = new Thread(runnable, "PeaceMaker Pool - [Thrd: " + count + "]");
+				thread.setDaemon(true);
+				return thread;
+			}
+		});
+		this.executor = Executors.newFixedThreadPool(70, new ThreadFactory() {
+			final AtomicInteger count = new AtomicInteger(0);
+
+			@Override
+			public Thread newThread(Runnable runnable) {
+				Thread thread = new Thread(runnable, "Main Pool - [Thrd: " + count + "]");
+				thread.setDaemon(true);
+				return thread;
+			}
+		});
 		this.config = new SPhantomConfig();
 		new Manager();
 		new Core();

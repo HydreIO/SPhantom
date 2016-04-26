@@ -16,7 +16,7 @@ import sceat.domain.protocol.Security;
 
 public abstract class PacketPhantom {
 
-	static {
+	public static void registerPkts() {
 		SPhantom.print("Initialising packets...");
 		try {
 			registerPacket((byte) 1, PacketPhantomServerInfo.class);
@@ -40,7 +40,7 @@ public abstract class PacketPhantom {
 	private static void registerPacket(byte id, Class<? extends PacketPhantom> packet) throws PacketIdAlrealyUsedException {
 		if (packets.containsKey(id)) throw new PacketIdAlrealyUsedException(id, packets.get(id));
 		packets.put(id, packet);
-		SPhantom.print(packet.getCanonicalName() + "[" + id + "] Registered");
+		SPhantom.print(packet.getName().substring(packet.getName().lastIndexOf('.') + 1) + "[" + id + "] Registered");
 	}
 
 	/**
