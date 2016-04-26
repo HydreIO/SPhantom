@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import sceat.Main;
 import sceat.SPhantom;
 import sceat.domain.Manager;
 import sceat.domain.minecraft.Grades;
@@ -96,7 +97,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 			if (ss.contains(srv)) ss.remove(srv);
 			m.getServersByLabel().remove(getLabel());
 			if (curr == null) {
-				// vps not found osef car tt fa�on on le vire
+				// vps not found osef car tt façon on le vire
 				SPhantom.print("PacketPhantomServerInfo : State Closing | the server " + getLabel() + " is registered but not in a Vps object | Info ! break");
 				return;
 			}
@@ -116,7 +117,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 	}
 
 	public static PacketPhantomServerInfo fromServer(Server srv) {
-		return new PacketPhantomServerInfo(srv.getStatus(), srv.getLabel(), srv.getVps().getLabel(), srv.getIpadress(), srv.getType(), srv.getMaxPlayers(), srv.getPlayersMap(), srv.getKeys(), false);
+		return new PacketPhantomServerInfo(srv.getStatus(), srv.getLabel(), srv.getVpsLabel(), srv.getIpadress(), srv.getType(), srv.getMaxPlayers(), srv.getPlayersMap(), srv.getKeys(), false);
 	}
 
 	public boolean isFromSymbiote() {
@@ -151,7 +152,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		try {
 			return InetAddress.getByName(ip);
 		} catch (UnknownHostException e) {
-			e.printStackTrace();
+			Main.printStackTrace(e);
 			return null;
 		}
 	}

@@ -139,7 +139,6 @@ public class RabbitMqConnector implements IMessaging {
 
 	@Override
 	public void sendServer(PacketPhantomServerInfo pkt) {
-		if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketServer |to:HUBS_PROXY_SPHANTOM");
 		basicPublich(MessagesType.UPDATE_SERVER, DestinationKey.HUBS_PROXY_SPHANTOM, pkt.toByteArray());
 	}
 

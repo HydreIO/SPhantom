@@ -45,11 +45,14 @@ public class PacketSender {
 	}
 
 	/**
-	 * Tout ce qui n'est pas interne comme le heartbeat doit verifier d'�tre sur le bon replica avant de pouvoir envoyer le packet, si cet instance de Sphantom est en pause alors on n'envoie rien
+	 * Tout ce qui n'est pas interne comme le heartbeat doit verifier d'être sur le bon replica avant de pouvoir envoyer le packet, si cet instance de Sphantom est en pause alors on n'envoie rien
 	 */
 	public void sendServer(PacketPhantomServerInfo pkt) {
 		setSecurity(pkt);
-		if (allowed) getBroker().sendServer(pkt.serialize());
+		if (allowed) {
+			if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketServer |to:HUBS_PROXY_SPHANTOM");
+			getBroker().sendServer(pkt.serialize());
+		}
 	}
 
 	public void takeLead(PacketPhantomHeartBeat pkt) {
