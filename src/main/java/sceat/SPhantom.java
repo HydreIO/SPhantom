@@ -12,9 +12,9 @@ import sceat.domain.adapter.mq.IMessaging;
 import sceat.domain.config.SPhantomConfig;
 import sceat.domain.network.Core;
 import sceat.domain.network.Core.OperatingMode;
-import sceat.domain.protocol.handler.PacketHandler;
 import sceat.domain.protocol.PacketSender;
 import sceat.domain.protocol.Security;
+import sceat.domain.protocol.handler.PacketHandler;
 import sceat.infra.connector.mq.RabbitMqConnector;
 
 public class SPhantom {

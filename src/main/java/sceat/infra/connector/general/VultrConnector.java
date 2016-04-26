@@ -20,6 +20,7 @@ public class VultrConnector implements Iphantom {
 		ConcurrentHashMap<String, Vps> vps = Core.getInstance().getVps();
 		if (!vps.contains(label)) SPhantom.print("Try destroying vps instance : [" + label + "] /!\\ This instance is not registered in Sphantom or already destroyed /!\\");
 		else {
+			if (SPhantom.logDiv()) SPhantom.print("Destroying instance : " + label);
 			Vps vp = vps.get(label).setState(VpsState.Destroying);
 			// Jvultr.destroyInstance
 			SPhantom.getInstance().getExecutor().execute(() -> {
@@ -28,7 +29,7 @@ public class VultrConnector implements Iphantom {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				vp.unregister(); 
+				vp.unregister();
 			});
 		}
 	}

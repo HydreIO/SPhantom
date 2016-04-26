@@ -26,6 +26,7 @@ public abstract class PacketPhantom {
 			registerPacket((byte) 5, PacketPhantomSymbiote.class);
 			registerPacket((byte) 6, PacketPhantomDestroyInstance.class);
 			registerPacket((byte) 7, PacketPhantomReduceServer.class);
+			registerPacket((byte) 8, PacketPhantomServerCrash.class);
 		} catch (PacketIdAlrealyUsedException e) {
 			Main.printStackTrace(e);
 		}
@@ -43,7 +44,7 @@ public abstract class PacketPhantom {
 	}
 
 	/**
-	 * m�thode apell� pendant pendant la serialization
+	 * méthode apellé pendant pendant la serialization
 	 */
 	public void encodeSecurity() {
 		writeString(getSecu().getSerial());
@@ -51,7 +52,7 @@ public abstract class PacketPhantom {
 	}
 
 	/**
-	 * m�thode apell� pendant pendant la deserialization
+	 * méthode apellé pendant pendant la deserialization
 	 */
 	public void decodeSecurity() {
 		this.secu = new Security(readString(), readString());

@@ -6,7 +6,8 @@ public enum Statut {
 	OPEN(2),
 	REDUCTION(3),
 	REBOOTING(4),
-	CLOSING(5);
+	CLOSING(5),
+	CRASHED(6);
 	private int _value;
 
 	private Statut(int value) {
@@ -14,7 +15,7 @@ public enum Statut {
 	}
 
 	/**
-	 * Retourne la valeur (0 pour ouvert, 1 pour fermé, 2 pour reboot, 3 pour maintenance)
+	 * Retourne la valeur (0 pour ouvert, 1 pour fermï¿½, 2 pour reboot, 3 pour maintenance)
 	 * 
 	 * @return
 	 */
