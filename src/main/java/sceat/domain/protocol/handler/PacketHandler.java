@@ -1,14 +1,12 @@
 package sceat.domain.protocol.handler;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import sceat.Main;
 import sceat.domain.protocol.MessagesType;
 import sceat.domain.protocol.packets.PacketPhantom;
+import sceat.domain.utils.PhantomThreadPoolExecutor;
 
 /**
  * Le PacketSender peut se mettre en pause en cas de prise du lead par un autre replica,
@@ -59,13 +57,13 @@ public class PacketHandler {
 
 	private List<RawPacket> rawPackets;
 	private PacketWatchDog watchDog;
-	private ExecutorService pool;
+	private PhantomThreadPoolExecutor pool;
 
 	public PacketHandler() {
 		instance = this;
 		rawPackets = new CopyOnWriteArrayList<>();
 		watchDog = new PacketWatchDog(this);
-		pool = Executors.newFixedThreadPool(10);
+		pool = new PhantomThreadPoolExecutor(50);
 	}
 
 	public static PacketHandler getInstance() {
@@ -92,12 +90,8 @@ public class PacketHandler {
 	}
 
 	public void reorganisePackets() {
-		pool.shutdownNow();// Ignore runnables
-		pool = Executors.newFixedThreadPool(10);// Recreate
-		// Remove Packet can be dropped
-		Iterator<RawPacket> packets = rawPackets.iterator();
-		while (packets.hasNext())
-			if (packets.next().type.canBeDropped()) packets.remove();
+		pool.safeDrain();// Ignore runnables
+		pool = new PhantomThreadPoolExecutor(50);// Recreate
 		rawPackets.sort((i1, i2) -> Integer.compare(i1.type.getPriority(), i2.type.getPriority()));
 		rawPackets.forEach(e -> pool.execute(new PacketDeserializer(e)));
 	}

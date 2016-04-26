@@ -1,42 +1,40 @@
 package sceat.domain.protocol.handler;
 
-public class PacketWatchDog extends Thread{
-    public static final long MAX_PACKET_READ_MILLIS = 2000;
+public class PacketWatchDog extends Thread {
+	public static final long MAX_PACKET_READ_MILLIS = 5000;
 
-    private PacketHandler owner;
+	private PacketHandler owner;
 
-    public PacketWatchDog(PacketHandler owner) {
-        super("Packet WatchDog");
-        this.owner = owner;
-    }
+	public PacketWatchDog(PacketHandler owner) {
+		super("Packet WatchDog");
+		this.owner = owner;
+	}
 
-    public void notifyEnd() {
-        if(isAlive())
-            stopThread();
-    }
+	public void notifyEnd() {
+		if (isAlive()) stopThread();
+	}
 
-    public void notifyStart() {
-        if(!isAlive())
-            start();
-    }
+	public void notifyStart() {
+		if (!isAlive()) start();
+	}
 
-    @Override
-    public synchronized void start() {
-        super.start();
-    }
+	@Override
+	public synchronized void start() {
+		super.start();
+	}
 
-    public void stopThread() {
-        this.interrupt();
-        super.start();
-    }
+	public void stopThread() {
+		this.interrupt();
+		super.start();
+	}
 
-    @Override
-    public void run() {
-        try{
-            Thread.sleep(MAX_PACKET_READ_MILLIS);
-            owner.reorganisePackets();
-        }catch (InterruptedException ignored){
-            interrupt();
-        }
-    }
+	@Override
+	public void run() {
+		try {
+			Thread.sleep(MAX_PACKET_READ_MILLIS);
+			owner.reorganisePackets();
+		} catch (InterruptedException ignored) {
+			interrupt();
+		}
+	}
 }
