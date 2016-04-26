@@ -11,20 +11,11 @@ public class PacketWatchDog extends Thread {
 	}
 
 	public void notifyEnd() {
-		if (isAlive()) stopThread();
+		if (isAlive()) this.interrupt();
 	}
 
 	public void notifyStart() {
 		if (!isAlive()) start();
-	}
-
-	@Override
-	public synchronized void start() {
-		super.start();
-	}
-
-	public void stopThread() {
-		this.interrupt();
 	}
 
 	@Override
