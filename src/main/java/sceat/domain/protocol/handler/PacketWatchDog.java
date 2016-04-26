@@ -1,5 +1,7 @@
 package sceat.domain.protocol.handler;
 
+import java.lang.Thread.State;
+
 public class PacketWatchDog implements Runnable {
 	public static final long MAX_PACKET_READ_MILLIS = 5000;
 
@@ -8,19 +10,25 @@ public class PacketWatchDog implements Runnable {
 
 	public PacketWatchDog(PacketHandler owner) {
 		this.owner = owner;
-		this.thread = new Thread(this , "Watchdog Thread");
+		this.thread = new Thread(this, "Watchdog Thread");
 	}
 
 	public void notifyEnd() {
-		if (thread.isAlive()){
+		if (thread.isAlive()) {
 			thread.interrupt();
-			this.thread = new Thread(this , "Watchdog Thread");
+			flush();
 		}
 	}
 
+	protected void flush() {
+		this.thread = new Thread(this, "Watchdog Thread");
+	}
+
 	public void notifyStart() {
-		if (!thread.isAlive())	
+		if (!thread.isAlive()) {
+			if (thread.getState() != State.NEW) flush();
 			thread.start();
+		}
 	}
 
 	@Override
