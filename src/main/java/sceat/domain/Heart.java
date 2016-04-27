@@ -44,6 +44,10 @@ public class Heart implements Scheduled {
 
 	public Heart takeLead() {
 		if (this.local) return this; // if local, disable rabbit & replica
+		if (SPhantom.getInstance().isLeading()) {
+			SPhantom.print("Already lead !");
+			return this;
+		}
 		SPhantom.print("Take lead !");
 		SPhantom.getInstance().setLead(true);
 		getReplicas().add(getLocalBeat().handshake());
