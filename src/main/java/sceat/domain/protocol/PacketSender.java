@@ -63,7 +63,7 @@ public class PacketSender {
 
 	public void heartBeat(PacketPhantomHeartBeat pkt) {
 		setSecurity(pkt);
-		if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketHeartBeat |to:SPHANTOM");
+		if (SPhantom.getInstance().logHeart) SPhantom.print(">>>>]SEND] PacketHeartBeat |to:SPHANTOM");
 		getBroker().heartBeat(pkt.serialize());
 	}
 

@@ -33,6 +33,7 @@ public class SPhantom {
 	private boolean lead = false;
 	private boolean local = false;
 	private boolean logPkt = true;
+	public boolean logHeart = false;
 	public boolean logprovider = true;
 	public boolean logDiv = true;
 	private Iphantom iphantom = new VultrConnector();
@@ -162,8 +163,15 @@ public class SPhantom {
 					print("> logpkt [Enable/Disable the packet logger]");
 					print("> logProvider [Enable/Disable the overspan logger]");
 					print("> setMode <1|2|3> [Set operating mode Eco|Normal|NoLag]");
+					print("> logHB [Enable/Disable the heartBeat logger]");
 					print("> logDiv [Enable/Disable the global logger]");
 					print("> vps [Show all vps]");
+					print("> create_server <type");
+					break;
+				case "loghb":
+				case "logHB":
+					this.logHeart = !this.logHeart;
+					print("HeartBeat logger " + (this.logHeart ? "enabled" : "disabled") + " !");
 					break;
 				case "vps":
 					print("Vps registered : ");

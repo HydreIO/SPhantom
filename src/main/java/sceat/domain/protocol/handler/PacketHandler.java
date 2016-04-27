@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import sceat.Main;
+import sceat.SPhantom;
 import sceat.domain.protocol.MessagesType;
 import sceat.domain.protocol.packets.PacketPhantom;
 import sceat.domain.utils.PhantomThreadPoolExecutor;
@@ -49,7 +50,6 @@ public class PacketHandler {
 			}
 			rawPackets.remove(rawPacket);
 			if (rawPackets.isEmpty()) watchDog.notifyEnd();
-
 		}
 	}
 
@@ -58,6 +58,10 @@ public class PacketHandler {
 	private List<RawPacket> rawPackets;
 	private PacketWatchDog watchDog;
 	private PhantomThreadPoolExecutor pool;
+
+	public List<RawPacket> getRawPackets() {
+		return rawPackets;
+	}
 
 	public PacketHandler() {
 		instance = this;
@@ -90,7 +94,8 @@ public class PacketHandler {
 	}
 
 	public void reorganisePackets() {
-		pool.safeDrain();// Ignore runnables
+		List<Runnable> drained = pool.safeDrain();// drain and ignore runnable (just for sys.print)
+		SPhantom.print("Reorganise Packets /!\\ [rawList(" + rawPackets.size() + ")|PoolActiveThreads(" + pool.getActiveCount() + ")|QueuedTaskRemaining(" + drained.size() + ")]");
 		pool = new PhantomThreadPoolExecutor(50);// Recreate
 		rawPackets.sort((i1, i2) -> Integer.compare(i1.type.getPriority(), i2.type.getPriority()));
 		rawPackets.forEach(e -> pool.execute(new PacketDeserializer(e)));

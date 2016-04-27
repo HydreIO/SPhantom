@@ -35,7 +35,7 @@ public class PacketWatchDog implements Runnable {
 	public void run() {
 		try {
 			Thread.sleep(MAX_PACKET_READ_MILLIS);
-			owner.reorganisePackets();
+			if (PacketHandler.getInstance().getRawPackets().size() > 30) owner.reorganisePackets();
 		} catch (InterruptedException ignored) {
 			thread.interrupt();
 		}
