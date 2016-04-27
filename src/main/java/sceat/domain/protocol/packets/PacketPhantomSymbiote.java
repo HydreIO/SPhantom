@@ -32,7 +32,7 @@ public class PacketPhantomSymbiote extends PacketPhantom {
 	@Override
 	protected void serialize_() {
 		writeString(getVpsLabel());
-		writeString(getState().name());
+		writeByte(getState().getId());
 		writeInt(getRam());
 		writeString(getIp().getHostAddress());
 	}
@@ -40,7 +40,7 @@ public class PacketPhantomSymbiote extends PacketPhantom {
 	@Override
 	protected void deserialize_() {
 		this.vpsLabel = readString();
-		this.state = VpsState.valueOf(readString());
+		this.state = VpsState.fromId(readByte());
 		this.ram = readInt();
 		try {
 			this.ip = InetAddress.getByName(readString());
@@ -54,7 +54,7 @@ public class PacketPhantomSymbiote extends PacketPhantom {
 		if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketSymbiote [" + getVpsLabel() + "|" + getState() + "|" + getIp().getHostAddress() + "|Ram(" + getRam() + ")]");
 		ConcurrentHashMap<String, Vps> varmap = Core.getInstance().getVps();
 		if (varmap.containsKey(getVpsLabel())) varmap.get(getVpsLabel()).setState(getState());
-		else new Vps(getVpsLabel(), getRam(), getIp(), new HashSet<Server>()).register();
+		else new Vps(getVpsLabel(), getRam(), getIp(), new HashSet<Server>()).register().setState(getState());
 	}
 
 	public String getVpsLabel() {

@@ -109,7 +109,7 @@ public class SPhantom {
 			print("----------------------------------------------------------");
 			print("SPhantom instance has lost the lead !");
 			print("Starting to run in background and wait for wakingUp !");
-			print("SPhantom can't print report until he get the lead ! try <forcelead> or switch to the leading SPhantom instance");
+			print("try <forcelead> for set this instance to lead");
 			print("----------------------------------------------------------");
 		}
 		PacketSender.getInstance().pause(!lead);
