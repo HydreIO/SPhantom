@@ -21,6 +21,7 @@ public class SPhantomConfig {
 	private String RabbitPassword = "pass";
 	private String RabbitAdress = "127.0.0.1";
 	private int RabbitPort = 0000;
+	private int DeployedVpsRam = 8;
 	private String VultrKey = "key";
 	private String VultrUser = "user";
 	private String VultrPass = "pass";
@@ -49,6 +50,7 @@ public class SPhantomConfig {
 			getConfig().set("Broker.Adress", RabbitAdress);
 			getConfig().set("Broker.Port", RabbitPort);
 			getConfig().set("MaxDeployedInstances", this.maxInstance);
+			getConfig().set("DeployedVpsRam", DeployedVpsRam);
 			getConfig().set(Constant.CONFIG_Optional_var + ".Vultr_User", getVultrUser());
 			getConfig().set(Constant.CONFIG_Optional_var + ".Vultr_Pass", getVultrPass());
 			getConfig().set(Constant.CONFIG_Optional_var + ".Vultr_Api_Key", getVultrKey());
@@ -64,6 +66,10 @@ public class SPhantomConfig {
 
 	public int getRamFor(ServerType type) {
 		return instances.get(type).getRamNeeded();
+	}
+
+	public int getDeployedVpsRam() {
+		return DeployedVpsRam;
 	}
 
 	public int getMaxInstance() {
@@ -106,6 +112,7 @@ public class SPhantomConfig {
 			SPhantom.print("Broker_adress [ok]");
 			this.RabbitPort = getConfig().getInt("Broker.Port");
 			SPhantom.print("Broker_port [ok]");
+			this.DeployedVpsRam = getConfig().getInt("DeployedVpsRam");
 			this.VultrUser = getConfig().getString(Constant.CONFIG_Optional_var + ".Vultr_User");
 			SPhantom.print("Vultr_User [ok]");
 			this.VultrPass = getConfig().getString(Constant.CONFIG_Optional_var + ".Vultr_Pass");
@@ -162,7 +169,7 @@ public class SPhantomConfig {
 	}
 
 	/**
-	 * Représente la configuration d'un serveur dédié ou d'un vps
+	 * Reprï¿½sente la configuration d'un serveur dï¿½diï¿½ ou d'un vps
 	 * 
 	 * @author MrSceat
 	 *

@@ -52,7 +52,7 @@ public class Core implements Scheduled {
 	private int deployedInstances = -1;
 
 	/**
-	 * pour gerer l'offre de vps je doit connaitre la marge qu'il reste par serverType, moins il y a de marge plus je vais incrementer la priorité du server provider
+	 * pour gerer l'offre de vps je doit connaitre la marge qu'il reste par serverType, moins il y a de marge plus je vais incrementer la prioritï¿½ du server provider
 	 * <p>
 	 * plus il y en a plus je decrement
 	 */
@@ -117,9 +117,9 @@ public class Core implements Scheduled {
 	}
 
 	/**
-	 * Cette methode du futur confectionnées par mes soins m'a pris 3 putain de jours !
+	 * Cette methode du futur confectionnï¿½es par mes soins m'a pris 3 putain de jours !
 	 * <p>
-	 * Elle effectue une sorte de défragmentation pour regrouper un maximum les serveurs sur les vps et ainsi pouvoir fermer les instances en trop ! Economie d'argent morray !
+	 * Elle effectue une sorte de dï¿½fragmentation pour regrouper un maximum les serveurs sur les vps et ainsi pouvoir fermer les instances en trop ! Economie d'argent morray !
 	 */
 	@Schedule(rate = 1, unit = TimeUnit.HOURS)
 	public void balk() {
@@ -154,7 +154,7 @@ public class Core implements Scheduled {
 	}
 
 	/**
-	 * on verifie içi si la map playersByType servant pour l'overspan est bien a jour ! si le nombre de joueurs n'est pas egal au nombre trouvé via la reduction directement efféctuée sur les serveurs
+	 * on verifie iï¿½i si la map playersByType servant pour l'overspan est bien a jour ! si le nombre de joueurs n'est pas egal au nombre trouvï¿½ via la reduction directement effï¿½ctuï¿½e sur les serveurs
 	 * <p>
 	 * alors on remap manuellement la hashmap
 	 */
@@ -301,9 +301,37 @@ public class Core implements Scheduled {
 				SPhantom.print("[" + max + "] instances are already deployed ! For bypass this security please change the Sphantom config");
 				break;
 			}
-			vp.add(SPhantom.getInstance().getIphantom().deployInstance(ServerLabel.newVpsLabel(), 8).register());
+			vp.add(SPhantom.getInstance().getIphantom().deployInstance(ServerLabel.newVpsLabel(), SPhantom.getInstance().getSphantomConfig().getDeployedVpsRam()).register());
 		}
 		return vp;
+	}
+
+	/**
+	 * generally used for create srv with cmd
+	 * 
+	 * @param type
+	 */
+	public void forceDeployServer(ServerType type, int nbr) {
+		if (type == ServerType.Proxy) SPhantom.print("Can't deploy proxy forced !");
+		else {
+			SPhantom.print("Deploy Server |Type_" + type + "|Nbr(" + nbr + ")");
+			SPhantomConfig conf = SPhantom.getInstance().getSphantomConfig();
+			McServerConfigObject obj = conf.getInstances().get(type);
+			for (int i = 0; i < nbr; i++) {
+				Vps vp = ServerProvider.getInstance().getVps(type, Optional.empty());
+				if (vp == null) {
+					SPhantom.print("No vps available ! Deploying instance, please wait and retry in few minutes...");
+					deployInstances(1);
+					break;
+				}
+				Server srv = Server.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, type.getKeys());
+				SPhantom.print("Deploying server [Label('" + srv.getLabel() + "')|State('" + srv.getStatus() + "')]");
+				serversByType.get(type).add(srv);
+				Manager.getInstance().getServersByLabel().put(srv.getLabel(), srv);
+				vp.getServers().add(srv);
+				PacketSender.getInstance().bootServer(new PacketPhantomBootServer(srv));
+			}
+		}
 	}
 
 	private Set<Server> deployServer(ServerType type, int nbr) {

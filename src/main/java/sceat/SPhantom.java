@@ -1,5 +1,6 @@
 package sceat;
 
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
@@ -18,6 +19,7 @@ import sceat.domain.protocol.PacketSender;
 import sceat.domain.protocol.Security;
 import sceat.domain.protocol.handler.PacketHandler;
 import sceat.domain.protocol.packets.PacketPhantom;
+import sceat.gui.terminal.PhantomTui;
 import sceat.infra.connector.general.VultrConnector;
 import sceat.infra.connector.mq.RabbitMqConnector;
 
@@ -56,8 +58,7 @@ public class SPhantom {
 
 			@Override
 			public Thread newThread(Runnable runnable) {
-				Thread thread = new Thread(runnable, "Pinger Pool - [Thrd: " + count + "]");
-				thread.setDaemon(true);
+				Thread thread = new Thread(runnable, "Pinger Pool - [Thrd: " + count.incrementAndGet() + "]");
 				return thread;
 			}
 		});
@@ -66,8 +67,7 @@ public class SPhantom {
 
 			@Override
 			public Thread newThread(Runnable runnable) {
-				Thread thread = new Thread(runnable, "PeaceMaker Pool - [Thrd: " + count + "]");
-				thread.setDaemon(true);
+				Thread thread = new Thread(runnable, "PeaceMaker Pool - [Thrd: " + count.incrementAndGet() + "]");
 				return thread;
 			}
 		});
@@ -76,8 +76,7 @@ public class SPhantom {
 
 			@Override
 			public Thread newThread(Runnable runnable) {
-				Thread thread = new Thread(runnable, "Main Pool - [Thrd: " + count + "]");
-				thread.setDaemon(true);
+				Thread thread = new Thread(runnable, "Main Pool - [Thrd: " + count.incrementAndGet() + "]");
 				return thread;
 			}
 		});
@@ -166,7 +165,15 @@ public class SPhantom {
 					print("> logHB [Enable/Disable the heartBeat logger]");
 					print("> logDiv [Enable/Disable the global logger]");
 					print("> vps [Show all vps]");
-					print("> create_server <type");
+					print("> create_server");
+					break;
+				case "create_srv":
+				case "create_server":
+					try {
+						PhantomTui.commandServ();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 					break;
 				case "loghb":
 				case "logHB":
@@ -248,6 +255,7 @@ public class SPhantom {
 	}
 
 	public static void print(String txt, boolean log) {
+		if (!PhantomTui.canlog) return;
 		if (log) Main.getLogger().info(txt);
 		else System.out.println(new java.sql.Timestamp(System.currentTimeMillis()).toString().substring(0, 16) + " | [Sphantom] > " + txt);
 	}

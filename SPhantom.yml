@@ -1,0 +1,39 @@
+Broker:
+  User: SPhantom
+  Pass: YjZmMTdiZjlhNWM5NDZkNGViZDc2Yzc0
+  Adress: 149.202.230.168
+  Port: 5672
+MaxDeployedInstances: 3
+Optional_Var:
+  Vultr_User: user
+  Vultr_Pass: pass
+  Vultr_Api_Key: key
+Instances:
+  Servers:
+    Vpsz_01:
+      ip: 149.202.230.168
+      user: user
+      pass: pass
+      port: 22
+      ram: 16
+  Types:
+    Agares:
+      maxPlayers: 40
+      PercentplayersBeforeNewInstance: 20
+      ram: 4
+    AresRpg:
+      maxPlayers: 75
+      PercentplayersBeforeNewInstance: 45
+      ram: 6
+    Lobby:
+      maxPlayers: 90
+      PercentplayersBeforeNewInstance: 60
+      ram: 2
+    Iron:
+      maxPlayers: 60
+      PercentplayersBeforeNewInstance: 35
+      ram: 4
+    Proxy:
+      maxPlayers: 500
+      PercentplayersBeforeNewInstance: 300
+      ram: 3
