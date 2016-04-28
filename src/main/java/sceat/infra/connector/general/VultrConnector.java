@@ -10,6 +10,8 @@ import sceat.domain.network.server.Vps.VpsState;
 
 public class VultrConnector implements Iphantom {
 
+	// vultr peut refuser de destroy une instance si elle a été créé ya pas longtemps, faut donc foutre une liste pour add le vps a destroy et retester tout les X temps puis le virer (en laissant le vpsState sur destroying)
+
 	@Override
 	public Vps deployInstance(String label, int ram) {
 		return Vps.fromBoot(label, ram, /* ip recup depuis Jvultr */null);
