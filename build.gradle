@@ -17,4 +17,5 @@ dependencies {
     compile 'commons-cli:commons-cli:1.2'
     compile 'com.rabbitmq:amqp-client:3.6.1'
     compile 'org.yaml:snakeyaml:1.17'
+    compile 'com.googlecode.lanterna:lanterna:3.0.0-beta2'
 }

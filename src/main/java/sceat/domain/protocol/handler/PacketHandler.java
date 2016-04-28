@@ -58,6 +58,7 @@ public class PacketHandler {
 	private List<RawPacket> rawPackets;
 	private PacketWatchDog watchDog;
 	private PhantomThreadPoolExecutor pool;
+	public volatile boolean needToSort = false;
 
 	public List<RawPacket> getRawPackets() {
 		return rawPackets;
@@ -87,17 +88,19 @@ public class PacketHandler {
 	 */
 
 	public void handle(MessagesType type, byte[] msg) {
+		if (needToSort) reorganisePackets();
 		RawPacket packet = new RawPacket(type, msg);
 		rawPackets.add(packet);
 		pool.execute(new PacketDeserializer(packet));
 		watchDog.notifyStart();
 	}
 
-	public void reorganisePackets() {
+	private void reorganisePackets() {
 		List<Runnable> drained = pool.safeDrain();// drain and ignore runnable (just for sys.print)
 		SPhantom.print("Reorganise Packets /!\\ [rawList(" + rawPackets.size() + ")|PoolActiveThreads(" + pool.getActiveCount() + ")|QueuedTaskRemaining(" + drained.size() + ")]");
 		pool = new PhantomThreadPoolExecutor(50);// Recreate
 		rawPackets.sort((i1, i2) -> Integer.compare(i1.type.getPriority(), i2.type.getPriority()));
 		rawPackets.forEach(e -> pool.execute(new PacketDeserializer(e)));
+		needToSort = false;
 	}
 }
