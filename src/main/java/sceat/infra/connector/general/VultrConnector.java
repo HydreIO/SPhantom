@@ -27,7 +27,7 @@ public class VultrConnector implements Iphantom {
 	static {
 		try {
 			for(JVultrOS o : JVultrAPI.getOSs().values())
-				if("Debian 8 x64 (jessie".equals(o.getName())){
+				if("Debian 8 x64 (jessie)".equals(o.getName())){
 					os = o;
 					break;
 				}
