@@ -49,7 +49,6 @@ public class ConsoleWebSocketServer extends WebSocketApplication implements Inpu
     @Override
     public void onMessage(WebSocket socket, String text) {
         super.onMessage(socket, text);
-        System.out.println(text);
         Main.getLogger().log(Level.INFO , text);
         push(text);
     }
