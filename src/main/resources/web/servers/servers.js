@@ -33,6 +33,8 @@ function countPlayers(serverArray) {
 }
 
 function addServer(server , parentList) {
+    if(server == null)
+        return;
     var element = $("<li></li>");
     element.attr("id" , server.label);
     var list = $("<ul></ul>");
