@@ -2,7 +2,6 @@ package sceat;
 
 import java.io.IOException;
 import java.util.Calendar;
-import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -168,14 +167,11 @@ public class SPhantom {
 	}
 
 	public void awaitForInput() {
-		@SuppressWarnings("resource")
-		Scanner scan = new Scanner(System.in);
+		Input input = Input.getInstance();
 		while (isRunning()) {
 			print("Send Input (type help for show cmds) :");
 			print(".. >_");
-			String nex = scan.next();
-			Input.getHandlers().forEach(c -> c.accept(nex));
-			switch (nex) {
+			switch (input.next()) {
 				case "help":
 				case "Help":
 					print("> shutdown [Close this Sphantom instance]");

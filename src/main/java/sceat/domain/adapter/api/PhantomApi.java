@@ -3,6 +3,7 @@ package sceat.domain.adapter.api;
 import java.net.InetAddress;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import sceat.SPhantom;
@@ -140,6 +141,12 @@ public interface PhantomApi {
 
 		/**
 		 * 
+		 * @return the label
+		 */
+		String getLabel();
+
+		/**
+		 * 
 		 * @return The name of the current vps
 		 */
 		String getVpsLabel();
@@ -201,6 +208,12 @@ public interface PhantomApi {
 		 * @return the last timeout
 		 */
 		String getLastTimeout();
+
+		/**
+		 * 
+		 * @return all players
+		 */
+		Set<UUID> getPlayers();
 
 	}
 }
