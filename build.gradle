@@ -19,4 +19,8 @@ dependencies {
     compile 'org.yaml:snakeyaml:1.17'
     compile 'com.googlecode.lanterna:lanterna:3.0.0-beta2'
     compile  fileTree(dir: 'libs', include: '*.jar')
+    compile 'org.glassfish.grizzly:grizzly-websockets:2.3.24'
+    compile 'org.glassfish.grizzly:grizzly-http-server:2.3.24'
+    compile 'org.glassfish.grizzly:grizzly-http-servlet:2.3.24'
+    compile 'javax.servlet:javax.servlet-api:3.1.0'
 }

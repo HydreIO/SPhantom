@@ -1,0 +1,31 @@
+#fakeTextInput {
+    overflow: hidden;
+    opacity: 0;
+    position: absolute;
+    font-family: 'monospace','Lucida Console','Lucida Sans Unicode','Verdana';
+    font-size: 18px;
+    margin-left: 11px;
+    z-index: 10;
+}
+
+#console{
+    background-color: black;
+    color: #58bf1d;
+    font-size: 18px;
+    font-family: 'monospace','Lucida Console','Lucida Sans Unicode','Verdana';
+    width: 100%;
+    height: 100%;
+    margin: 0 auto;
+    position: relative;
+}
+
+#console-text{
+    overflow-y: scroll;
+}
+
+#console-input{
+    border-top: 1px solid #2c3e50;
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+}
