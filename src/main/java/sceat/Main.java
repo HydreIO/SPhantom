@@ -22,6 +22,7 @@ import org.apache.commons.cli.ParseException;
 import sceat.domain.Heart;
 import sceat.domain.ressources.Constant;
 import sceat.domain.schedule.Scheduler;
+import sceat.infra.input.ScannerInput;
 
 public class Main {
 
@@ -117,6 +118,7 @@ public class Main {
 
 	public static void shutDown() {
 		SPhantom.print("Shutdown..");
+		ScannerInput.shutDown();
 		SPhantom.getInstance().getExecutor().shutdown();
 		Scheduler.getScheduler().shutdown();
 		if (Heart.getInstance() != null) Heart.getInstance().broke();

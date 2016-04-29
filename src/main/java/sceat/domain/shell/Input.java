@@ -1,10 +1,7 @@
 package sceat.domain.shell;
 
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.Set;
-import java.util.function.Consumer;
 
 public class Input {
 
@@ -34,24 +31,6 @@ public class Input {
 	public String next() {
 		while (true)
 			if (!handlers.isEmpty()) return handlers.poll();
-	}
-
-	public static class OutPut {
-
-		private static OutPut instance = new OutPut();
-		private Set<Consumer<String>> handlers = new HashSet<Consumer<String>>();
-
-		private OutPut() {
-		}
-
-		public static void register(Consumer<String> handler) {
-			instance.handlers.add(handler);
-		}
-
-		public static Set<Consumer<String>> getHandlers() {
-			return instance.handlers;
-		}
-
 	}
 
 }
