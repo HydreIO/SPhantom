@@ -284,7 +284,7 @@ public class Core implements Scheduled {
 				default:
 					Set<String> torm = new HashSet<String>();
 					getVps().forEach((k, v) -> {
-						if (v.getServers().isEmpty() && !ServerProvider.getInstance().getConfigInstances().containsKey(k)) {
+						if (v.canBeDestroyed() && v.getServers().isEmpty() && !ServerProvider.getInstance().getConfigInstances().containsKey(k)) {
 							if (SPhantom.logDiv()) SPhantom.print("Vps reduction |Destroying instance : " + k);
 							SPhantom.getInstance().getIphantom().destroyServer(k);
 							torm.add(k);

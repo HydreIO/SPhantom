@@ -24,8 +24,10 @@ import sceat.domain.protocol.handler.PacketHandler;
 import sceat.domain.protocol.packets.PacketPhantom;
 import sceat.domain.shell.Input;
 import sceat.gui.terminal.PhantomTui;
+import sceat.gui.web.GrizzlyWebServer;
 import sceat.infra.connector.general.VultrConnector;
 import sceat.infra.connector.mq.RabbitMqConnector;
+import sceat.infra.input.ScannerInput;
 
 public class SPhantom {
 
@@ -90,9 +92,19 @@ public class SPhantom {
 		new Manager();
 		new ServerProvider();
 		new Core();
+		new ScannerInput();
 		new PacketHandler();
 		new PacketSender(getSphantomConfig().getRabbitUser(), getSphantomConfig().getRabbitPassword(), local);
 		new Heart(local).takeLead();
+		try {
+			new GrizzlyWebServer(8080);
+		} catch (IOException e) {
+			print("[ERREUR] Unable to start web server !");
+			print("____________________________________________________\n");
+			Main.printStackTrace(e);
+			print("\n____________________________________________________");
+
+		}
 	}
 
 	public PhantomApi getMainApi() {
