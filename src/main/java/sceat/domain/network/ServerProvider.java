@@ -111,7 +111,6 @@ public class ServerProvider {
 				}
 				break;
 			}
-		System.out.println("1" + vp);
 		Vps vf = getOrdered().get(type);
 		if (vp == null) vp = exclude.isPresent() ? vf == exclude.get() ? null : vf : vf;
 		if (vf != null && !vf.isUpdated()) vf = null;
