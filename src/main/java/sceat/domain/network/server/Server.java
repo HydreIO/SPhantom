@@ -36,7 +36,7 @@ public class Server {
 		Server sr = null; // je ne peut pas use la methode getOrDefault de la concurrentHashmap car je doit modif le serveur contenu dans la map :(
 		boolean neww = false;
 		ConcurrentHashMap<String, Server> sbl = Manager.getInstance().getServersByLabel();
-		if (sbl.contains(pkt.getLabel())) {
+		if (sbl.containsKey(pkt.getLabel())) {
 			sr = sbl.get(pkt.getLabel());
 			if (sr.getStatus() != Statut.REDUCTION) sr.setStatus(pkt.getState()); // si on connait le serv et qu'il est en reduction alors on ne change pas le statut
 			if (!pkt.isFromSymbiote()) sr.setPlayers(pkt.getPlayersPerGrade()); // sa voudra dire qu'on a reçu un packet avant d'avoir pu informer le serveur qu'il devait se reduire

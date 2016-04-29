@@ -74,8 +74,20 @@ public class Core implements Scheduled {
 			serversByType.put(t, new HashSet<Server>());
 			playersByType.put(t, new HashSet<UUID>());
 		});
+		SPhantom.getInstance().getSphantomConfig().getServers().stream().map(vs -> new Vps(vs.getName(), vs.getRam(), getByName(vs.getIp()), New.set()))
+				.forEach(v -> ServerProvider.getInstance().getConfigInstances().put(v.getLabel(), v.register()));
 		Scheduler.getScheduler().register(this);
 		initialised = true;
+	}
+
+	// internal use for bypass tryCatch block
+	private InetAddress getByName(String name) {
+		try {
+			return InetAddress.getByName(name);
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	private boolean procc = false;
@@ -185,7 +197,7 @@ public class Core implements Scheduled {
 	}
 
 	public void checkVps(String label) {
-		if (getVps().contains(label)) return;
+		if (getVps().containsKey(label)) return;
 		try {
 			new Vps(label, 0, InetAddress.getByName("127.0.0.1"), New.set()).register();
 		} catch (UnknownHostException e) {

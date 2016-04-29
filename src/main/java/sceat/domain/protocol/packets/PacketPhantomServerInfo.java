@@ -2,6 +2,7 @@ package sceat.domain.protocol.packets;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,6 +21,7 @@ import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.network.server.Vps;
 import sceat.domain.protocol.MessagesType;
 import sceat.domain.protocol.PacketSender;
+import sceat.domain.utils.New;
 
 public class PacketPhantomServerInfo extends PacketPhantom {
 
@@ -40,6 +42,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		this.keys = keys == null ? new HashSet<String>() : keys;
 		this.type = type;
 		this.players = pl == null ? new HashMap<Grades, Set<UUID>>() : pl;
+		if (pl == null) Arrays.stream(Grades.values()).forEach(g -> players.put(g, New.set()));
 		this.maxp = maxp;
 		this.state = state;
 	}
@@ -68,6 +71,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		this.maxp = readInt();
 		this.ip = readString();
 		this.players = readMap(() -> Grades.valueOf(readString()), () -> readCollection(new HashSet<UUID>(), () -> UUID.fromString(readString())));
+		if (players.get(Grades.Admin) == null) Arrays.stream(Grades.values()).forEach(g -> players.put(g, New.set()));
 		this.keys = readCollection(new HashSet<String>(), this::readString);
 		this.state = Statut.valueOf(readString());
 		this.fromSymbiote = readBoolean();
@@ -165,7 +169,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		return getPlayersPerGrade().values().stream().reduce((s1, s2) -> {
 			s1.addAll(s2);
 			return s1;
-		}).get();
+		}).orElse(new HashSet<UUID>());
 	}
 
 }

@@ -118,7 +118,7 @@ public class SPhantomConfig {
 			SPhantom.print("Instances config map filling");
 			Configuration cc2 = getConfig().getSection("Instances.Types");
 			cc2.getKeys().forEach(k -> {
-				Configuration section = cc.getSection(k);
+				Configuration section = cc2.getSection(k);
 				this.instances.put(ServerType.valueOf(k), new McServerConfigObject(section.getInt("maxPlayers"), section.getInt("playersBeforeNewInstance"), section.getInt("ram")));
 			});
 			SPhantom.print("Instances config map [ok]");

@@ -35,7 +35,8 @@ public class Vps implements Comparable<Vps> {
 
 	@Override
 	public String toString() {
-		return "-< [Vps]: Label('" + label + "')|Ram(" + ram + ")|Ip('" + ip.getHostAddress() + "')|State('" + state + "')|Servers(" + servers.size() + ")|Updated(" + isUpdated() + ") >-";
+		return "-< [Vps]: Label('" + label + "')|TotRam(" + ram + ")|RamAv(" + getAvailableRam(true) + ")|Ip('" + ip.getHostAddress() + "')|State('" + state + "')|Servers(" + servers.size()
+				+ ")|Updated(" + isUpdated() + ") >-";
 	}
 
 	public Vps(String label, int ram, InetAddress ip, Set<Server> srvs) {

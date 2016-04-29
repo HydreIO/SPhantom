@@ -1,7 +1,5 @@
 package sceat.domain.network;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map.Entry;
@@ -13,7 +11,6 @@ import sceat.SPhantom;
 import sceat.domain.config.SPhantomConfig;
 import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.network.server.Vps;
-import sceat.domain.utils.New;
 
 @SuppressWarnings("unchecked")
 public class ServerProvider {
@@ -35,8 +32,7 @@ public class ServerProvider {
 
 	public ServerProvider() {
 		instance = this;
-		SPhantom.getInstance().getSphantomConfig().getServers().stream().map(vs -> new Vps(vs.getName(), vs.getRam(), getByName(vs.getIp()), New.set()))
-				.forEach(v -> configInstances.put(v.getLabel(), v));
+
 	}
 
 	public void incrementPriority() {
@@ -78,16 +74,6 @@ public class ServerProvider {
 		ONE
 	}
 
-	// internal use for bypass tryCatch block
-	private InetAddress getByName(String name) {
-		try {
-			return InetAddress.getByName(name);
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
 	public static ServerProvider getInstance() {
 		return instance;
 	}
@@ -113,16 +99,19 @@ public class ServerProvider {
 	public synchronized Vps getVps(ServerType type, Optional<Vps> exclude) {
 		boolean log = SPhantom.getInstance().logprovider;
 		long time = System.currentTimeMillis();
-		if (log) SPhantom.print("Asking Vps for type : " + type.name());
+		if (log) SPhantom.print("[Provider] Asking Vps for type : " + type.name());
 		SPhantomConfig sc = SPhantom.getInstance().getSphantomConfig();
 		Vps vp = null;
 		for (Vps vss : getConfigInstances().values())
-			if (vss.getAvailableRam(true) >= sc.getRamFor(type)) { // recherche prioritaire dans les machines configur�e (vps/d�di� non lou� a l'heure)
+			if (vss.getAvailableRam(true) >= sc.getRamFor(type)) { // recherche prioritaire dans les machines configurée (vps/dédié non loué a l'heure)
 				vp = vss;
-				if (!vp.isUpdated() && exclude.isPresent() && vss == exclude.get()) continue;
-				if (vp != null && !vp.isUpdated()) vp = null;
+				if (!vp.isUpdated() || (exclude.isPresent() && vss == exclude.get())) {
+					vp = null;
+					continue;
+				}
 				break;
 			}
+		System.out.println("1" + vp);
 		Vps vf = getOrdered().get(type);
 		if (vp == null) vp = exclude.isPresent() ? vf == exclude.get() ? null : vf : vf;
 		if (vf != null && !vf.isUpdated()) vf = null;
@@ -133,8 +122,9 @@ public class ServerProvider {
 			if (SPhantom.getInstance().logprovider) SPhantom.print("Force found vps : " + (vp == null ? "Not found again.. Wait for defqon to grow" : vp.getLabel()));
 			if (vp == null) return null; // si on trouve vraiment pas de vps on return null et tant pis aucun serveur ne s'ouvrira il faudra attendre l'ouverture d'une instance automatiquement
 		}
-		int availableRam = vp.getAvailableRam(true) - sc.getRamFor(type);
-		if (log) SPhantom.print("Available ram : " + availableRam);
+		int rfm = sc.getRamFor(type);
+		int availableRam = vp.getAvailableRam(true) - rfm;
+		if (log) SPhantom.print("Available ram : " + (availableRam + rfm));
 		for (Entry<ServerType, Vps> e : ordered.entrySet()) {
 			Vps value = e.getValue();
 			ServerType key = e.getKey();
