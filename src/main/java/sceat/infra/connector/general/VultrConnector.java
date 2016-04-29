@@ -75,10 +75,10 @@ public class VultrConnector implements Iphantom {
 		ConcurrentHashMap<String, Vps> vps = Core.getInstance().getVps();
 		if (!vps.containsKey(label)) SPhantom.print("Try destroying vps instance : [" + label + "] /!\\ This instance is not registered in Sphantom or already destroyed /!\\");
 		else {
+			Integer id = servers.get(label);
 			try {
 				if (SPhantom.logDiv()) SPhantom.print("Destroying instance : " + label);
 				Vps vp = vps.get(label).setState(VpsState.Destroying);
-				Integer id = servers.get(label);
 				if (id == null) {
 					for (Map.Entry<Integer, JVultrServer> servers : api.getSevers().entrySet()) {
 						if (servers.getValue().getLabel().equals(label)) {
@@ -89,7 +89,7 @@ public class VultrConnector implements Iphantom {
 					Main.printStackTrace(new IllegalStateException("VPS not found " + label));
 					return;
 				} else servers.remove(label);
-				api.destroyServer(id);
+				api.destroyServer(id); // moment ou sa peut fail, on aura pas besoin de vp.register si sa fail car le vp.unregister est call si tout fonctionne
 				SPhantom.getInstance().getExecutor().execute(() -> {
 					try {
 						Thread.sleep(6000); // on attend un peu que le vps soit bien destroy
@@ -99,6 +99,7 @@ public class VultrConnector implements Iphantom {
 					vp.unregister();
 				});
 			} catch (JVultrException e) {
+				servers.put(label, id); // si l'api a fail bah on reAdd le vps pour qu'il puisse le destroy plus tard
 				Main.printStackTrace(e);
 			}
 		}
