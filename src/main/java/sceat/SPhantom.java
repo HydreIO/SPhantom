@@ -23,6 +23,7 @@ import sceat.domain.protocol.PacketSender;
 import sceat.domain.protocol.Security;
 import sceat.domain.protocol.handler.PacketHandler;
 import sceat.domain.protocol.packets.PacketPhantom;
+import sceat.domain.shell.Input;
 import sceat.gui.terminal.PhantomTui;
 import sceat.infra.connector.general.VultrConnector;
 import sceat.infra.connector.mq.RabbitMqConnector;
@@ -173,6 +174,7 @@ public class SPhantom {
 			print("Send Input (type help for show cmds) :");
 			print(".. >_");
 			String nex = scan.next();
+			Input.getHandlers().forEach(c -> c.accept(nex));
 			switch (nex) {
 				case "help":
 				case "Help":

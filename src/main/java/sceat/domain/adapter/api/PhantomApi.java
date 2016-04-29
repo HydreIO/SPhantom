@@ -1,7 +1,9 @@
 package sceat.domain.adapter.api;
 
 import java.net.InetAddress;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import sceat.SPhantom;
 import sceat.domain.Manager;
@@ -16,18 +18,15 @@ import sceat.domain.network.server.Vps;
 import sceat.domain.network.server.Vps.VpsState;
 import sceat.domain.protocol.DestinationKey;
 
-import com.sun.javafx.collections.MappingChange.Map;
-
 public interface PhantomApi {
 
 	/**
 	 * Get all the vps registered in Sphantom
 	 * 
-	 * @return a Map<String, VpsApi>
+	 * @return a {@code Map<String, VpsApi>}
 	 */
-	@SuppressWarnings("unchecked")
 	public static Map<String, VpsApi> getAllVps() {
-		return (Map<String, VpsApi>) (Map<?, ?>) Core.getInstance().getVps();
+		return Core.getInstance().getVps().entrySet().stream().collect(Collectors.toMap(e -> e.getKey(), v -> v.getValue()));
 	}
 
 	/**
