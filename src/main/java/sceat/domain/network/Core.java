@@ -75,6 +75,7 @@ public class Core implements Scheduled {
 			playersByType.put(t, new HashSet<UUID>());
 		});
 		Scheduler.getScheduler().register(this);
+		initialised = true;
 	}
 
 	private boolean procc = false;
@@ -90,14 +91,11 @@ public class Core implements Scheduled {
 				if (v == ServerType.Proxy) continue;
 				int playersCount = playersByType.get(v).size();
 				int totspace = SPhantom.getInstance().getSphantomConfig().getInstances().get(v).getMaxPlayers() * serversByType.get(v).size();
-				if (SPhantom.logDiv()) SPhantom.print("Core.checkFreeSpace() |" + v + "|pl(" + playersCount + ")|totspace(" + totspace + ")");
-				if (totspace <= 0) {
-					if (SPhantom.logDiv()) SPhantom.print("Core.checkFreeSpace() |No server found for " + v + "|continue;");
-					continue;
-				}
+				if (SPhantom.logDiv()) SPhantom.print("[FreeSpace CHECK] |" + v + "|players(" + playersCount + ")|totspace(" + totspace + ")");
+				if (totspace <= 0) continue;
 				if (totspace * getMode().getPercentPl() <= playersCount) {
 					ServerProvider.getInstance().incrementPriority();
-					if (SPhantom.logDiv()) SPhantom.print("Core.checkFreeSpace() |incrementPriority();");
+					if (SPhantom.logDiv()) SPhantom.print("[DEFQON |incrementPriority();");
 					int nbr = 3;
 					if (plTot < 200) nbr = 1;
 					else if (plTot < 1000) nbr = 2;
@@ -107,7 +105,7 @@ public class Core implements Scheduled {
 			}
 			if (decrem) {
 				ServerProvider.getInstance().decrementPriority();
-				if (SPhantom.logDiv()) SPhantom.print("Core.checkFreeSpace() |decrementPriority(); /Yup/");
+				if (SPhantom.logDiv()) SPhantom.print("[DEFQON |decrementPriority(); /Yup/");
 			}
 		} catch (Exception e) {
 			procc = false;
@@ -154,7 +152,7 @@ public class Core implements Scheduled {
 	}
 
 	/**
-	 * on verifie i�i si la map playersByType servant pour l'overspan est bien a jour ! si le nombre de joueurs n'est pas egal au nombre trouv� via la reduction directement eff�ctu�e sur les serveurs
+	 * on verifie içi si la map playersByType servant pour l'overspan est bien a jour ! si le nombre de joueurs n'est pas egal au nombre trouv� via la reduction directement efféctuée sur les serveurs
 	 * <p>
 	 * alors on remap manuellement la hashmap
 	 */
@@ -162,14 +160,14 @@ public class Core implements Scheduled {
 	public void repairMap() {
 		Arrays.stream(ServerType.values()).forEach(v -> {
 			if (!serversByType.get(v).isEmpty()) {
-				int totplayers = serversByType.get(v).stream().filter(s -> (s.getStatus() == Statut.OPEN)).mapToInt(ss -> ss.countPlayers()).reduce((a, b) -> a + b).getAsInt();
+				int totplayers = serversByType.get(v).stream().filter(s -> (s.getStatus() == Statut.OPEN)).mapToInt(ss -> ss.countPlayers()).reduce((a, b) -> a + b).orElse(0);
 				if (totplayers != playersByType.get(v).size()) Core.this.remapPlayersByType();
 			}
 		});
 	}
 
 	private void remapPlayersByType() {
-		if (SPhantom.logDiv()) SPhantom.print("Core.repairMap() | /!\\ Remaping players /!\\ !");
+		if (SPhantom.logDiv()) SPhantom.print("[Map repairing] | /!\\ Remaping players /!\\ !");
 		Arrays.stream(ServerType.values()).forEach(v -> {
 			playersByType.put(v, serversByType.get(v).stream().filter(s -> (s.getStatus() == Statut.OPEN)).map(s -> s.getPlayers()).reduce((a, b) -> {
 				a.addAll(b);
@@ -247,7 +245,7 @@ public class Core implements Scheduled {
 		if (pro || SPhantom.getInstance().isLocal()) return;
 		pro = true;
 		this.deployedInstances = SPhantom.getInstance().getIphantom().countDeployedInstance();
-		if (SPhantom.logDiv()) SPhantom.print("Iphantom custom deployed instances = " + deployedInstances);
+		if (SPhantom.logDiv()) SPhantom.print("[Network] Custom deployed instances = " + deployedInstances);
 		pro = false;
 	}
 
@@ -280,7 +278,6 @@ public class Core implements Scheduled {
 							torm.add(k);
 						}
 					});
-					torm.forEach(SPhantom.getInstance().getIphantom()::destroyServer);
 					PacketSender.getInstance().triggerDestroyInstance(new PacketPhantomDestroyInstance(torm));
 					break;
 			}
@@ -325,7 +322,8 @@ public class Core implements Scheduled {
 					break;
 				}
 				Server srv = Server.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, type.getKeys());
-				SPhantom.print("Deploying server [Label('" + srv.getLabel() + "')|State('" + srv.getStatus() + "')]");
+				srv.setVpsLabel(vp.getLabel());
+				SPhantom.print("Deploying server [Label('" + srv.getLabel() + "')|State('" + srv.getStatus() + "')|MaxP(" + srv.getMaxPlayers() + ")]");
 				serversByType.get(type).add(srv);
 				Manager.getInstance().getServersByLabel().put(srv.getLabel(), srv);
 				vp.getServers().add(srv);
@@ -345,6 +343,7 @@ public class Core implements Scheduled {
 			if (vp == null) break;
 			Server srv = Server.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, type.getKeys());
 			set.add(srv);
+			srv.setVpsLabel(vp.getLabel());
 			serversByType.get(type).add(srv);
 			Manager.getInstance().getServersByLabel().put(srv.getLabel(), srv);
 			vp.getServers().add(srv);
@@ -360,12 +359,13 @@ public class Core implements Scheduled {
 		}
 		SPhantomConfig conf = SPhantom.getInstance().getSphantomConfig();
 		McServerConfigObject obj = conf.getInstances().get(type);
-		if (fromBalk) SPhantom.print("deployServerOnVps() [DEFRAGMENTATION SEQUENCING] | Transfert on " + v.getLabel() + " |Type : " + type + "\n_______________________________________________]");
+		if (fromBalk) SPhantom.print("[DEFRAGMENTATION SEQUENCING] | Transfert on " + v.getLabel() + " |Type : " + type + "\n_______________________________________________]");
 		else if (SPhantom.logDiv()) SPhantom.print("Deploy Server ON VPS |Type_" + type + "|Vps = " + v.getLabel());
 		Server srv = Server.fromScratch(type, obj.getMaxPlayers(), v.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, type.getKeys());
 		serversByType.get(type).add(srv);
 		Manager.getInstance().getServersByLabel().put(srv.getLabel(), srv);
 		v.getServers().add(srv);
+		srv.setVpsLabel(v.getLabel());
 		PacketSender.getInstance().bootServer(new PacketPhantomBootServer(srv));
 	}
 

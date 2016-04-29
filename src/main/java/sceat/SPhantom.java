@@ -15,6 +15,7 @@ import sceat.domain.adapter.mq.IMessaging;
 import sceat.domain.config.SPhantomConfig;
 import sceat.domain.network.Core;
 import sceat.domain.network.Core.OperatingMode;
+import sceat.domain.network.ServerProvider;
 import sceat.domain.protocol.PacketSender;
 import sceat.domain.protocol.Security;
 import sceat.domain.protocol.handler.PacketHandler;
@@ -38,7 +39,7 @@ public class SPhantom {
 	public boolean logHeart = false;
 	public boolean logprovider = true;
 	public boolean logDiv = true;
-	private Iphantom iphantom = new VultrConnector();
+	private Iphantom iphantom;
 	private Security security;
 
 	/**
@@ -81,7 +82,9 @@ public class SPhantom {
 			}
 		});
 		this.config = new SPhantomConfig();
+		this.iphantom = new VultrConnector();
 		new Manager();
+		new ServerProvider();
 		new Core();
 		new PacketHandler();
 		new PacketSender(getSphantomConfig().getRabbitUser(), getSphantomConfig().getRabbitPassword(), local);

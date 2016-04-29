@@ -53,8 +53,8 @@ public class PacketPhantomSymbiote extends PacketPhantom {
 	public void handleData(MessagesType type) {
 		if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketSymbiote [" + getVpsLabel() + "|" + getState() + "|" + getIp().getHostAddress() + "|Ram(" + getRam() + ")]");
 		ConcurrentHashMap<String, Vps> varmap = Core.getInstance().getVps();
-		if (varmap.containsKey(getVpsLabel())) varmap.get(getVpsLabel()).setState(getState());
-		else new Vps(getVpsLabel(), getRam(), getIp(), new HashSet<Server>()).register().setState(getState());
+		if (varmap.containsKey(getVpsLabel())) varmap.get(getVpsLabel()).setUpdated(true).setState(getState());
+		else new Vps(getVpsLabel(), getRam(), getIp(), new HashSet<Server>()).register().setUpdated(true).setState(getState());
 	}
 
 	public String getVpsLabel() {

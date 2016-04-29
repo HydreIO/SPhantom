@@ -51,7 +51,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 	protected void serialize_() {
 		writeString(getLabel());
 		writeString(this.vpsLabel);
-		writeString(getType().name());
+		writeByte(getType().getId());
 		writeInt(getMaxp());
 		writeString(this.ip);
 		writeMap(this.players, d -> writeString(d.name()), d -> writeCollection(d, e -> writeString(e.toString())));
@@ -64,7 +64,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 	protected void deserialize_() {
 		this.label = readString();
 		this.vpsLabel = readString();
-		this.type = ServerType.valueOf(readString());
+		this.type = ServerType.fromByte(readByte());
 		this.maxp = readInt();
 		this.ip = readString();
 		this.players = readMap(() -> Grades.valueOf(readString()), () -> readCollection(new HashSet<UUID>(), () -> UUID.fromString(readString())));

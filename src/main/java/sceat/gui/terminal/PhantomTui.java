@@ -2,8 +2,10 @@ package sceat.gui.terminal;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 
+import sceat.domain.network.Core;
 import sceat.domain.network.server.Server.ServerType;
 
 import com.googlecode.lanterna.TerminalPosition;
@@ -67,18 +69,27 @@ public class PhantomTui {
 			ask.type = ServerType.valueOf(box.getText());
 			ask.nbr = Integer.parseInt(tb.getText());
 			MessageDialog.showMessageDialog(gui, "Infos", "You just created " + ask.nbr + " Server with type " + ask.type, MessageDialogButton.Close);
+			canlog = true;
 			try {
 				screen.stopScreen();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			canlog = true;
+			Core.getInstance().forceDeployServer(ask.type, ask.nbr);
 		});
 		panel.addComponent(new EmptySpace(new TerminalSize(1, 1)));
 		panel.addComponent(new EmptySpace(new TerminalSize(0, 0)));
 		panel.addComponent(b);
 		window.setComponent(panel.withBorder(Borders.doubleLine("Boot Server")));
 		gui.addWindowAndWait(window);
+		CompletableFuture.runAsync(() -> {
+			try {
+				Thread.sleep(7000);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			canlog = true;
+		});
 	}
 
 	public static Label label = new Label("");

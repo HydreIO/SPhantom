@@ -23,13 +23,13 @@ public class ServerProvider {
 	private Defqon defqon = Defqon.FIVE;
 
 	/**
-	 * Map des instances préenregistré dans la config (généralement les gros dédié de base pour les joueurs constants)
+	 * Map des instances prï¿½enregistrï¿½ dans la config (gï¿½nï¿½ralement les gros dï¿½diï¿½ de base pour les joueurs constants)
 	 * <p>
 	 * on cherchera d'abord a remplir ceux la avant de toucher au instances vultr
 	 */
 	private ConcurrentHashMap<String, Vps> configInstances = new ConcurrentHashMap<String, Vps>();
 	/**
-	 * Map des instances suplémentaire loué a l'heure, mises a jour en fonction de la ram dispo sur les Vps et la ram demandée pour le type du serveur
+	 * Map des instances suplï¿½mentaire louï¿½ a l'heure, mises a jour en fonction de la ram dispo sur les Vps et la ram demandï¿½e pour le type du serveur
 	 */
 	private ConcurrentHashMap<ServerType, Vps> ordered = new ConcurrentHashMap<ServerType, Vps>();
 
@@ -101,9 +101,9 @@ public class ServerProvider {
 	}
 
 	/**
-	 * On recup le vps aproprié puis on le remplace par le premier adéquat trouvé dans la liste des vps online
+	 * On recup le vps apropriï¿½ puis on le remplace par le premier adï¿½quat trouvï¿½ dans la liste des vps online
 	 * <p>
-	 * synchronized pour que les opérations de remplacement ne soit pas baisées
+	 * synchronized pour que les opï¿½rations de remplacement ne soit pas baisï¿½es
 	 * 
 	 * @param type
 	 * @param exclude
@@ -117,17 +117,20 @@ public class ServerProvider {
 		SPhantomConfig sc = SPhantom.getInstance().getSphantomConfig();
 		Vps vp = null;
 		for (Vps vss : getConfigInstances().values())
-			if (vss.getAvailableRam(true) >= sc.getRamFor(type)) { // recherche prioritaire dans les machines configurée (vps/dédié non loué a l'heure)
+			if (vss.getAvailableRam(true) >= sc.getRamFor(type)) { // recherche prioritaire dans les machines configurï¿½e (vps/dï¿½diï¿½ non louï¿½ a l'heure)
 				vp = vss;
-				if (exclude.isPresent() && vss == exclude.get()) continue;
+				if (!vp.isUpdated() && exclude.isPresent() && vss == exclude.get()) continue;
+				if (vp != null && !vp.isUpdated()) vp = null;
 				break;
 			}
 		Vps vf = getOrdered().get(type);
 		if (vp == null) vp = exclude.isPresent() ? vf == exclude.get() ? null : vf : vf;
+		if (vf != null && !vf.isUpdated()) vf = null;
 		if (log) SPhantom.print("Found vps : " + (vp == null ? "NULL :(" : vp.getLabel()));
 		if (vp == null) {
 			vp = searchFirst(sc.getRamFor(type), exclude);
-			if (SPhantom.getInstance().logprovider) SPhantom.print("Force found vps : " + (vp == null ? "Not found again.. Houston we have a problem" : vp.getLabel()));
+			if (vp != null && !vp.isUpdated()) vp = null;
+			if (SPhantom.getInstance().logprovider) SPhantom.print("Force found vps : " + (vp == null ? "Not found again.. Wait for defqon to grow" : vp.getLabel()));
 			if (vp == null) return null; // si on trouve vraiment pas de vps on return null et tant pis aucun serveur ne s'ouvrira il faudra attendre l'ouverture d'une instance automatiquement
 		}
 		int availableRam = vp.getAvailableRam(true) - sc.getRamFor(type);

@@ -38,7 +38,7 @@ public class Server {
 		ConcurrentHashMap<String, Server> sbl = Manager.getInstance().getServersByLabel();
 		if (sbl.contains(pkt.getLabel())) {
 			sr = sbl.get(pkt.getLabel());
-			if (sr.getStatus() != Statut.REDUCTION) sr.setStatus(pkt.getState()); // si on connait le serv et qu'il est en reduction alors on ne change pas le statut 
+			if (sr.getStatus() != Statut.REDUCTION) sr.setStatus(pkt.getState()); // si on connait le serv et qu'il est en reduction alors on ne change pas le statut
 			if (!pkt.isFromSymbiote()) sr.setPlayers(pkt.getPlayersPerGrade()); // sa voudra dire qu'on a reçu un packet avant d'avoir pu informer le serveur qu'il devait se reduire
 		} else {
 			sr = canBeNull ? null : new Server(pkt.getLabel(), pkt.getType(), pkt.getState(), pkt.getMaxp(), pkt.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, pkt.getKeys().stream()
@@ -203,6 +203,7 @@ public class Server {
 
 	public static enum ServerType {
 		Proxy(
+				(byte) 0,
 				RessourcePack.RESSOURCE_PACK_DEFAULT,
 				DestinationKey.PROXY,
 				DestinationKey.HUBS_AND_PROXY,
@@ -211,6 +212,7 @@ public class Server {
 				DestinationKey.ALL,
 				DestinationKey.ALL_SPHANTOM),
 		Lobby(
+				(byte) 1,
 				RessourcePack.RESSOURCE_PACK_DEFAULT,
 				DestinationKey.ALL,
 				DestinationKey.HUBS,
@@ -218,20 +220,30 @@ public class Server {
 				DestinationKey.HUBS_PROXY_SPHANTOM,
 				DestinationKey.HUBS_PROXY_SPHANTOM_SYMBIOTE,
 				DestinationKey.ALL_SPHANTOM),
-		Agares(RessourcePack.AGARES, DestinationKey.ALL, DestinationKey.SERVEURS, DestinationKey.SRV_AGARES, DestinationKey.ALL_SPHANTOM),
-		AresRpg(RessourcePack.ARESRPG, DestinationKey.ALL, DestinationKey.SERVEURS, DestinationKey.SRV_ARES, DestinationKey.ALL_SPHANTOM),
-		Iron(RessourcePack.IRON, DestinationKey.ALL, DestinationKey.SERVEURS, DestinationKey.SRV_IRON, DestinationKey.ALL_SPHANTOM);
+		Agares((byte) 2, RessourcePack.AGARES, DestinationKey.ALL, DestinationKey.SERVEURS, DestinationKey.SRV_AGARES, DestinationKey.ALL_SPHANTOM),
+		AresRpg((byte) 3, RessourcePack.ARESRPG, DestinationKey.ALL, DestinationKey.SERVEURS, DestinationKey.SRV_ARES, DestinationKey.ALL_SPHANTOM),
+		Iron((byte) 4, RessourcePack.IRON, DestinationKey.ALL, DestinationKey.SERVEURS, DestinationKey.SRV_IRON, DestinationKey.ALL_SPHANTOM);
 
+		private byte id;
 		private String[] keys;
 		private RessourcePack pack;
 
-		private ServerType(RessourcePack pack, String... keys) {
+		private ServerType(byte id, RessourcePack pack, String... keys) {
 			this.keys = keys;
+			this.id = id;
 			this.pack = pack;
+		}
+
+		public byte getId() {
+			return id;
 		}
 
 		public RessourcePack getPack() {
 			return pack;
+		}
+
+		public static ServerType fromByte(byte id) {
+			return Arrays.stream(values()).filter(i -> i.id == id).findFirst().orElse(null);
 		}
 
 		public String[] getKeys() {

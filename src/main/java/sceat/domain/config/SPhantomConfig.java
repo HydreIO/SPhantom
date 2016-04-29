@@ -23,8 +23,6 @@ public class SPhantomConfig {
 	private int RabbitPort = 0000;
 	private int DeployedVpsRam = 8;
 	private String VultrKey = "key";
-	private String VultrUser = "user";
-	private String VultrPass = "pass";
 	private int maxInstance = 10;
 	private List<VpsConfigObject> servers = new ArrayList<SPhantomConfig.VpsConfigObject>();
 	private Map<ServerType, McServerConfigObject> instances = new HashMap<Server.ServerType, SPhantomConfig.McServerConfigObject>();
@@ -51,8 +49,6 @@ public class SPhantomConfig {
 			getConfig().set("Broker.Port", RabbitPort);
 			getConfig().set("MaxDeployedInstances", this.maxInstance);
 			getConfig().set("DeployedVpsRam", DeployedVpsRam);
-			getConfig().set(Constant.CONFIG_Optional_var + ".Vultr_User", getVultrUser());
-			getConfig().set(Constant.CONFIG_Optional_var + ".Vultr_Pass", getVultrPass());
 			getConfig().set(Constant.CONFIG_Optional_var + ".Vultr_Api_Key", getVultrKey());
 			getServers().forEach(s -> s.write(getConfig()));
 			getInstances().forEach((k, v) -> v.setType(k).write(getConfig()));
@@ -84,14 +80,6 @@ public class SPhantomConfig {
 		return RabbitPort;
 	}
 
-	public String getVultrUser() {
-		return VultrUser;
-	}
-
-	public String getVultrPass() {
-		return VultrPass;
-	}
-
 	public static boolean isReloading() {
 		return isReloading;
 	}
@@ -113,9 +101,6 @@ public class SPhantomConfig {
 			this.RabbitPort = getConfig().getInt("Broker.Port");
 			SPhantom.print("Broker_port [ok]");
 			this.DeployedVpsRam = getConfig().getInt("DeployedVpsRam");
-			this.VultrUser = getConfig().getString(Constant.CONFIG_Optional_var + ".Vultr_User");
-			SPhantom.print("Vultr_User [ok]");
-			this.VultrPass = getConfig().getString(Constant.CONFIG_Optional_var + ".Vultr_Pass");
 			SPhantom.print("Vultr_Pass [ok]");
 			this.VultrKey = getConfig().getString(Constant.CONFIG_Optional_var + ".Vultr_Api_Key");
 			SPhantom.print("Vultr_key [ok]");

@@ -4,10 +4,9 @@ Broker:
   Adress: 149.202.230.168
   Port: 5672
 MaxDeployedInstances: 3
+DeployedVpsRam: 8
 Optional_Var:
-  Vultr_User: user
-  Vultr_Pass: pass
-  Vultr_Api_Key: key
+  Vultr_Api_Key: E5EVQNLYRHWFT2QMQDOTCTF2MRPPNR
 Instances:
   Servers:
     Vpsz_01:

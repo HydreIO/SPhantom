@@ -20,6 +20,11 @@ public class Vps implements Comparable<Vps> {
 	private VpsState state;
 
 	/**
+	 * internal use only
+	 */
+	private boolean updated = false;
+
+	/**
 	 * labels
 	 */
 	private Set<Server> servers;
@@ -30,7 +35,7 @@ public class Vps implements Comparable<Vps> {
 
 	@Override
 	public String toString() {
-		return "-< [Vps]: Label('" + label + "')|Ram(" + ram + ")|Ip('" + ip.getHostAddress() + "')|State('" + state + "')|Servers(" + servers.size() + ") >-";
+		return "-< [Vps]: Label('" + label + "')|Ram(" + ram + ")|Ip('" + ip.getHostAddress() + "')|State('" + state + "')|Servers(" + servers.size() + ")|Updated(" + isUpdated() + ") >-";
 	}
 
 	public Vps(String label, int ram, InetAddress ip, Set<Server> srvs) {
@@ -42,6 +47,15 @@ public class Vps implements Comparable<Vps> {
 
 	public Vps register() {
 		Core.getInstance().getVps().put(getLabel(), this);
+		return this;
+	}
+
+	public boolean isUpdated() {
+		return this.updated;
+	}
+
+	public Vps setUpdated(boolean updated) {
+		this.updated = updated;
 		return this;
 	}
 
@@ -66,7 +80,7 @@ public class Vps implements Comparable<Vps> {
 	public int getAvailableRam(boolean excludeClosing) {
 		return ram
 				- getServers().stream().filter(s -> excludeClosing ? s.getStatus() != Statut.REDUCTION && s.getStatus() != Statut.CLOSING : true)
-						.mapToInt(t -> SPhantom.getInstance().getSphantomConfig().getRamFor(t.getType())).reduce((a, b) -> a + b).getAsInt();
+						.mapToInt(t -> SPhantom.getInstance().getSphantomConfig().getRamFor(t.getType())).reduce((a, b) -> a + b).orElse(0);
 	}
 
 	public VpsState getState() {
