@@ -50,7 +50,7 @@ function addServer(server , parentList) {
 function setupWebSockets() {
     ws = new WebSocket("ws://"+window.location.hostname+(window.location.port ? ':'+window.location.port: '')+"/servers");
     ws.onmessage = function (evt) {
-        addServer(JSON.parse(evt.data));
+        addVps(JSON.parse(evt.data));
     }
 }
 
