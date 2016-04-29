@@ -45,15 +45,34 @@ public class VultrConnector implements Iphantom {
 	private Map<String, Integer> servers;
 
 	public VultrConnector() {
+		this.deployed = SPhantom.getInstance().getSphantomConfig().getMaxInstance();
 		this.api = JVultrAPI.newClient(SPhantom.getInstance().getSphantomConfig().getVultrKey());
 		this.servers = new HashMap<>();
 	}
 
-	// vultr peut refuser de destroy une instance si elle a été créé ya pas longtemps, faut donc foutre une liste pour add le vps a destroy et retester tout les X temps puis le virer (en laissant le vpsState sur destroying)
+	private int deployed;
+	private long lastReq = System.currentTimeMillis();
+
+	public synchronized boolean checkReq() {
+		if (System.currentTimeMillis() < lastReq) return false;
+		lastReq = System.currentTimeMillis();
+		return true;
+	}
+
+	private void sleep() {
+		try {
+			Thread.sleep(1300);
+		} catch (InterruptedException e) {
+			Main.printStackTrace(e);
+		}
+	}
 
 	@Override
 	public Vps deployInstance(String label, int ram) {
+		if (!checkReq()) sleep();
+		deployed--;
 		try {
+			if (deployed <= 0) throw new IllegalAccessException("Too many instance a deployed ! please configure for bypass");
 			BiValue<JVultrPlan, JVultrRegion> plan = null;
 			for (String region : REGIONS) {
 				plan = JVultrUtil.searchPlan(region, ram * 1024);
@@ -64,7 +83,7 @@ public class VultrConnector implements Iphantom {
 			JVultrServer server = api.createServer(plan.getSecond(), plan.getFirst(), os, null, null, script, null, null, null, label, null, false, null, null, null, null);
 			servers.put(label, server.getId());
 			return Vps.fromBoot(label, ram, InetAddress.getByName(server.getInternalIp()));
-		} catch (JVultrException | UnknownHostException e) {
+		} catch (JVultrException | UnknownHostException | IllegalAccessException e) {
 			Main.printStackTrace(e);
 			return null;
 		}
@@ -72,6 +91,7 @@ public class VultrConnector implements Iphantom {
 
 	@Override
 	public void destroyServer(String label) {
+		if (!checkReq()) sleep();
 		ConcurrentHashMap<String, Vps> vps = Core.getInstance().getVps();
 		if (!vps.containsKey(label)) SPhantom.print("Try destroying vps instance : [" + label + "] /!\\ This instance is not registered in Sphantom or already destroyed /!\\");
 		else {
@@ -108,6 +128,7 @@ public class VultrConnector implements Iphantom {
 	@Override
 	public int countDeployedInstance() {
 		try {
+			if (!checkReq()) sleep();
 			return api.getSevers().size();
 		} catch (JVultrException e) {
 			Main.printStackTrace(e);
