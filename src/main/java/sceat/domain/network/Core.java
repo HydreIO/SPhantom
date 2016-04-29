@@ -74,7 +74,7 @@ public class Core implements Scheduled {
 			serversByType.put(t, new HashSet<Server>());
 			playersByType.put(t, new HashSet<UUID>());
 		});
-		SPhantom.getInstance().getSphantomConfig().getServers().stream().map(vs -> new Vps(vs.getName(), vs.getRam(), getByName(vs.getIp()), New.set()))
+		SPhantom.getInstance().getSphantomConfig().getServers().stream().map(vs -> new Vps(vs.getName(), vs.getRam(), getByName(vs.getIp()), New.set(), System.currentTimeMillis()))
 				.forEach(v -> ServerProvider.getInstance().getConfigInstances().put(v.getLabel(), v.register()));
 		Scheduler.getScheduler().register(this);
 		initialised = true;
@@ -199,7 +199,7 @@ public class Core implements Scheduled {
 	public void checkVps(String label) {
 		if (getVps().containsKey(label)) return;
 		try {
-			new Vps(label, 0, InetAddress.getByName("127.0.0.1"), New.set()).register();
+			new Vps(label, 0, InetAddress.getByName("127.0.0.1"), New.set(), System.currentTimeMillis()).register();
 		} catch (UnknownHostException e) {
 			Main.printStackTrace(e);
 		}

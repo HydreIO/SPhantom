@@ -10,6 +10,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import sceat.domain.Heart;
 import sceat.domain.Manager;
+import sceat.domain.adapter.api.PhantomApi;
+import sceat.domain.adapter.api.PhantomApi.ServerApi;
+import sceat.domain.adapter.api.PhantomApi.VpsApi;
 import sceat.domain.adapter.general.Iphantom;
 import sceat.domain.adapter.mq.IMessaging;
 import sceat.domain.config.SPhantomConfig;
@@ -41,6 +44,7 @@ public class SPhantom {
 	public boolean logDiv = true;
 	private Iphantom iphantom;
 	private Security security;
+	private PhantomApi mainApi;
 
 	/**
 	 * Init sphantom
@@ -89,6 +93,18 @@ public class SPhantom {
 		new PacketHandler();
 		new PacketSender(getSphantomConfig().getRabbitUser(), getSphantomConfig().getRabbitPassword(), local);
 		new Heart(local).takeLead();
+	}
+
+	public PhantomApi getMainApi() {
+		return mainApi;
+	}
+
+	public ServerApi getServerApi(String srv) {
+		return Manager.getInstance().getServersByLabel().getOrDefault(srv, null);
+	}
+
+	public VpsApi getVpsApi(String vps) {
+		return Core.getInstance().getVps().getOrDefault(vps, null);
 	}
 
 	public boolean logPkt() {

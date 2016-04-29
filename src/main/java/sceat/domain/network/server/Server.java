@@ -1,6 +1,10 @@
 package sceat.domain.network.server;
 
 import java.net.InetAddress;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,6 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import sceat.domain.Manager;
+import sceat.domain.adapter.api.PhantomApi.ServerApi;
 import sceat.domain.minecraft.Grades;
 import sceat.domain.minecraft.RessourcePack;
 import sceat.domain.minecraft.Statut;
@@ -19,7 +24,7 @@ import sceat.domain.protocol.DestinationKey;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
 import sceat.domain.utils.ServerLabel;
 
-public class Server {
+public class Server implements ServerApi {
 
 	/**
 	 * Au moment ou un packet server arrive c'est la qu'on synchronise les joueurs
@@ -71,13 +76,6 @@ public class Server {
 	private InetAddress ipadress;
 	private long timeout;
 
-	/**
-	 * Lors de la gestion, sphantom decide en fonction du nombre de joueurs combien d'instance de ce type de serveur sont requise
-	 * <p>
-	 * si il y a d�ja suffisament d'instance, "needed" passe sur false et permet ainsi la destruction du serveur si le dernier joueur se d�connecte
-	 */
-	private boolean needed = true;
-
 	public Server(String label, ServerType type, Statut state, int maxplayer, InetAddress ip, RessourcePack pack, String... destinationKeys) {
 		this.label = label;
 		this.type = type;
@@ -99,6 +97,14 @@ public class Server {
 		return this;
 	}
 
+	public long getTimeout() {
+		return timeout;
+	}
+
+	public String getLastTimeout() {
+		return LocalDateTime.ofInstant(Instant.ofEpochMilli(getTimeout()), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("dd/MM HH:mm"));
+	}
+
 	public String getVpsLabel() {
 		return vpsLabel;
 	}
@@ -109,10 +115,6 @@ public class Server {
 
 	public boolean hasTimeout() {
 		return System.currentTimeMillis() > this.timeout + 10000;
-	}
-
-	public boolean isNeeded() {
-		return this.needed;
 	}
 
 	public Server setStatus(Statut st) {
