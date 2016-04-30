@@ -22,6 +22,7 @@ import org.apache.commons.cli.ParseException;
 import sceat.domain.Heart;
 import sceat.domain.ressources.Constant;
 import sceat.domain.schedule.Scheduler;
+import sceat.gui.web.GrizzlyWebServer;
 import sceat.infra.input.ScannerInput;
 
 public class Main {
@@ -118,6 +119,7 @@ public class Main {
 
 	public static void shutDown() {
 		SPhantom.print("Shutdown..");
+		GrizzlyWebServer.stop();
 		ScannerInput.shutDown();
 		SPhantom.getInstance().getExecutor().shutdown();
 		Scheduler.getScheduler().shutdown();

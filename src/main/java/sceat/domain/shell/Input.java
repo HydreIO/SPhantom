@@ -1,12 +1,11 @@
 package sceat.domain.shell;
 
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Input {
 
 	private static Input instance = new Input();
-	private Queue<String> handlers = new LinkedList<String>();
+	private ConcurrentLinkedQueue<String> handlers = new ConcurrentLinkedQueue<String>();
 
 	private Input() {
 	}
