@@ -1,5 +1,5 @@
 var ws;
-var console = document.getElementById("console-text");
+var consoleText = document.getElementById("console-text");
 function blink() {
     $('.blink').fadeOut(500).fadeIn(500);
 }
@@ -22,13 +22,13 @@ function fakeInput() {
 function setupWebSockets() {
     ws = new WebSocket("ws://"+window.location.hostname+(window.location.port ? ':'+window.location.port: '')+"/console");
     ws.onmessage = function (evt) {
-        console.innerHTML = console.innerHTML + evt.data.split("\n").join("</br>");
+        consoleText.innerHTML = consoleText.innerHTML + evt.data.split("\n").join("</br>");
         scrollConsole();
     }
 }
 
 function scrollConsole(){
-    console.scrollTop = console.scrollHeight;
+    consoleText.scrollTop = consoleText.scrollHeight;
 }
 
 $( document ).ready(function (){
