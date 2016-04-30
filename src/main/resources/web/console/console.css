@@ -21,7 +21,7 @@
 
 #console-text{
     overflow-y: scroll;
-    height: 98%;
+    height: 97%;
 }
 
 #console-input{
@@ -29,4 +29,5 @@
     position: absolute;
     width: 100%;
     bottom: 0;
+    height: 3%;
 }

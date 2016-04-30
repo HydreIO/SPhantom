@@ -32,4 +32,9 @@ public class GrizzlyWebServer {
         this.server.shutdown();
     }
 
+    public static void main(String[] args) throws IOException, InterruptedException {
+        new GrizzlyWebServer(8080);
+        Thread.sleep(Long.MAX_VALUE);
+    }
+
 }

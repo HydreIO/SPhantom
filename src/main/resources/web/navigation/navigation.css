@@ -1,0 +1,72 @@
+body {
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    background: url('http://wallpapercraze.com/images/wallpapers/CRminecraftghost-42382.jpeg') no-repeat center 0;
+}
+
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    width: 200px;
+    background-color: #e74c3c;
+    position: fixed;
+    height: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    transition:width 300ms;
+}
+
+nav ul.nav-collapsed {
+    width: 50px;
+}
+
+ul.nav-collapsed > li > a > span{
+    display: none;
+}
+
+nav li a {
+    display: block;
+    color: white;
+    padding: 8px 0 8px 16px;
+    text-decoration: none;
+}
+
+nav li a.active {
+    background-color: #d91e18;
+}
+
+nav li a:hover:not(.active) {
+    background-color: #e74c3c;
+}
+
+#nav-collapse {
+    position: absolute;
+    bottom: 0;
+    color: white;
+    width: 200px;
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    background-color: #d91e18;
+    text-decoration: none;
+    cursor: pointer;
+    transition:width 300ms;
+}
+
+
+#nav-collapse.nav-collapsed {
+    width: 50px;
+}
+
+#content {
+    height: 100%;
+    margin-left: 200px;
+    transition:margin 300ms;
+}
+
+#content.nav-collapsed{
+    margin-left: 50px !important;
+}

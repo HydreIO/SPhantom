@@ -3,26 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <title>SPhantom console</title>
-    <link rel="stylesheet" href="../navigation.css">
+    <INCLUDE>navigation/navigationh.html</INCLUDE>
     <link rel="stylesheet" href="servers.css">
 </head>
 <body>
-    <nav>
-        <ul class="nav-hideable">
-            <li><a href="../index.html">Home</a></li>
-            <li><a href="../console/console.html">Console</a></li>
-            <li><a class="active" href="servers.html">Servers</a></li>
-            <li><a href="#about">About</a></li>
-        </ul>
-    </nav>
-    <button id="nav-button" onclick="changeNavState()">&gt</button>
+    <INCLUDE>navigation/navigation.html</INCLUDE>
     <div id="content" class="nav-hideable">
         <ul id="servers"></ul>
     </div>
-    <script src="https://code.jquery.com/jquery-2.2.3.min.js"
-            integrity="sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo="
-            crossorigin="anonymous"></script>
     <script src="servers.js"></script>
-    <script src="../navigation.js"></script>
+
 </body>
 </html>
