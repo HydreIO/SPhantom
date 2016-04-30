@@ -10,6 +10,7 @@ import sceat.domain.minecraft.Statut;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.protocol.MessagesType;
+import sceat.domain.trigger.PhantomTrigger;
 
 public class PacketPhantomBootServer extends PacketPhantom {
 
@@ -59,6 +60,9 @@ public class PacketPhantomBootServer extends PacketPhantom {
 
 	@Override
 	public void handleData(MessagesType te) {
+		PhantomTrigger.getAll().forEach(t -> {
+			
+		});
 		if (cameFromLocal()) return;
 		if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketBootServer [" + getLabel() + "|MaxP(" + getMaxP() + ")|Ram(" + getRam() + ")]");
 		Server.fromPacket(new PacketPhantomServerInfo(Statut.CREATING, label, vpsLabel, ip, type, maxP, new HashMap<>(), type.getKeysAsSet(), false), false);

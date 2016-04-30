@@ -34,6 +34,7 @@ import sceat.domain.schedule.Schedule;
 import sceat.domain.schedule.Scheduled;
 import sceat.domain.schedule.Scheduler;
 import sceat.domain.schedule.TimeUnit;
+import sceat.domain.trigger.PhantomTrigger;
 import sceat.domain.utils.New;
 import sceat.domain.utils.ServerLabel;
 
@@ -238,6 +239,7 @@ public class Core implements Scheduled {
 	 */
 	public void setMode(OperatingMode mode, boolean auto) {
 		if (SPhantom.logDiv()) SPhantom.print("Setting mode " + mode + " [" + (auto ? "AUTO" : "MANUAL") + "]");
+		PhantomTrigger.getAll().forEach(t -> t.handleOpMode(mode));
 		this.mode = mode;
 	}
 

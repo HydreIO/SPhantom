@@ -8,6 +8,7 @@ import sceat.SPhantom;
 import sceat.domain.config.SPhantomConfig;
 import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.network.server.Vps;
+import sceat.domain.trigger.PhantomTrigger;
 
 @SuppressWarnings("unchecked")
 public class ServerProvider {
@@ -53,6 +54,7 @@ public class ServerProvider {
 
 	public void setDefqon(Defqon defqon) {
 		this.defqon = defqon;
+		PhantomTrigger.getAll().forEach(t -> t.handleDefcon(defqon));
 	}
 
 	public Defqon getDefqon() {
