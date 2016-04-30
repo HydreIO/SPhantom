@@ -1,6 +1,5 @@
 package sceat.domain;
 
-import java.util.Collection;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -45,8 +44,7 @@ public class Heart implements Scheduled {
 	}
 
 	public Heart takeLead() {
-		if (this.local)
-			return this; // if local, disable rabbit & replica
+		if (this.local) return this; // if local, disable rabbit & replica
 		if (SPhantom.getInstance().isLeading()) {
 			SPhantom.print("Already lead !");
 			return this;
@@ -61,7 +59,8 @@ public class Heart implements Scheduled {
 	/**
 	 * Called when another heart take the lead
 	 * 
-	 * @param pkt packet to transplant
+	 * @param pkt
+	 *            packet to transplant
 	 */
 	public void transplant(PacketPhantomHeartBeat pkt) {
 		SPhantom.print("Another instance has taken the lead ! SPhantom is going to sleep");
@@ -72,7 +71,8 @@ public class Heart implements Scheduled {
 	/**
 	 * Called when others hearts heartbeat
 	 * 
-	 * @param pkt packet to transfuse
+	 * @param pkt
+	 *            packet to transfuse
 	 */
 	public void transfuse(PacketPhantomHeartBeat pkt) {
 		getReplicas().stream().filter(d -> d.getSecu().correspond(pkt.getSecu())).forEach(PacketPhantomHeartBeat::resetHandShake);
@@ -81,7 +81,6 @@ public class Heart implements Scheduled {
 	public boolean isAlive() {
 		return this.alive;
 	}
-
 
 	/**
 	 * Kill this heart

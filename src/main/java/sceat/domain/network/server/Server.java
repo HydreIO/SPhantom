@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 import sceat.domain.Manager;
 import sceat.domain.adapter.api.PhantomApi.ServerApi;
