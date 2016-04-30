@@ -1,0 +1,36 @@
+package sceat.domain.trigger;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import sceat.domain.adapter.api.PhantomApi.VpsApi;
+import sceat.domain.network.Core.OperatingMode;
+import sceat.domain.network.ServerProvider.Defqon;
+
+public class PhantomTrigger {
+
+	private static PhantomTrigger instance = new PhantomTrigger();
+	private Set<Trigger> trg = new HashSet<PhantomTrigger.Trigger>();
+
+	private PhantomTrigger() {
+	}
+
+	public static Set<Trigger> getAll() {
+		return instance.trg;
+	}
+
+	public interface Trigger {
+
+		void handleDefcon(Defqon d);
+
+		void handleOpMode(OperatingMode o);
+
+		void handleVps(VpsApi a);
+
+		public static Trigger n3w(Trigger t) {
+			instance.trg.add(t);
+			return t;
+		}
+
+	}
+}
