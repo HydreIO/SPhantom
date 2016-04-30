@@ -10,17 +10,20 @@ import sceat.domain.network.server.Server.ServerType;
 public class ServerLabel {
 	private static Random r = new Random();
 
-	private ServerLabel(){}
+	private ServerLabel() {
+	}
 
 	public static String newLabel(ServerType type) {
 		String label;
-		while (Manager.getInstance().getServersByLabel().containsKey(label = type.name() + "-" + r.nextInt(5000))) ;
+		while (Manager.getInstance().getServersByLabel().containsKey(label = type.name() + "-" + r.nextInt(5000)))
+			;
 		return label;
 	}
 
 	public static String newVpsLabel() {
 		String label;
-		while (Core.getInstance().getVps().containsKey(label = UUID.randomUUID().toString().substring(4, 8) + "_Ares_" + r.nextInt(5000))) ;
+		while (Core.getInstance().getVps().containsKey(label = UUID.randomUUID().toString().substring(4, 8) + "_ares_" + r.nextInt(5000)))
+			;
 		return label;
 	}
 

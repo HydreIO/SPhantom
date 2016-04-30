@@ -82,7 +82,7 @@ public class VultrConnector implements IPhantom {
 			JVultrScript script = api.getScripts().values().iterator().next();
 			JVultrServer server = api.createServer(plan.getSecond(), plan.getFirst(), os, null, null, script, null, null, null, label, null, false, null, null, null, null, -1, label);
 			servers.put(label, server.getId());
-			return Vps.fromBoot(label, ram, InetAddress.getByName(server.getInternalIp()));
+			return Vps.fromBoot(label, ram, InetAddress.getByName(server.getMainIp()));
 		} catch (JVultrException | UnknownHostException | IllegalAccessException e) {
 			Main.printStackTrace(e);
 			return null;

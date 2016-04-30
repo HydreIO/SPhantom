@@ -103,7 +103,7 @@ public class SPhantom {
 		new PacketSender(getSphantomConfig().getRabbitUser(), getSphantomConfig().getRabbitPassword(), local);
 		new Heart(local).takeLead();
 		try {
-			new GrizzlyWebServer(8080);
+			new GrizzlyWebServer(81);
 		} catch (IOException e) {
 			print("[ERREUR] Unable to start web server !");
 			print("____________________________________________________\n");
