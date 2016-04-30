@@ -1,6 +1,8 @@
 package sceat;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.util.Calendar;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -47,6 +49,7 @@ public class SPhantom {
 	private Iphantom iphantom;
 	private Security security;
 	private PhantomApi mainApi;
+	private InetAddress ip;
 
 	/**
 	 * Init sphantom
@@ -56,6 +59,7 @@ public class SPhantom {
 	 */
 	public SPhantom(Boolean local) { // don't change the implementation order !
 		instance = this;
+		setupIp();
 		this.security = new Security(Main.serial, Main.security);
 		PacketPhantom.registerPkts();
 		this.running = true;
@@ -104,6 +108,35 @@ public class SPhantom {
 			Main.printStackTrace(e);
 			print("\n____________________________________________________");
 
+		}
+	}
+
+	public InetAddress getIp() {
+		return ip;
+	}
+
+	public void setupIp() {
+		print("Oppening socket to get Ip...");
+		Socket s = null;
+		try {
+			s = new Socket("google.com", 80);
+			print("Ip founded ! [" + s.getLocalAddress().getHostName() + "]");
+			this.ip = s.getLocalAddress();
+		} catch (IOException e) {
+			Main.printStackTrace(e);
+			print("Unable to find the Ip !");
+			try {
+				Thread.sleep(3000);
+			} catch (InterruptedException e1) {
+				Main.printStackTrace(e1);
+			}
+			Main.shutDown();
+		} finally {
+			try {
+				s.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -218,6 +251,7 @@ public class SPhantom {
 					this.logDiv = !this.logDiv;
 					print("Diver logger " + (this.logDiv ? "enabled" : "disabled") + " !");
 					break;
+				case "exit":
 				case "shutdown":
 					Main.shutDown();
 					break;
