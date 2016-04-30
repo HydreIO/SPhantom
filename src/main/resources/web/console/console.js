@@ -1,4 +1,5 @@
 var ws;
+var console = document.getElementById("console-text");
 function blink() {
     $('.blink').fadeOut(500).fadeIn(500);
 }
@@ -20,10 +21,14 @@ function fakeInput() {
 
 function setupWebSockets() {
     ws = new WebSocket("ws://"+window.location.hostname+(window.location.port ? ':'+window.location.port: '')+"/console");
-    var console = document.getElementById("console-text");
     ws.onmessage = function (evt) {
         console.innerHTML = console.innerHTML + evt.data.split("\n").join("</br>");
+        scrollConsole();
     }
+}
+
+function scrollConsole(){
+    console.scrollTop = console.scrollHeight;
 }
 
 $( document ).ready(function (){
