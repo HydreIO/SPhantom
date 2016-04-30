@@ -6,7 +6,7 @@ Broker:
 MaxDeployedInstances: 3
 DeployedVpsRam: 8
 Optional_Var:
-  Vultr_Api_Key: E5EVQNLYRHWFT2QMQDOTCTF2MRPPNR
+  Vultr_Api_Key: 5KF74UKJQLA247Q3BFPG5I2ID4QASY
 Instances:
   Servers:
     Vpsz_01:

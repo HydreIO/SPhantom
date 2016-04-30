@@ -72,6 +72,8 @@ public interface PhantomApi {
 			return SPhantom.getInstance().getVpsApi(vpsLabel);
 		}
 
+		String getLabel();
+
 		/**
 		 * When a vps is initialised he got a long value who represent his date of birth
 		 * <p>
