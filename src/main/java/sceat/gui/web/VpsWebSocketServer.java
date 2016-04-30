@@ -8,23 +8,22 @@ import org.glassfish.grizzly.websockets.WebSocket;
 import org.glassfish.grizzly.websockets.WebSocketApplication;
 
 import sceat.domain.adapter.api.PhantomApi;
+import sceat.domain.network.Core;
+import sceat.domain.network.ServerProvider;
+import sceat.domain.trigger.PhantomTrigger;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import sceat.domain.network.Core;
-import sceat.domain.network.ServerProvider;
-import sceat.domain.trigger.PhantomTrigger;
 
-public class VpsWebSocketServer extends WebSocketApplication implements PhantomTrigger.Trigger{
+public class VpsWebSocketServer extends WebSocketApplication implements PhantomTrigger.Trigger {
 
-	@SuppressWarnings("unused")
 	private Broadcaster broadcaster = new OptimizedBroadcaster();
 	private Gson gson = new GsonBuilder().create();
 
-	private VpsWebSocketServer(){
+	VpsWebSocketServer() {
 		PhantomTrigger.Trigger.n3w(this);
 	}
 
@@ -70,16 +69,16 @@ public class VpsWebSocketServer extends WebSocketApplication implements PhantomT
 
 	@Override
 	public void handleDefcon(ServerProvider.Defqon d) {
-		//Ignore
+		// Ignore
 	}
 
 	@Override
 	public void handleOpMode(Core.OperatingMode o) {
-		//Ignore
+		// Ignore
 	}
 
 	@Override
 	public void handleVps(PhantomApi.VpsApi a) {
-		broadcaster.broadcast(getWebSockets() , gson.toJson(toJsonObject(a.getLabel() , a)));
+		broadcaster.broadcast(getWebSockets(), gson.toJson(toJsonObject(a.getLabel(), a)));
 	}
 }
