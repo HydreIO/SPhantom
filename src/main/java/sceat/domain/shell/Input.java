@@ -1,14 +1,14 @@
 package sceat.domain.shell;
 
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Input {
 
 	private static Input instance = new Input();
-	private ConcurrentLinkedQueue<String> handlers = new ConcurrentLinkedQueue<String>();
+	private Queue<String> inputQueue = new ConcurrentLinkedQueue<>();
 
-	private Input() {
-	}
+	private Input() {}
 
 	public static Input getInstance() {
 		return instance;
@@ -23,13 +23,18 @@ public class Input {
 		 *            command
 		 */
 		default void push(String input) {
-			instance.handlers.add(input);
+			instance.push(input);
 		}
+	}
+
+	public void push(String input){
+		inputQueue.add(input);
 	}
 
 	public String next() {
 		while (true)
-			if (!handlers.isEmpty()) return handlers.poll();
+			if (!inputQueue.isEmpty())
+				return inputQueue.poll();
 	}
 
 }
