@@ -9,10 +9,11 @@ import sceat.domain.network.ServerProvider.Defqon;
 
 public class PhantomTrigger {
 
-	private static PhantomTrigger instance = new PhantomTrigger();
+	private static PhantomTrigger instance;
 	private Set<Trigger> trg = new HashSet<PhantomTrigger.Trigger>();
 
-	private PhantomTrigger() {
+	public PhantomTrigger() {
+		instance = this;
 	}
 
 	public static Set<Trigger> getAll() {

@@ -12,6 +12,7 @@ import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Vps;
 import sceat.domain.network.server.Vps.VpsState;
 import sceat.domain.protocol.MessagesType;
+import sceat.domain.trigger.PhantomTrigger;
 
 public class PacketPhantomSymbiote extends PacketPhantom {
 	private String vpsLabel;
@@ -55,6 +56,8 @@ public class PacketPhantomSymbiote extends PacketPhantom {
 		ConcurrentHashMap<String, Vps> varmap = Core.getInstance().getVps();
 		if (varmap.containsKey(getVpsLabel())) varmap.get(getVpsLabel()).setUpdated(true).setState(getState());
 		else new Vps(getVpsLabel(), getRam(), getIp(), new HashSet<Server>(), System.currentTimeMillis()).register().setUpdated(true).setState(getState());
+		Vps v = Core.getInstance().getVps().getOrDefault(vpsLabel, null);
+		if (v != null) PhantomTrigger.getAll().forEach(t -> t.handleVps(v));
 	}
 
 	public String getVpsLabel() {

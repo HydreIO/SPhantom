@@ -9,6 +9,7 @@ import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Vps;
 import sceat.domain.protocol.MessagesType;
 import sceat.domain.protocol.PacketSender;
+import sceat.domain.trigger.PhantomTrigger;
 
 public class PacketPhantomServerCrash extends PacketPhantom {
 
@@ -49,6 +50,8 @@ public class PacketPhantomServerCrash extends PacketPhantom {
 			SPhantom.print("PacketPhantomServerInfo : State Crashed | the server " + getLabel() + " is registered but not in a Vps object | Info ! break");
 			return;
 		}
+		Vps vss = curr;
+		PhantomTrigger.getAll().forEach(t -> t.handleVps(vss)); // trigger
 		if (curr.getServers().contains(srv)) curr.getServers().remove(srv);
 		PacketSender.getInstance().sendServer(PacketPhantomServerInfo.fromServer(srv));
 	}

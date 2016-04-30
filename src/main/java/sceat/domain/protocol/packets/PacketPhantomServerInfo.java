@@ -21,6 +21,7 @@ import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.network.server.Vps;
 import sceat.domain.protocol.MessagesType;
 import sceat.domain.protocol.PacketSender;
+import sceat.domain.trigger.PhantomTrigger;
 import sceat.domain.utils.New;
 
 public class PacketPhantomServerInfo extends PacketPhantom {
@@ -106,6 +107,8 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 				return;
 			}
 			if (curr.getServers().contains(srv)) curr.getServers().remove(srv);
+			Vps vsss = curr;
+			PhantomTrigger.getAll().forEach(t -> t.handleVps(vsss)); // trigger
 			PacketSender.getInstance().sendServer(PacketPhantomServerInfo.fromServer(srv));
 			return;
 		}
@@ -118,6 +121,8 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		m.getPlayersPerGrade().entrySet().forEach(e -> e.getValue().addAll(getPlayersPerGrade().get(e.getKey())));
 		Core.getInstance().getPlayersByType().get(getType()).addAll(players);
 		PacketSender.getInstance().sendServer(PacketPhantomServerInfo.fromServer(srvf));
+		Vps v = Core.getInstance().getVps().getOrDefault(vpsLabel, null);
+		if (v != null) PhantomTrigger.getAll().forEach(t -> t.handleVps(v));
 	}
 
 	public static PacketPhantomServerInfo fromServer(Server srv) {

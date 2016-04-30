@@ -6,7 +6,9 @@ import java.util.Set;
 import sceat.SPhantom;
 import sceat.domain.network.Core;
 import sceat.domain.network.ServerProvider;
+import sceat.domain.network.server.Vps;
 import sceat.domain.protocol.MessagesType;
+import sceat.domain.trigger.PhantomTrigger;
 
 public class PacketPhantomDestroyInstance extends PacketPhantom {
 
@@ -32,6 +34,10 @@ public class PacketPhantomDestroyInstance extends PacketPhantom {
 	@Override
 	public void handleData(MessagesType tp) {
 		if (cameFromLocal()) return;
+		labels.forEach(vpsLabel -> { // apres le cameFromLocal() car c'est juste pour les autres instance (pour le publisher du packet on fait direct dans core)
+			Vps v = Core.getInstance().getVps().getOrDefault(vpsLabel, null);
+			if (v != null) PhantomTrigger.getAll().forEach(t -> t.handleVps(v));
+		});
 		if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketDestroyInstance [" + getLabels().stream().reduce((a, b) -> a + " " + b) + "]");
 		labels.forEach(s -> {
 			Core.getInstance().getVps().remove(s);

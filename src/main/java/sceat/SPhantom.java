@@ -25,6 +25,7 @@ import sceat.domain.protocol.Security;
 import sceat.domain.protocol.handler.PacketHandler;
 import sceat.domain.protocol.packets.PacketPhantom;
 import sceat.domain.shell.Input;
+import sceat.domain.trigger.PhantomTrigger;
 import sceat.gui.terminal.PhantomTui;
 import sceat.gui.web.GrizzlyWebServer;
 import sceat.infra.connector.general.VultrConnector;
@@ -93,6 +94,7 @@ public class SPhantom {
 		});
 		this.config = new SPhantomConfig();
 		this.iphantom = new VultrConnector();
+		new PhantomTrigger();
 		new Manager();
 		new ServerProvider();
 		new Core();
