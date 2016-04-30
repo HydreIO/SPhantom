@@ -40,7 +40,7 @@ public class Server implements ServerApi {
 	public static Server fromPacket(PacketPhantomServerInfo pkt, boolean canBeNull) {
 		Server sr = null; // je ne peut pas use la methode getOrDefault de la concurrentHashmap car je doit modif le serveur contenu dans la map :(
 		boolean neww = false;
-		ConcurrentHashMap<String, Server> sbl = Manager.getInstance().getServersByLabel();
+		Map<String, Server> sbl = Manager.getInstance().getServersByLabel();
 		if (sbl.containsKey(pkt.getLabel())) {
 			sr = sbl.get(pkt.getLabel());
 			if (sr.getStatus() != Statut.REDUCTION) sr.setStatus(pkt.getState()); // si on connait le serv et qu'il est en reduction alors on ne change pas le statut

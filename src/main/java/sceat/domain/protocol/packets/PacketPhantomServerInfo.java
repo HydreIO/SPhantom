@@ -71,7 +71,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		this.maxp = readInt();
 		this.ip = readString();
 		this.players = readMap(() -> Grades.valueOf(readString()), () -> readCollection(new HashSet<UUID>(), () -> UUID.fromString(readString())));
-		if (players.get(Grades.Admin) == null) Arrays.stream(Grades.values()).forEach(g -> players.put(g, New.set()));
+		if (players.get(Grades.ADMIN) == null) Arrays.stream(Grades.values()).forEach(g -> players.put(g, New.set()));
 		this.keys = readCollection(new HashSet<String>(), this::readString);
 		this.state = Statut.valueOf(readString());
 		this.fromSymbiote = readBoolean();
