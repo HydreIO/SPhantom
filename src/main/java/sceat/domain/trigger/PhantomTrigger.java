@@ -10,7 +10,7 @@ import sceat.domain.network.ServerProvider.Defqon;
 public class PhantomTrigger {
 
 	private static PhantomTrigger instance;
-	private Set<Trigger> trg = new HashSet<PhantomTrigger.Trigger>();
+	private Set<Trigger> trg = new HashSet<Trigger>();
 
 	public PhantomTrigger() {
 		instance = this;
