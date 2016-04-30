@@ -49,7 +49,7 @@ public class SPhantomConfig {
 			getConfig().set("Broker.Port", RabbitPort);
 			getConfig().set("MaxDeployedInstances", this.maxInstance);
 			getConfig().set("DeployedVpsRam", DeployedVpsRam);
-			getConfig().set(Constant.CONFIG_Optional_var + ".Vultr_Api_Key", getVultrKey());
+			getConfig().set(Constant.CONFIG_OPTIONAL_VAR + ".Vultr_Api_Key", getVultrKey());
 			getServers().forEach(s -> s.write(getConfig()));
 			getInstances().forEach((k, v) -> v.setType(k).write(getConfig()));
 			saveConfig(getConfig(), cong);
@@ -102,7 +102,7 @@ public class SPhantomConfig {
 			SPhantom.print("Broker_port [ok]");
 			this.DeployedVpsRam = getConfig().getInt("DeployedVpsRam");
 			SPhantom.print("Vultr_Pass [ok]");
-			this.VultrKey = getConfig().getString(Constant.CONFIG_Optional_var + ".Vultr_Api_Key");
+			this.VultrKey = getConfig().getString(Constant.CONFIG_OPTIONAL_VAR + ".Vultr_Api_Key");
 			SPhantom.print("Vultr_key [ok]");
 			SPhantom.print("Clearing servers config..");
 			this.servers.clear();

@@ -1,10 +1,7 @@
 package sceat.domain.network;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import sceat.SPhantom;
@@ -21,13 +18,13 @@ public class ServerProvider {
 	private Defqon defqon = Defqon.FIVE;
 
 	/**
-	 * Map des instances pr�enregistr� dans la config (g�n�ralement les gros d�di� de base pour les joueurs constants)
+	 * Map des instances préenregistré dans la config (généralement les gros dédié de base pour les joueurs constants)
 	 * <p>
 	 * on cherchera d'abord a remplir ceux la avant de toucher au instances vultr
 	 */
 	private ConcurrentHashMap<String, Vps> configInstances = new ConcurrentHashMap<String, Vps>();
 	/**
-	 * Map des instances supl�mentaire lou� a l'heure, mises a jour en fonction de la ram dispo sur les Vps et la ram demand�e pour le type du serveur
+	 * Map des instances suplémentaire loué a l'heure, mises a jour en fonction de la ram dispo sur les Vps et la ram demandée pour le type du serveur
 	 */
 	private ConcurrentHashMap<ServerType, Vps> ordered = new ConcurrentHashMap<ServerType, Vps>();
 
@@ -68,7 +65,7 @@ public class ServerProvider {
 		return priority;
 	}
 
-	public static enum Defqon {
+	public enum Defqon {
 		FIVE,
 		FOUR,
 		THREE,
@@ -80,18 +77,18 @@ public class ServerProvider {
 		return instance;
 	}
 
-	public ConcurrentHashMap<ServerType, Vps> getOrdered() {
+	public Map<ServerType, Vps> getOrdered() {
 		return ordered;
 	}
 
-	public ConcurrentHashMap<String, Vps> getConfigInstances() {
+	public Map<String, Vps> getConfigInstances() {
 		return configInstances;
 	}
 
 	/**
-	 * On recup le vps apropri� puis on le remplace par le premier ad�quat trouv� dans la liste des vps online
+	 * On recup le vps aproprié puis on le remplace par le premier adéquat trouvé dans la liste des vps online
 	 * <p>
-	 * synchronized pour que les op�rations de remplacement ne soit pas bais�es
+	 * synchronized pour que les opérations de remplacement ne soit pas baisées
 	 * 
 	 * @param type
 	 * @param exclude
@@ -132,7 +129,7 @@ public class ServerProvider {
 			int ramfor = sc.getRamFor(key);
 			int ramavail = value == null ? -1 : value == vp ? availableRam : value.getAvailableRam(true);
 			if (ramfor > ramavail) {
-				Vps neew = searchFirst(ramfor, Optional.<Vps> of(vp), exclude);
+				Vps neew = searchFirst(ramfor, Optional.of(vp), exclude);
 				ordered.put(key, neew);
 			}
 		}
@@ -141,8 +138,8 @@ public class ServerProvider {
 	}
 
 	private Vps searchFirst(int ramNeeded, Optional<Vps>... exclude) {
-		Set<Vps> comp = new HashSet<Vps>();
-		Arrays.stream(exclude).filter(e -> e.isPresent()).forEach(o -> comp.add(o.get()));
+		Set<Vps> comp = new HashSet<>();
+		Arrays.stream(exclude).filter(Optional::isPresent).forEach(o -> comp.add(o.get()));
 		return Core.getInstance().getVps().values().stream().filter(vp -> vp.getAvailableRam(true) >= ramNeeded && (comp.isEmpty() || !comp.contains(vp))).findFirst().orElse(null);
 	}
 

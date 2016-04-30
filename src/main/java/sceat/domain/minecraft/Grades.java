@@ -2,39 +2,39 @@ package sceat.domain.minecraft;
 
 public enum Grades {
 
-	Fondateur((byte)0, "Fondateur"),
-	Admin((byte)1, "Admin"),
-	SysAdmin((byte)2, "SysAdmin"),
-	Resp((byte)3, "Resp"),
-	Moderateur((byte)4, "Moderateur"),
-	Developpeur((byte)5, "Developpeur"),
-	Architecte((byte)6, "Architecte"),
-	Web_Developpeur((byte)7, "Web_Developpeur"),
-	Graphiste((byte)8, "Graphiste"),
-	Builder((byte)9, "Builder"),
-	Helper((byte)10, "Helper"),
-	Build_Test((byte)11, "Build_Test"),
-	Staff((byte)12, "Staff"),
-	Ami((byte)13, "Ami"),
-	Partenaire((byte)14, "Partenaire"),
-	Youtube((byte)15, "Youtube"),
-	Streamer((byte)16, "Streamer"),
-	Musclay((byte)17, "Musclay"),
-	Lva((byte)18, "Lva"),
-	Vip_plus((byte)19, "Vip_plus"),
-	Vip((byte)20, "Vip"),
-	Joueur((byte)21, "Joueur");
+	FONDATEUR((byte)0, "Fondateur"),
+	ADMIN((byte)1, "Admin"),
+	SYS_ADMIN((byte)2, "SysAdmin"),
+	RESP((byte)3, "Resp"),
+	MODERATEUR((byte)4, "Moderateur"),
+	DEVELOPPEUR((byte)5, "Developpeur"),
+	ARCHITECTE((byte)6, "Architecte"),
+	WEB_DEVELOPPEUR((byte)7, "Web_Developpeur"),
+	GRAPHISTE((byte)8, "Graphiste"),
+	BUILDER((byte)9, "Builder"),
+	HELPER((byte)10, "Helper"),
+	BUILD_TEST((byte)11, "Build_Test"),
+	STAFF((byte)12, "Staff"),
+	AMI((byte)13, "Ami"),
+	PARTENAIRE((byte)14, "Partenaire"),
+	YOUTUBE((byte)15, "Youtube"),
+	STREAMER((byte)16, "Streamer"),
+	MUSCLAY((byte)17, "Musclay"),
+	LVA((byte)18, "Lva"),
+	VIP_PLUS((byte)19, "Vip_plus"),
+	VIP((byte)20, "Vip"),
+	JOUEUR((byte)21, "Joueur");
 
-	private byte _perm;
-	private String _gName;
+	private byte id;
+	private String name;
 
-	private Grades(byte perm, String name) {
-		this._perm = perm;
-		this._gName = name;
+	private Grades(byte id, String name) {
+		this.id = id;
+		this.name = name;
 	}
 
 	public boolean isBetterOrSimilarThan(int perm) {
-		return this._perm <= perm;
+		return this.id <= perm;
 	}
 
 	public boolean isBetterOrSimilarThan(Grades gr) {
@@ -42,19 +42,19 @@ public enum Grades {
 	}
 
 	public boolean isBetterThan(int perm) {
-		return this._perm < perm;
+		return this.id < perm;
 	}
 
 	public boolean correspond(String name) {
-		return this._gName.equals(name);
+		return this.name.equals(name);
 	}
 
 	public byte getValue() {
-		return this._perm;
+		return this.id;
 	}
 
 	public String getName() {
-		return this._gName;
+		return this.name;
 	}
 
 	public static Grades fromName(String name, boolean canBeNull) {

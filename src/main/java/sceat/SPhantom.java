@@ -14,7 +14,7 @@ import sceat.domain.Manager;
 import sceat.domain.adapter.api.PhantomApi;
 import sceat.domain.adapter.api.PhantomApi.ServerApi;
 import sceat.domain.adapter.api.PhantomApi.VpsApi;
-import sceat.domain.adapter.general.Iphantom;
+import sceat.domain.adapter.general.IPhantom;
 import sceat.domain.adapter.mq.IMessaging;
 import sceat.domain.config.SPhantomConfig;
 import sceat.domain.network.Core;
@@ -47,7 +47,7 @@ public class SPhantom {
 	public boolean logHeart = false;
 	public boolean logprovider = true;
 	public boolean logDiv = true;
-	private Iphantom iphantom;
+	private IPhantom iphantom;
 	private Security security;
 	private PhantomApi mainApi;
 	private InetAddress ip;
@@ -162,7 +162,7 @@ public class SPhantom {
 		return this.local;
 	}
 
-	public Iphantom getIphantom() {
+	public IPhantom getIphantom() {
 		return iphantom;
 	}
 

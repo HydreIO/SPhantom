@@ -1,9 +1,6 @@
 package sceat.domain;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -14,13 +11,13 @@ public class Manager {
 
 	private static Manager instance;
 
-	private static ConcurrentHashMap<String, Server> serversByLabel = new ConcurrentHashMap<String, Server>();
-	private static CopyOnWriteArraySet<UUID> playersOnNetwork = new CopyOnWriteArraySet<UUID>();
-	private static ConcurrentHashMap<Grades, HashSet<UUID>> playersPerGrade = new ConcurrentHashMap<Grades, HashSet<UUID>>();
+	private static ConcurrentHashMap<String, Server> serversByLabel = new ConcurrentHashMap<>();
+	private static CopyOnWriteArraySet<UUID> playersOnNetwork = new CopyOnWriteArraySet<>();
+	private static ConcurrentHashMap<Grades, Set<UUID>> playersPerGrade = new ConcurrentHashMap<>();
 
 	public Manager() {
 		instance = this;
-		Arrays.stream(Grades.values()).forEach(g -> playersPerGrade.put(g, new HashSet<UUID>()));
+		Arrays.stream(Grades.values()).forEach(g -> playersPerGrade.put(g, new HashSet<>()));
 	}
 
 	public static Manager getInstance() {
@@ -35,21 +32,21 @@ public class Manager {
 		return getPlayersOnNetwork().size();
 	}
 
-	public ConcurrentHashMap<String, Server> getServersByLabel() {
+	public Map<String, Server> getServersByLabel() {
 		return serversByLabel;
 	}
 
-	public CopyOnWriteArraySet<UUID> getPlayersOnNetwork() {
+	public Set<UUID> getPlayersOnNetwork() {
 		return playersOnNetwork;
 	}
 
-	public ConcurrentHashMap<Grades, HashSet<UUID>> getPlayersPerGrade() {
+	public Map<Grades, Set<UUID>> getPlayersPerGrade() {
 		return playersPerGrade;
 	}
 
-	public static enum Notifier {
-		PacketPhantomServerInfo,
-		PacketPhantomPlayer
+	public enum Notifier {
+		PACKET_PHANTOM_SERVER_INFO,
+		PACKET_PHANTOM_PLAYER
 	}
 
 }

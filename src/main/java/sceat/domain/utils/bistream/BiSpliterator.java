@@ -15,11 +15,13 @@ public class BiSpliterator<T , U> implements Spliterator<BiStream.BiValue<T , U>
 
     @Override
     public boolean tryAdvance(Consumer<? super BiStream.BiValue<T, U>> action) {
-        if (action == null) throw new NullPointerException();
+        if (action == null)
+            throw new NullPointerException();
         BiStream.BiValue<T , U> b = new BiStream.BiValue<>(null , null);
-        boolean tr = this.t.tryAdvance((t) -> b.t = t);
-        boolean ur = this.u.tryAdvance((u) -> b.u = u);
-        if(!tr && !ur)return false;
+        boolean tr = this.t.tryAdvance(t -> b.t = t);
+        boolean ur = this.u.tryAdvance(u -> b.u = u);
+        if(!tr && !ur)
+            return false;
         action.accept(b);
         return true;
     }

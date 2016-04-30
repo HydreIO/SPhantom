@@ -42,6 +42,14 @@ public class PacketPhantomHeartBeat extends PacketPhantom {
 		return this;
 	}
 
+	public void setLastHandShake(long lastHandShake) {
+		this.lastHandShake = lastHandShake;
+	}
+
+	public void resetHandShake(){
+		this.lastHandShake = System.currentTimeMillis();
+	}
+
 	public boolean isDead() {
 		return System.currentTimeMillis() > getLastHandShake() + 15000;
 	}

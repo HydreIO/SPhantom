@@ -2,7 +2,7 @@ package sceat.domain.adapter.general;
 
 import sceat.domain.network.server.Vps;
 
-public interface Iphantom {
+public interface IPhantom {
 
 	public int countDeployedInstance();
 

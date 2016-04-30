@@ -13,24 +13,24 @@ import java.util.Set;
 public class New {
 
 	public static <E> List<E> arrayList() {
-		return new ArrayList<E>();
+		return new ArrayList<>();
 	}
 
 	public static <E> Collection<E> coll() {
-		return new ArrayList<E>();
+		return new ArrayList<>();
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <E> List<E> arrayList(E... values) {
+	public static <E> List<E> list(E... values) {
 		return Arrays.asList(values);
 	}
 
 	public static <K, V> Map<K, V> map() {
-		return new HashMap<K, V>();
+		return new HashMap<>();
 	}
 
 	public static <E> Set<E> set() {
-		return new HashSet<E>();
+		return new HashSet<>();
 	}
 
 	/**

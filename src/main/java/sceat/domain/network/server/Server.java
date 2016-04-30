@@ -48,7 +48,7 @@ public class Server implements ServerApi {
 		} else {
 			sr = canBeNull ? null : new Server(pkt.getLabel(), pkt.getType(), pkt.getState(), pkt.getMaxp(), pkt.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, pkt.getKeys().stream()
 					.toArray(String[]::new)).setPlayers(pkt.getPlayersPerGrade());
-			neww = true; // si on cr�� on a pas besoin de verifier si le pkt vient du symbiote car de tt fa�on la liste des joueurs (seul field que le symbiote ne connait pas) devra attendre de se sync later
+			neww = true; // si on créé on a pas besoin de verifier si le pkt vient du symbiote car de tt fa�on la liste des joueurs (seul field que le symbiote ne connait pas) devra attendre de se sync later
 		}
 		if (sr != null) {
 			boolean hasvps = pkt.getVpsLabel() != null;

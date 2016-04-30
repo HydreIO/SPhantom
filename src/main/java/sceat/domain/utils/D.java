@@ -10,7 +10,7 @@ public interface D extends Runnable {
 	@Override
 	public void run();
 
-	default void If(boolean condition) {
+	default void runIf(boolean condition) {
 		if (condition) run();
 	}
 
