@@ -17,7 +17,8 @@ public enum TimeUnit {
 	}
 
 	public long convert(long duration, TimeUnit unit) {
-		if (unit == this) return duration;
+		if (unit == this)
+			return duration;
 		else return duration * this.nanoSeconds / unit.nanoSeconds;
 	}
 

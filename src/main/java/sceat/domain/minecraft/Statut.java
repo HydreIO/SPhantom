@@ -1,31 +1,32 @@
 package sceat.domain.minecraft;
 
 public enum Statut {
-	CREATING(0),
-	BOOTING(1),
-	OPEN(2),
-	REDUCTION(3),
-	REBOOTING(4),
-	CLOSING(5),
-	CRASHED(6);
-	private int _value;
+	CREATING((byte)0),
+	BOOTING((byte)1),
+	OPEN((byte)2),
+	REDUCTION((byte)3),
+	REBOOTING((byte)4),
+	CLOSING((byte)5),
+	CRASHED((byte)6);
+	private byte id;
 
-	private Statut(int value) {
-		this._value = value;
+	private Statut(byte value) {
+		this.id = value;
 	}
 
 	/**
-	 * Retourne la valeur (0 pour ouvert, 1 pour ferm�, 2 pour reboot, 3 pour maintenance)
+	 * Retourne l'id (0 pour ouvert, 1 pour fermé, 2 pour reboot, 3 pour maintenance)
 	 * 
-	 * @return
+	 * @return l'id
 	 */
 	public int getValue() {
-		return this._value;
+		return this.id;
 	}
 
-	public static Statut fromValue(int value) {
+	public static Statut fromValue(byte value) {
 		for (Statut s : values()) {
-			if (s.getValue() == value) return s;
+			if (s.getValue() == value)
+				return s;
 		}
 		throw new NullPointerException("Aucun serveur ne possede la valeur : " + value);
 	}

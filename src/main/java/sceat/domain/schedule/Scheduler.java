@@ -1,5 +1,7 @@
 package sceat.domain.schedule;
 
+import sceat.Main;
+
 import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -33,15 +35,15 @@ public class Scheduler {
 	}
 
 	public void register(Scheduled scheduled) {
-		Arrays.stream(scheduled.getClass().getMethods()).filter((m) -> m.isAnnotationPresent(Schedule.class)).forEach((m) -> {
+		Arrays.stream(scheduled.getClass().getMethods()).filter(m -> m.isAnnotationPresent(Schedule.class)).forEach(m -> {
 			Schedule s = m.getAnnotation(Schedule.class);
 			long ns = s.unit().toNanos(s.rate());
 			pool.scheduleAtFixedRate(() -> {
 				try {
 					m.invoke(scheduled, new Object[m.getParameterCount()]);
 				} catch (Exception e) {
-					System.out.println("[Scheduler] Error with " + "//: " + m.getDeclaringClass() + "//:" + m.getName());
-					e.printStackTrace();
+					Main.getLogger().info("[Scheduler] Error with " + "//: " + m.getDeclaringClass() + "//:" + m.getName());
+					Main.printStackTrace(e);
 				}
 			}, ns, ns, java.util.concurrent.TimeUnit.NANOSECONDS);
 		});

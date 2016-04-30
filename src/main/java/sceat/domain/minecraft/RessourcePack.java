@@ -7,13 +7,13 @@ public enum RessourcePack {
 	AGARES(""),
 	IRON("");
 
-	private String _url;
+	private String url;
 
 	private RessourcePack(String url) {
-		this._url = url;
+		this.url = url;
 	}
 
 	public String getUrl() {
-		return this._url;
+		return this.url;
 	}
 }

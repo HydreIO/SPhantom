@@ -16,17 +16,17 @@ public class BiStreamImpl<T , U> implements BiStream<T , U> {
 
     @Override
     public BiStream<T, U> filter(BiPredicate<? super T, ? super U> predicate) {
-        return BiStream.wrap(stream.filter((v) -> predicate.test(v.t , v.u)));
+        return BiStream.wrap(stream.filter(v -> predicate.test(v.t , v.u)));
     }
 
     @Override
     public <R> Stream<R> map(BiFunction<? super T, ? super U, ? extends R> function) {
-        return stream.map((v) -> function.apply(v.t , v.u));
+        return stream.map(v -> function.apply(v.t , v.u));
     }
 
     @Override
     public IntStream mapToInt(ToIntBiFunction<? super T, ? super U> toIntBiFunction) {
-        return stream.mapToInt((v) -> toIntBiFunction.applyAsInt(v.t , v.u));
+        return stream.mapToInt(v -> toIntBiFunction.applyAsInt(v.t , v.u));
     }
 
     @Override

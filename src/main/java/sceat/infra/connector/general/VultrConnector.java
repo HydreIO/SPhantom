@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import sceat.Main;
 import sceat.SPhantom;
-import sceat.domain.adapter.general.Iphantom;
+import sceat.domain.adapter.general.IPhantom;
 import sceat.domain.network.Core;
 import sceat.domain.network.server.Vps;
 import sceat.domain.network.server.Vps.VpsState;
@@ -25,7 +25,7 @@ import xyz.deltaevo.jvultr.exception.JVultrException;
 import xyz.deltaevo.jvultr.utils.BiValue;
 import xyz.deltaevo.jvultr.utils.JVultrUtil;
 
-public class VultrConnector implements Iphantom {
+public class VultrConnector implements IPhantom {
 
 	private static final List<String> REGIONS = Arrays.asList("Paris", "Amsterdam", "London", "Frankfurt");
 	private static JVultrOS os;

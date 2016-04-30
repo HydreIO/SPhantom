@@ -27,7 +27,7 @@ public interface PhantomApi {
 	 * @return a {@code Map<String, VpsApi>}
 	 */
 	public static Map<String, VpsApi> getAllVps() {
-		return Core.getInstance().getVps().entrySet().stream().collect(Collectors.toMap(e -> e.getKey(), v -> v.getValue()));
+		return Core.getInstance().getVps().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 	}
 
 	/**

@@ -30,5 +30,5 @@ public class Constant {
 
 	}
 
-	public static final String CONFIG_Optional_var = "Optional_Var";
+	public static final String CONFIG_OPTIONAL_VAR = "Optional_Var";
 }
