@@ -92,8 +92,10 @@ public class Vps implements Comparable<Vps>, VpsApi {
 	 */
 	public int getAvailableRam(boolean excludeClosing) {
 		return ram
-				- getServers().stream().filter(s -> excludeClosing ? s.getStatus() != Statut.REDUCTION && s.getStatus() != Statut.CLOSING : true)
-						.mapToInt(t -> SPhantom.getInstance().getSphantomConfig().getRamFor(t.getType())).reduce((a, b) -> a + b).orElse(0);
+				- getServers()
+						.stream()
+						.filter(s -> excludeClosing ? s.getStatus() != Statut.REDUCTION && s.getStatus() != Statut.CLOSING && s.getStatus() != Statut.CRASHED && s.getStatus() != Statut.OVERHEAD
+								: true).mapToInt(t -> SPhantom.getInstance().getSphantomConfig().getRamFor(t.getType())).reduce((a, b) -> a + b).orElse(0);
 	}
 
 	public int getAvailableRam() {

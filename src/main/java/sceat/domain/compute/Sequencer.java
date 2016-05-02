@@ -101,7 +101,7 @@ public interface Sequencer<V, S> {
 		 * @param worker
 		 *            the worker for transfert process
 		 * @param noClose
-		 *            predicate for test if the server is not in REDUCTION or CLOSE
+		 *            predicate for test if the server is not in REDUCTION,CRASHED,OVERHEAD or CLOSE
 		 * @param adder
 		 *            the add method
 		 * @param canAccept
@@ -124,14 +124,14 @@ public interface Sequencer<V, S> {
 	@FunctionalInterface
 	public interface Worker<V, S> {
 		/**
-		 * Take all the server on the vps who haven't REDUCTION or CLOSE statut en try to transfert them on the gived vps
+		 * Take all the server on the vps who haven't REDUCTION CRASH OVERHEAD or CLOSE statut en try to transfert them on the gived vps
 		 * 
 		 * @param v
 		 *            the gived vps who receive servers
 		 * @param collection
 		 *            the server list on the current vps
 		 * @param noClose
-		 *            predicate for test if the server is not in REDUCTION or CLOSE
+		 *            predicate for test if the server is not in REDUCTION CRASH OVERHEAD or CLOSE
 		 * @param adder
 		 *            the add method
 		 * @param canAccept

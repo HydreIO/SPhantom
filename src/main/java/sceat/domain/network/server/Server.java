@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -113,7 +114,7 @@ public class Server implements ServerApi {
 	}
 
 	public boolean hasTimeout() {
-		return System.currentTimeMillis() > this.timeout + 10000;
+		return System.currentTimeMillis() > this.timeout + 11000;
 	}
 
 	public Server setStatus(Statut st) {
@@ -192,10 +193,11 @@ public class Server implements ServerApi {
 	}
 
 	public Set<UUID> getPlayers() {
+
 		return getPlayersMap().values().stream().reduce((t, u) -> {
 			t.addAll(u);
 			return t;
-		}).get();
+		}).orElse(Collections.emptySet());
 	}
 
 	public Vps getVps() {
