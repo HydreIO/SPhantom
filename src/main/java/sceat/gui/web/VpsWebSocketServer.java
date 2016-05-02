@@ -28,11 +28,6 @@ public class VpsWebSocketServer extends WebSocketApplication implements PhantomT
 	}
 
 	@Override
-	public void onMessage(WebSocket socket, byte[] bytes) {
-		// Ignore messages
-	}
-
-	@Override
 	public void onConnect(WebSocket socket) {
 		super.onConnect(socket);
 		for (Map.Entry<String, PhantomApi.VpsApi> e : PhantomApi.getAllVps().entrySet())
