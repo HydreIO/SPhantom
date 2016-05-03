@@ -51,11 +51,11 @@ public class VpsWebSocketServer extends WebSocketApplication implements PhantomT
 		super.onConnect(socket);
 		for (Map.Entry<String, PhantomApi.VpsApi> e : PhantomApi.getAllVps().entrySet())
 			socket.send(gson.toJson(toJsonObject(e.getKey(), e.getValue())));
-
 	}
 
-	@Override
+    @Override
 	public void onMessage(WebSocket socket, String text) {
+        super.onMessage(socket , text);
 		VpsCreateResponse response = gson.fromJson(text , VpsCreateResponse.class);
 		if(response.getAmount() > 5)
 			return;
