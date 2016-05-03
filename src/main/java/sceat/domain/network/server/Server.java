@@ -16,7 +16,7 @@ import java.util.UUID;
 
 import sceat.api.PhantomApi.ServerApi;
 import sceat.domain.Manager;
-import sceat.domain.icommon.utils.IRegistrable;
+import sceat.domain.common.utils.IRegistrable;
 import sceat.domain.minecraft.Grades;
 import sceat.domain.minecraft.RessourcePack;
 import sceat.domain.minecraft.Statut;

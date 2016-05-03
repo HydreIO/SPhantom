@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import sceat.Main;
 import sceat.SPhantom;
-import sceat.domain.icommon.IPhantom;
+import sceat.domain.common.IPhantom;
 import sceat.domain.network.Core;
 import sceat.domain.network.server.Vps;
 import sceat.domain.network.server.Vps.VpsState;

@@ -28,6 +28,8 @@ public abstract class PacketPhantom {
 			registerPacket((byte) 7, PacketPhantomReduceServer.class); // reduction
 			registerPacket((byte) 8, PacketPhantomKillProcess.class); // kill server cg overhead
 			registerPacket((byte) 9, PacketPhantomGradeUpdate.class); // player grade
+			registerPacket((byte) 10, PacketPhantomBanned.class);
+			registerPacket((byte) 11, PacketPhantomBroadcast.class);
 		} catch (PacketIdAlrealyUsedException e) {
 			Main.printStackTrace(e);
 		}

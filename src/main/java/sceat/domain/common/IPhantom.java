@@ -1,4 +1,4 @@
-package sceat.domain.icommon;
+package sceat.domain.common;
 
 import sceat.SPhantom;
 import sceat.domain.network.server.Vps;

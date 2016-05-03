@@ -1,7 +1,7 @@
 package sceat.domain.protocol;
 
 import sceat.SPhantom;
-import sceat.domain.icommon.mq.IMessaging;
+import sceat.domain.common.mq.IMessaging;
 import sceat.domain.protocol.packets.PacketPhantom;
 import sceat.domain.protocol.packets.PacketPhantomBootServer;
 import sceat.domain.protocol.packets.PacketPhantomDestroyInstance;

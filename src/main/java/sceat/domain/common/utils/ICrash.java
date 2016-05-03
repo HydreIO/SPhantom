@@ -1,4 +1,4 @@
-package sceat.domain.icommon.utils;
+package sceat.domain.common.utils;
 
 public interface ICrash {
 	void handleCrash();

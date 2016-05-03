@@ -1,4 +1,4 @@
-package sceat.domain.icommon.mq;
+package sceat.domain.common.mq;
 
 import sceat.domain.protocol.packets.PacketPhantomBootServer;
 import sceat.domain.protocol.packets.PacketPhantomDestroyInstance;
