@@ -16,9 +16,9 @@ public class Manager {
 
 	private static Manager instance;
 
-	private static ConcurrentHashMap<String, Server> serversByLabel = new ConcurrentHashMap<>();
-	private static CopyOnWriteArraySet<UUID> playersOnNetwork = new CopyOnWriteArraySet<>();
-	private static ConcurrentHashMap<Grades, Set<UUID>> playersPerGrade = new ConcurrentHashMap<>();
+	private ConcurrentHashMap<String, Server> serversByLabel = new ConcurrentHashMap<>();
+	private CopyOnWriteArraySet<UUID> playersOnNetwork = new CopyOnWriteArraySet<>();
+	private ConcurrentHashMap<Grades, Set<UUID>> playersPerGrade = new ConcurrentHashMap<>();
 
 	public Manager() {
 		instance = this;
@@ -47,11 +47,6 @@ public class Manager {
 
 	public Map<Grades, Set<UUID>> getPlayersPerGrade() {
 		return playersPerGrade;
-	}
-
-	public enum Notifier {
-		PACKET_PHANTOM_SERVER_INFO,
-		PACKET_PHANTOM_PLAYER
 	}
 
 }
