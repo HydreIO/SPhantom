@@ -12,14 +12,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import sceat.SPhantom;
-import sceat.domain.adapter.api.PhantomApi.ServerApi;
-import sceat.domain.adapter.api.PhantomApi.VpsApi;
+import sceat.api.PhantomApi.ServerApi;
+import sceat.api.PhantomApi.VpsApi;
+import sceat.domain.icommon.IPhantom;
+import sceat.domain.icommon.utils.ICrash;
+import sceat.domain.icommon.utils.IRegistrable;
 import sceat.domain.minecraft.Statut;
 import sceat.domain.network.Core;
 import sceat.domain.network.ServerProvider;
 import sceat.domain.network.server.Server.ServerType;
 
-public class Vps implements Comparable<Vps>, VpsApi {
+public class Vps implements Comparable<Vps>, VpsApi, ICrash, IRegistrable<Vps> {
 
 	private String label;
 	private int ram;
@@ -37,7 +40,7 @@ public class Vps implements Comparable<Vps>, VpsApi {
 	private Set<Server> servers;
 
 	public static Vps fromBoot(String label, int ram, InetAddress ip) {
-		return new Vps(label, ram, ip, new HashSet<Server>(), System.currentTimeMillis()).setState(VpsState.Deploying);
+		return new Vps(label, ram, ip, new HashSet<Server>(), System.currentTimeMillis()).setState(VpsState.DEPLOYING);
 	}
 
 	@Override
@@ -58,9 +61,20 @@ public class Vps implements Comparable<Vps>, VpsApi {
 		this.ip = ip;
 	}
 
-	public Vps register() {
-		Core.getInstance().getVps().put(getLabel(), this);
-		return this;
+	public boolean isCrashed() {
+		return getState() == VpsState.TIMEOUT;
+	}
+
+	@Override
+	public void handleCrash() {
+		if (!isCrashed()) throw new IllegalAccessError("Cannot handle crash of a vps not even crashed");
+		if (!isDaemon() && !IPhantom.get().exist(getLabel())) { // si c'est une instance cloud et qu'elle n'existe plus sur le cloud (en gros supp manuellement)
+			getServers().forEach(Server::unregister);
+			unregister();
+		} else {
+			getServers().stream().filter(Server::hasTimeout).forEach(s -> s.setStatus(Statut.CRASHED)); // sinon on laisse en standby pour qu'un dev puisse aller voir ce qui ce passe
+		}
+
 	}
 
 	public boolean isUpdated() {
@@ -76,13 +90,20 @@ public class Vps implements Comparable<Vps>, VpsApi {
 		return getAvailableRam(true) >= SPhantom.getInstance().getSphantomConfig().getRamFor(srv.getType());
 	}
 
+	public Vps register() {
+		Core.getInstance().getVps().put(getLabel(), this);
+		return this;
+	}
+
 	/**
-	 * called in VultrConnector
+	 * Unregister the vps but not his servers
 	 */
-	public void unregister() {
+	public Vps unregister() {
+		if (isDaemon()) throw new IllegalAccessError("Cannot unregister a configured vps ! (" + getLabel() + ")");
 		if (Core.getInstance().getVps().containsKey(getLabel())) Core.getInstance().getVps().remove(getLabel());
 		for (Entry<ServerType, Vps> e : ServerProvider.getInstance().getOrdered().entrySet())
 			if (e.getValue().getLabel().equals(getLabel())) ServerProvider.getInstance().getOrdered().put(e.getKey(), null);
+		return null;
 	}
 
 	/**
@@ -109,6 +130,14 @@ public class Vps implements Comparable<Vps>, VpsApi {
 	public Vps setState(VpsState st) {
 		this.state = st;
 		return this;
+	}
+
+	/**
+	 * 
+	 * @return false if the vps is a cloud/vultr instance
+	 */
+	public boolean isDaemon() {
+		return SPhantom.getInstance().getSphantomConfig().getServers().stream().anyMatch(p -> p.getName().equals(getLabel()));
 	}
 
 	public InetAddress getIp() {
@@ -145,9 +174,10 @@ public class Vps implements Comparable<Vps>, VpsApi {
 	}
 
 	public static enum VpsState {
-		Deploying((byte) 0),
-		Online((byte) 1),
-		Destroying((byte) 2);
+		DEPLOYING((byte) 0),
+		ONLINE((byte) 1),
+		TIMEOUT((byte) 2),
+		DESTROYING((byte) 3);
 
 		private byte id;
 

@@ -1,13 +1,20 @@
-package sceat.domain.adapter.general;
+package sceat.domain.icommon;
 
+import sceat.SPhantom;
 import sceat.domain.network.server.Vps;
 
 public interface IPhantom {
 
-	public int countDeployedInstance();
+	int countDeployedInstance();
 
-	public void destroyServer(String label);
+	void destroyServer(String label);
 
-	public Vps deployInstance(String label, int ram);
+	Vps deployInstance(String label, int ram);
+
+	boolean exist(String label);
+
+	static IPhantom get() {
+		return SPhantom.getInstance().getIphantom();
+	}
 
 }

@@ -4,6 +4,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Optional;
@@ -384,19 +385,24 @@ public class Core implements Scheduled {
 		PacketSender.getInstance().bootServer(new PacketPhantomBootServer(srv));
 	}
 
+	/**
+	 * set reduction statut to the server of @param type who has less players
+	 * 
+	 * @param type
+	 */
 	private void reduceServer(ServerType type) {
 		if (type == ServerType.Proxy) {
 			reduceProxy();
 			return;
 		}
-		Optional<Server> s = getServersByType().get(type).stream().filter(sr -> sr.getStatus() == Statut.OPEN).findAny();
+		Optional<Server> s = getServersByType().get(type).stream().filter(sr -> sr.getStatus() == Statut.OPEN).min(Comparator.comparingInt(Server::countPlayers));
 		if (!s.isPresent()) return;
 		Server srv = s.get().setStatus(Statut.REDUCTION);
 		PacketSender.getInstance().reduceServer(new PacketPhantomReduceServer(srv.getLabel(), srv.getVpsLabel()));
 	}
 
 	private void reduceProxy() {
-
+		// TODO
 	}
 
 	private Set<Server> deployProxy(int nbr) {

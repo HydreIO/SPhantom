@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import sceat.Main;
 import sceat.SPhantom;
-import sceat.domain.adapter.general.IPhantom;
+import sceat.domain.icommon.IPhantom;
 import sceat.domain.network.Core;
 import sceat.domain.network.server.Vps;
 import sceat.domain.network.server.Vps.VpsState;
@@ -98,7 +98,7 @@ public class VultrConnector implements IPhantom {
 			Integer id = servers.get(label);
 			try {
 				if (SPhantom.logDiv()) SPhantom.print("Destroying instance : " + label);
-				Vps vp = vps.get(label).setState(VpsState.Destroying);
+				Vps vp = vps.get(label).setState(VpsState.DESTROYING);
 				if (id == null) {
 					for (Map.Entry<Integer, JVultrServer> servers : api.getSevers().entrySet()) {
 						if (servers.getValue().getLabel().equals(label)) {
@@ -134,6 +134,14 @@ public class VultrConnector implements IPhantom {
 			Main.printStackTrace(e);
 			return -1;
 		}
+	}
+
+	/**
+	 * Return true if the vps exist on vultr
+	 */
+	@Override
+	public boolean exist(String label) {
+		throw new NullPointerException("David is a joke");
 	}
 
 }

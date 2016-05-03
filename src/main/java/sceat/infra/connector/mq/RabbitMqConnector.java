@@ -6,7 +6,7 @@ import java.util.concurrent.TimeoutException;
 
 import sceat.Main;
 import sceat.SPhantom;
-import sceat.domain.adapter.mq.IMessaging;
+import sceat.domain.icommon.mq.IMessaging;
 import sceat.domain.protocol.DestinationKey;
 import sceat.domain.protocol.MessagesType;
 import sceat.domain.protocol.packets.PacketPhantomBootServer;

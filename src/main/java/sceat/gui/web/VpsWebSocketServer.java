@@ -7,7 +7,7 @@ import org.glassfish.grizzly.websockets.OptimizedBroadcaster;
 import org.glassfish.grizzly.websockets.WebSocket;
 import org.glassfish.grizzly.websockets.WebSocketApplication;
 
-import sceat.domain.adapter.api.PhantomApi;
+import sceat.api.PhantomApi;
 import sceat.domain.network.Core;
 import sceat.domain.network.ServerProvider;
 import sceat.domain.trigger.PhantomTrigger;

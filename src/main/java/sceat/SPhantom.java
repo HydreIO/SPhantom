@@ -9,14 +9,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import sceat.api.PhantomApi;
+import sceat.api.PhantomApi.ServerApi;
+import sceat.api.PhantomApi.VpsApi;
 import sceat.domain.Heart;
 import sceat.domain.Manager;
-import sceat.domain.adapter.api.PhantomApi;
-import sceat.domain.adapter.api.PhantomApi.ServerApi;
-import sceat.domain.adapter.api.PhantomApi.VpsApi;
-import sceat.domain.adapter.general.IPhantom;
-import sceat.domain.adapter.mq.IMessaging;
 import sceat.domain.config.SPhantomConfig;
+import sceat.domain.icommon.IPhantom;
+import sceat.domain.icommon.mq.IMessaging;
 import sceat.domain.network.Core;
 import sceat.domain.network.Core.OperatingMode;
 import sceat.domain.network.ServerProvider;
@@ -102,15 +102,29 @@ public class SPhantom {
 		new PacketHandler();
 		new PacketSender(getSphantomConfig().getRabbitUser(), getSphantomConfig().getRabbitPassword(), local);
 		new Heart(local).takeLead();
-		try {
-			new GrizzlyWebServer(81);
-		} catch (IOException e) {
-			print("[ERREUR] Unable to start web server !");
-			print("____________________________________________________\n");
-			Main.printStackTrace(e);
-			print("\n____________________________________________________");
+		startWebPanel(); // ne pas start deux sphantom sur la meme ip sinon le port va être déja utilisé abruti ! de tt façon quel interet d'un replica sur la meme machine..
+	}
 
+	public void startWebPanel() {
+		if (isLeading()) {
+			print("Starting web panel..");
+			try {
+				new GrizzlyWebServer(81);
+				print("Web panel started!");
+			} catch (IOException e) {
+				print("[ERREUR] Unable to start web server !");
+				print("____________________________________________________\n");
+				Main.printStackTrace(e);
+				print("\n____________________________________________________");
+
+			}
 		}
+	}
+
+	public void stopWebPanel() {
+		print("WebPanel stoping...");
+		GrizzlyWebServer.stop();
+		print("WebPanel stopped.");
 	}
 
 	public InetAddress getIp() {

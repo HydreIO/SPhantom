@@ -3,7 +3,7 @@ package sceat.domain.trigger;
 import java.util.HashSet;
 import java.util.Set;
 
-import sceat.domain.adapter.api.PhantomApi.VpsApi;
+import sceat.api.PhantomApi.VpsApi;
 import sceat.domain.network.Core.OperatingMode;
 import sceat.domain.network.ServerProvider.Defqon;
 

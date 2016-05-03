@@ -14,8 +14,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import sceat.api.PhantomApi.ServerApi;
 import sceat.domain.Manager;
-import sceat.domain.adapter.api.PhantomApi.ServerApi;
+import sceat.domain.icommon.utils.ICrash;
+import sceat.domain.icommon.utils.IRegistrable;
 import sceat.domain.minecraft.Grades;
 import sceat.domain.minecraft.RessourcePack;
 import sceat.domain.minecraft.Statut;
@@ -24,7 +26,7 @@ import sceat.domain.protocol.DestinationKey;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
 import sceat.domain.utils.ServerLabel;
 
-public class Server implements ServerApi {
+public class Server implements ServerApi, ICrash, IRegistrable<Server> {
 
 	/**
 	 * Au moment ou un packet server arrive c'est la qu'on synchronise les joueurs
@@ -56,7 +58,7 @@ public class Server implements ServerApi {
 				Core.getInstance().checkVps(pkt.getVpsLabel()); // verification de l'existance du vps, instanciation en cas de NULL (des qu'un packet symbiote arrivera il sera update)
 				sr.setVpsLabel(pkt.getVpsLabel());
 			}
-			if (neww) sr.PhantomRegister(hasvps);
+			if (neww) sr.register().registerInVps();
 		}
 		return sr;
 	}
@@ -84,12 +86,6 @@ public class Server implements ServerApi {
 		this.pack = pack;
 		this.ipadress = ip;
 		Arrays.stream(destinationKeys).forEach(keys::add);
-	}
-
-	public void PhantomRegister(boolean registerVps) {
-		Manager.getInstance().getServersByLabel().put(getLabel(), this);
-		Core.getInstance().getServersByType().get(getType()).add(this);
-		if (registerVps) Core.getInstance().getVps().get(getVpsLabel()).getServers().add(this);
 	}
 
 	public Server setVpsLabel(String label) {
@@ -193,7 +189,6 @@ public class Server implements ServerApi {
 	}
 
 	public Set<UUID> getPlayers() {
-
 		return getPlayersMap().values().stream().reduce((t, u) -> {
 			t.addAll(u);
 			return t;
@@ -260,6 +255,29 @@ public class Server implements ServerApi {
 		public Set<String> getKeysAsSet() {
 			return new HashSet<String>(getKeysAslist());
 		}
+	}
+
+	@Override
+	public void handleCrash() {
+	}
+
+	@Override
+	public Server register() {
+		Manager.getInstance().getServersByLabel().put(getLabel(), this);
+		Core.getInstance().getServersByType().get(getType()).add(this);
+		return this;
+	}
+
+	public Server registerInVps() {
+		Core.getInstance().getVps().get(getVpsLabel()).getServers().add(this);
+		return this;
+	}
+
+	@Override
+	public Server unregister() {
+		Manager.getInstance().getServersByLabel().remove(getLabel());
+		Core.getInstance().getServersByType().get(getType()).remove(this);
+		return this;
 	}
 
 }

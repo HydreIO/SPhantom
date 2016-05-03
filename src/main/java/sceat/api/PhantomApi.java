@@ -1,4 +1,4 @@
-package sceat.domain.adapter.api;
+package sceat.api;
 
 import java.net.InetAddress;
 import java.util.Map;

@@ -15,6 +15,8 @@ import sceat.domain.protocol.MessagesType;
 import sceat.domain.protocol.Security;
 
 public abstract class PacketPhantom {
+	
+	
 
 	public static void registerPkts() {
 		SPhantom.print("Initialising packets...");
