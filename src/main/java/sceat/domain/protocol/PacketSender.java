@@ -5,11 +5,19 @@ import sceat.domain.icommon.mq.IMessaging;
 import sceat.domain.protocol.packets.PacketPhantom;
 import sceat.domain.protocol.packets.PacketPhantomBootServer;
 import sceat.domain.protocol.packets.PacketPhantomDestroyInstance;
+import sceat.domain.protocol.packets.PacketPhantomGradeUpdate;
 import sceat.domain.protocol.packets.PacketPhantomHeartBeat;
+import sceat.domain.protocol.packets.PacketPhantomKillProcess;
 import sceat.domain.protocol.packets.PacketPhantomPlayer;
 import sceat.domain.protocol.packets.PacketPhantomReduceServer;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
 
+/**
+ * Je prefere avoir une class de centralisation pour l'envoi des packet plutot que Packet.send pour avoir une vue d'ensemble directe !
+ * 
+ * @author MrSceat
+ *
+ */
 public class PacketSender {
 
 	private static PacketSender instance;
@@ -52,6 +60,27 @@ public class PacketSender {
 		if (allowed) {
 			if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketServer |to:HUBS_PROXY_SPHANTOM");
 			getBroker().sendServer(pkt.serialize());
+		}
+	}
+
+	public void sendGradeUpdate(PacketPhantomGradeUpdate pkt) {
+		setSecurity(pkt);
+		if (allowed) {
+			if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketServer |to:ALL_SPHANTOM");
+			getBroker().gradeUpdate(pkt.serialize());
+		}
+	}
+
+	/**
+	 * when mc serv CGoverhead
+	 * 
+	 * @param pkt
+	 */
+	public void killProcess(PacketPhantomKillProcess pkt) {
+		setSecurity(pkt);
+		if (allowed) {
+			if (SPhantom.getInstance().logPkt()) SPhantom.print(">>>>]SEND] PacketKillProcess |to:SYMBIOTE");
+			getBroker().killProcess(pkt.serialize());
 		}
 	}
 

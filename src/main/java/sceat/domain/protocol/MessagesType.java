@@ -6,15 +6,16 @@ package sceat.domain.protocol;
  * @author MrSceat
  */
 public enum MessagesType {
-	UPDATE_SERVER("exchange_server", 7),
-	UPDATE_PLAYER_ACTION("exchange_playerAction", 3),
-	UPDATE_PLAYER_GRADE("exchange_playerGrade", 1),
-	HEART_BEAT("exchange_heartbeat", 9),
-	BOOT_SERVER("exchange_symbiote_bootServer", 4),
-	SYMBIOTE_INFOS("exchange_symbiote", 6),
-	REDUCE_SERVER("exchange_reduceServer", 2),
-	DESTROY_INSTANCE("exchange_destroyVps", 5),
-	TAKE_LEAD("exchange_takelead", 8);
+	UPDATE_SERVER("exchange_server", 8),
+	UPDATE_PLAYER_ACTION("exchange_playerAction", 4),
+	UPDATE_PLAYER_GRADE("exchange_playerGrade", 2),
+	HEART_BEAT("exchange_heartbeat", 10),
+	BOOT_SERVER("exchange_symbiote_bootServer", 5),
+	SYMBIOTE_INFOS("exchange_symbiote", 7),
+	REDUCE_SERVER("exchange_reduceServer", 3),
+	DESTROY_INSTANCE("exchange_destroyVps", 6),
+	TAKE_LEAD("exchange_takelead", 9),
+	KILL_PROCESS("exchange_killproc", 1);
 
 	private String exchangeName;
 	private int priority;

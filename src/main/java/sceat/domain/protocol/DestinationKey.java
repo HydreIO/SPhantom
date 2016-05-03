@@ -14,6 +14,7 @@ public class DestinationKey {
 	public static final String PROXY = "proxy";
 	public static final String BUILD = "build";
 	public static final String SPHANTOM = "sphantom";
+	public static final String SYMBIOTE = "symbiote";
 	public static final String HUBS_AND_PROXY = "hubs_proxy";
 	public static final String HUBS_PROXY_SPHANTOM_SYMBIOTE = "hubs_proxy_sphantom_symbiote";
 	public static final String HUBS_PROXY_SPHANTOM = "hubs_proxy_sphantom";

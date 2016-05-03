@@ -11,7 +11,9 @@ import sceat.domain.protocol.DestinationKey;
 import sceat.domain.protocol.MessagesType;
 import sceat.domain.protocol.packets.PacketPhantomBootServer;
 import sceat.domain.protocol.packets.PacketPhantomDestroyInstance;
+import sceat.domain.protocol.packets.PacketPhantomGradeUpdate;
 import sceat.domain.protocol.packets.PacketPhantomHeartBeat;
+import sceat.domain.protocol.packets.PacketPhantomKillProcess;
 import sceat.domain.protocol.packets.PacketPhantomPlayer;
 import sceat.domain.protocol.packets.PacketPhantomReduceServer;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
@@ -170,6 +172,16 @@ public class RabbitMqConnector implements IMessaging {
 	@Override
 	public void reduceServer(PacketPhantomReduceServer pkt) {
 		basicPublich(MessagesType.REDUCE_SERVER, DestinationKey.ALL_SPHANTOM, pkt.toByteArray());
+	}
+
+	@Override
+	public void killProcess(PacketPhantomKillProcess pkt) {
+		basicPublich(MessagesType.KILL_PROCESS, DestinationKey.SYMBIOTE, pkt.toByteArray());
+	}
+
+	@Override
+	public void gradeUpdate(PacketPhantomGradeUpdate pkt) {
+		basicPublich(MessagesType.UPDATE_PLAYER_GRADE, DestinationKey.ALL_SPHANTOM, pkt.toByteArray());
 	}
 
 }

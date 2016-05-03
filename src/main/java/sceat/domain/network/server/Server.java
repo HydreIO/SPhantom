@@ -16,7 +16,6 @@ import java.util.UUID;
 
 import sceat.api.PhantomApi.ServerApi;
 import sceat.domain.Manager;
-import sceat.domain.icommon.utils.ICrash;
 import sceat.domain.icommon.utils.IRegistrable;
 import sceat.domain.minecraft.Grades;
 import sceat.domain.minecraft.RessourcePack;
@@ -26,7 +25,7 @@ import sceat.domain.protocol.DestinationKey;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
 import sceat.domain.utils.ServerLabel;
 
-public class Server implements ServerApi, ICrash, IRegistrable<Server> {
+public class Server implements ServerApi, IRegistrable<Server> {
 
 	/**
 	 * Au moment ou un packet server arrive c'est la qu'on synchronise les joueurs
@@ -255,11 +254,6 @@ public class Server implements ServerApi, ICrash, IRegistrable<Server> {
 		public Set<String> getKeysAsSet() {
 			return new HashSet<String>(getKeysAslist());
 		}
-	}
-
-	@Override
-	public void handleCrash() {
-		
 	}
 
 	@Override

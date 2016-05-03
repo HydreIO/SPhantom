@@ -2,25 +2,31 @@ package sceat.domain.icommon.mq;
 
 import sceat.domain.protocol.packets.PacketPhantomBootServer;
 import sceat.domain.protocol.packets.PacketPhantomDestroyInstance;
+import sceat.domain.protocol.packets.PacketPhantomGradeUpdate;
 import sceat.domain.protocol.packets.PacketPhantomHeartBeat;
+import sceat.domain.protocol.packets.PacketPhantomKillProcess;
 import sceat.domain.protocol.packets.PacketPhantomPlayer;
 import sceat.domain.protocol.packets.PacketPhantomReduceServer;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
 
 public interface IMessaging {
 
-	public void sendServer(PacketPhantomServerInfo pkt);
+	void sendServer(PacketPhantomServerInfo pkt);
 
-	public void takeLead(PacketPhantomHeartBeat pkt);
+	void takeLead(PacketPhantomHeartBeat pkt);
 
-	public void heartBeat(PacketPhantomHeartBeat pkt);
+	void heartBeat(PacketPhantomHeartBeat pkt);
 
-	public void sendPlayer(PacketPhantomPlayer pkt);
+	void sendPlayer(PacketPhantomPlayer pkt);
 
-	public void bootServer(PacketPhantomBootServer pkt);
+	void gradeUpdate(PacketPhantomGradeUpdate pkt);
 
-	public void destroyInstance(PacketPhantomDestroyInstance pkt);
+	void bootServer(PacketPhantomBootServer pkt);
 
-	public void reduceServer(PacketPhantomReduceServer pkt);
+	void destroyInstance(PacketPhantomDestroyInstance pkt);
+
+	void reduceServer(PacketPhantomReduceServer pkt);
+
+	void killProcess(PacketPhantomKillProcess pkt);
 
 }
