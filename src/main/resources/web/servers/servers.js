@@ -67,9 +67,8 @@ function createServer(){
             type: domForm["serverType"].value,
             amount: parseInt(domForm["amount"].value)
         }));
-     } else {
-     	alert("The websocket is not open! try refreshing your browser");
-     }
+     } else
+     	setTimeout(createServer , 500);
     return false;
 }
 
