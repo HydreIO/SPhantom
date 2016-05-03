@@ -1,12 +1,12 @@
 package sceat.domain.schedule;
 
-import sceat.Main;
-
 import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import sceat.Main;
 
 public class Scheduler {
 	private static ThreadFactory factory = new ThreadFactory() {

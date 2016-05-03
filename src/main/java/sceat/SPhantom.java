@@ -106,18 +106,16 @@ public class SPhantom {
 	}
 
 	public void startWebPanel() {
-		if (isLeading()) {
-			print("Starting web panel..");
-			try {
-				new GrizzlyWebServer(81);
-				print("Web panel started!");
-			} catch (IOException e) {
-				print("[ERREUR] Unable to start web server !");
-				print("____________________________________________________\n");
-				Main.printStackTrace(e);
-				print("\n____________________________________________________");
+		print("Starting web panel..");
+		try {
+			new GrizzlyWebServer(81);
+			print("Web panel started!");
+		} catch (IOException e) {
+			print("[ERREUR] Unable to start web server !");
+			print("____________________________________________________\n");
+			Main.printStackTrace(e);
+			print("\n____________________________________________________");
 
-			}
 		}
 	}
 

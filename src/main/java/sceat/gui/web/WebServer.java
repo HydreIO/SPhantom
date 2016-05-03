@@ -1,15 +1,15 @@
 package sceat.gui.web;
 
-import org.glassfish.grizzly.http.server.HttpHandler;
-import org.glassfish.grizzly.http.server.Request;
-import org.glassfish.grizzly.http.server.Response;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.glassfish.grizzly.http.server.HttpHandler;
+import org.glassfish.grizzly.http.server.Request;
+import org.glassfish.grizzly.http.server.Response;
 
 public class WebServer extends HttpHandler{
     public static final Pattern INCLUDE_PATERN = Pattern.compile("<INCLUDE>([^ ]*)</INCLUDE>");

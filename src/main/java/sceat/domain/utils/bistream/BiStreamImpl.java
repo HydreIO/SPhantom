@@ -3,8 +3,20 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Spliterator;
-import java.util.function.*;
-import java.util.stream.*;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
+import java.util.function.BinaryOperator;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
+import java.util.function.ToDoubleBiFunction;
+import java.util.function.ToIntBiFunction;
+import java.util.function.ToLongBiFunction;
+import java.util.stream.Collector;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
+import java.util.stream.Stream;
 
 public class BiStreamImpl<T , U> implements BiStream<T , U> {
 

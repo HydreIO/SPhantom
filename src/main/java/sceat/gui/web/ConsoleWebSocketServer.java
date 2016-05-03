@@ -1,12 +1,5 @@
 package sceat.gui.web;
 
-import org.glassfish.grizzly.websockets.Broadcaster;
-import org.glassfish.grizzly.websockets.OptimizedBroadcaster;
-import org.glassfish.grizzly.websockets.WebSocket;
-import org.glassfish.grizzly.websockets.WebSocketApplication;
-import sceat.Main;
-import sceat.domain.shell.Input;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -16,6 +9,14 @@ import java.util.Date;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+
+import org.glassfish.grizzly.websockets.Broadcaster;
+import org.glassfish.grizzly.websockets.OptimizedBroadcaster;
+import org.glassfish.grizzly.websockets.WebSocket;
+import org.glassfish.grizzly.websockets.WebSocketApplication;
+
+import sceat.Main;
+import sceat.domain.shell.Input;
 
 public class ConsoleWebSocketServer extends WebSocketApplication implements Input.PhantomInput{
     private class LoggerHandler extends Handler{
