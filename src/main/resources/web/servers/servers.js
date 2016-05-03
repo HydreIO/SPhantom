@@ -62,7 +62,7 @@ $( document ).ready(function (){
 
 function createServer(){
     var domForm = form.get(0);
-    console.log(JSON.stringify({
+    ws.send(JSON.stringify({
         type: domForm["serverType"].value,
         amount: parseInt(domForm["amount"].value)
     }));

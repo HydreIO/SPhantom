@@ -198,7 +198,7 @@ public class Server implements ServerApi, IRegistrable<Server> {
 		return Core.getInstance().getVps().getOrDefault(getVpsLabel(), null);
 	}
 
-	public static enum ServerType {
+	public enum ServerType {
 		PROXY(
 				(byte) 0,
 				RessourcePack.RESSOURCE_PACK_DEFAULT,
