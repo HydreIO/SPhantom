@@ -199,7 +199,7 @@ public class Server implements ServerApi, IRegistrable<Server> {
 	}
 
 	public static enum ServerType {
-		Proxy(
+		PROXY(
 				(byte) 0,
 				RessourcePack.RESSOURCE_PACK_DEFAULT,
 				DestinationKey.PROXY,
@@ -208,7 +208,7 @@ public class Server implements ServerApi, IRegistrable<Server> {
 				DestinationKey.HUBS_PROXY_SPHANTOM_SYMBIOTE,
 				DestinationKey.ALL,
 				DestinationKey.ALL_SPHANTOM),
-		Lobby(
+		LOBBY(
 				(byte) 1,
 				RessourcePack.RESSOURCE_PACK_DEFAULT,
 				DestinationKey.ALL,
@@ -217,9 +217,9 @@ public class Server implements ServerApi, IRegistrable<Server> {
 				DestinationKey.HUBS_PROXY_SPHANTOM,
 				DestinationKey.HUBS_PROXY_SPHANTOM_SYMBIOTE,
 				DestinationKey.ALL_SPHANTOM),
-		Agares((byte) 2, RessourcePack.AGARES, DestinationKey.ALL, DestinationKey.SERVEURS, DestinationKey.SRV_AGARES, DestinationKey.ALL_SPHANTOM),
-		AresRpg((byte) 3, RessourcePack.ARESRPG, DestinationKey.ALL, DestinationKey.SERVEURS, DestinationKey.SRV_ARES, DestinationKey.ALL_SPHANTOM),
-		Iron((byte) 4, RessourcePack.IRON, DestinationKey.ALL, DestinationKey.SERVEURS, DestinationKey.SRV_IRON, DestinationKey.ALL_SPHANTOM);
+		AGARES((byte) 2, RessourcePack.AGARES, DestinationKey.ALL, DestinationKey.SERVEURS, DestinationKey.SRV_AGARES, DestinationKey.ALL_SPHANTOM),
+		ARESRPG((byte) 3, RessourcePack.ARESRPG, DestinationKey.ALL, DestinationKey.SERVEURS, DestinationKey.SRV_ARES, DestinationKey.ALL_SPHANTOM),
+		IRON((byte) 4, RessourcePack.IRON, DestinationKey.ALL, DestinationKey.SERVEURS, DestinationKey.SRV_IRON, DestinationKey.ALL_SPHANTOM);
 
 		private byte id;
 		private String[] keys;
