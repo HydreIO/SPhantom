@@ -164,6 +164,11 @@ public class Vps implements Comparable<Vps>, VpsApi, ICrash, IRegistrable<Vps> {
 		return createdMilli;
 	}
 
+	public Vps setCreatedMilli(long createdMilli) {
+		this.createdMilli = createdMilli;
+		return this;
+	}
+
 	/**
 	 * Check si le vps a été créé depuis suffisament de temps pour être destroyed (50min mini) pour ne pas payer inutilement
 	 * 
