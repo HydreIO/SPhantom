@@ -2,7 +2,6 @@ package sceat.gui.web;
 
 import java.util.Map;
 
-import com.google.gson.stream.JsonReader;
 import org.glassfish.grizzly.websockets.Broadcaster;
 import org.glassfish.grizzly.websockets.OptimizedBroadcaster;
 import org.glassfish.grizzly.websockets.WebSocket;
@@ -22,10 +21,11 @@ import com.google.gson.JsonPrimitive;
 
 public class VpsWebSocketServer extends WebSocketApplication implements PhantomTrigger.Trigger {
 
-	private static class VpsCreateResponse{
+	private static class VpsCreateResponse {
 		private Server.ServerType type;
 		private int amount;
 
+		@SuppressWarnings("unused")
 		public VpsCreateResponse(Server.ServerType type, int amount) {
 			this.type = type;
 			this.amount = amount;
@@ -39,6 +39,7 @@ public class VpsWebSocketServer extends WebSocketApplication implements PhantomT
 			return amount;
 		}
 	}
+
 	private Broadcaster broadcaster = new OptimizedBroadcaster();
 	private Gson gson = new GsonBuilder().create();
 
@@ -53,13 +54,13 @@ public class VpsWebSocketServer extends WebSocketApplication implements PhantomT
 			socket.send(gson.toJson(toJsonObject(e.getKey(), e.getValue())));
 	}
 
-    @Override
+	@Override
 	public void onMessage(WebSocket socket, String text) {
-        super.onMessage(socket , text);
-		VpsCreateResponse response = gson.fromJson(text , VpsCreateResponse.class);
-		if(response.getAmount() > 5)
-			return;
-		Core.getInstance().forceDeployServer(response.getType() , response.getAmount());
+		super.onMessage(socket, text);
+		VpsCreateResponse response = gson.fromJson(text, VpsCreateResponse.class);
+		if (response.getAmount() > 5) return;
+		Core.getInstance().forceDeployServer(response.getType(), response.getAmount());
+
 	}
 
 	private JsonObject toJsonObject(String label, PhantomApi.VpsApi vps) {

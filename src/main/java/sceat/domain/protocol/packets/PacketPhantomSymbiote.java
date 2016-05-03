@@ -15,13 +15,16 @@ import sceat.domain.protocol.MessagesType;
 import sceat.domain.trigger.PhantomTrigger;
 
 public class PacketPhantomSymbiote extends PacketPhantom {
+
 	private String vpsLabel;
 	private VpsState state;
 	private int ram;
+	private long created;
 	private InetAddress ip;
 
-	public PacketPhantomSymbiote(String vpsLabel, VpsState state, int ram, InetAddress ip) {
+	public PacketPhantomSymbiote(String vpsLabel, VpsState state, int ram, InetAddress ip, long created) {
 		this.vpsLabel = vpsLabel;
+		this.created = created;
 		this.state = state;
 		this.ip = ip;
 		this.ram = ram;
@@ -35,6 +38,7 @@ public class PacketPhantomSymbiote extends PacketPhantom {
 		writeString(getVpsLabel());
 		writeByte(getState().getId());
 		writeInt(getRam());
+		writeLong(created);
 		writeString(getIp().getHostAddress());
 	}
 
@@ -43,6 +47,7 @@ public class PacketPhantomSymbiote extends PacketPhantom {
 		this.vpsLabel = readString();
 		this.state = VpsState.fromId(readByte());
 		this.ram = readInt();
+		this.created = readLong();
 		try {
 			this.ip = InetAddress.getByName(readString());
 		} catch (UnknownHostException e) {
@@ -50,12 +55,16 @@ public class PacketPhantomSymbiote extends PacketPhantom {
 		}
 	}
 
+	public long getCreated() {
+		return created;
+	}
+
 	@Override
 	public void handleData(MessagesType type) {
 		if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketSymbiote [" + getVpsLabel() + "|" + getState() + "|" + getIp().getHostAddress() + "|Ram(" + getRam() + ")]");
 		ConcurrentHashMap<String, Vps> varmap = Core.getInstance().getVps();
-		if (varmap.containsKey(getVpsLabel())) varmap.get(getVpsLabel()).setUpdated(true).setState(getState());
-		else new Vps(getVpsLabel(), getRam(), getIp(), new HashSet<Server>(), System.currentTimeMillis()).register().setUpdated(true).setState(getState());
+		if (varmap.containsKey(getVpsLabel())) varmap.get(getVpsLabel()).setUpdated(true).setState(getState()).setCreatedMilli(getCreated());
+		else new Vps(getVpsLabel(), getRam(), getIp(), new HashSet<Server>(), getCreated()).register().setUpdated(true).setState(getState());
 		Vps v = Core.getInstance().getVps().getOrDefault(vpsLabel, null);
 		if (v != null) PhantomTrigger.getAll().forEach(t -> t.handleVps(v));
 	}
