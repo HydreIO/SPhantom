@@ -15,20 +15,19 @@ import sceat.domain.protocol.MessagesType;
 import sceat.domain.protocol.Security;
 
 public abstract class PacketPhantom {
-	
-	
 
 	public static void registerPkts() {
 		SPhantom.print("Initialising packets...");
 		try {
-			registerPacket((byte) 1, PacketPhantomServerInfo.class);
-			registerPacket((byte) 2, PacketPhantomHeartBeat.class);
-			registerPacket((byte) 3, PacketPhantomPlayer.class);
-			registerPacket((byte) 4, PacketPhantomBootServer.class);
-			registerPacket((byte) 5, PacketPhantomSymbiote.class);
-			registerPacket((byte) 6, PacketPhantomDestroyInstance.class);
-			registerPacket((byte) 7, PacketPhantomReduceServer.class);
-			registerPacket((byte) 8, PacketPhantomServerCrash.class);
+			registerPacket((byte) 1, PacketPhantomServerInfo.class); // servers
+			registerPacket((byte) 2, PacketPhantomHeartBeat.class); // sphantom ping
+			registerPacket((byte) 3, PacketPhantomPlayer.class); // players connect/disconnect
+			registerPacket((byte) 4, PacketPhantomBootServer.class); // server boot
+			registerPacket((byte) 5, PacketPhantomSymbiote.class); // vps
+			registerPacket((byte) 6, PacketPhantomDestroyInstance.class); // destroy vps for other sphantom
+			registerPacket((byte) 7, PacketPhantomReduceServer.class); // reduction
+			registerPacket((byte) 8, PacketPhantomKillProcess.class); // kill server cg overhead
+			registerPacket((byte) 9, PacketPhantomGradeUpdate.class); // player grade
 		} catch (PacketIdAlrealyUsedException e) {
 			Main.printStackTrace(e);
 		}

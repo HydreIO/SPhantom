@@ -259,6 +259,7 @@ public class Server implements ServerApi, ICrash, IRegistrable<Server> {
 
 	@Override
 	public void handleCrash() {
+		
 	}
 
 	@Override
