@@ -12,7 +12,7 @@ import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 
 public class WebServer extends HttpHandler{
-    public static final Pattern INCLUDE_PATERN = Pattern.compile("<INCLUDE>([^ ]*)</INCLUDE>");
+    public static final Pattern INCLUDE_PATTERN = Pattern.compile("<INCLUDE>([^ ]*)</INCLUDE>");
     @Override
     public void service(Request request, Response response) throws Exception {
         if("/".equals(request.getPathInfo())){
@@ -29,7 +29,7 @@ public class WebServer extends HttpHandler{
     }
 
     private String replaceIncludes(String page) throws IOException {
-        Matcher matcher = INCLUDE_PATERN.matcher(page);
+        Matcher matcher = INCLUDE_PATTERN.matcher(page);
         String p = page;
         if(!matcher.find())
             return p;

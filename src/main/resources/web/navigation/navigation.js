@@ -26,7 +26,4 @@ function setActive(){
 $( document ).ready(function (){
     setActive();
     nav = $(".nav-hideable");
-    button.click(function () {
-        changeNavState();
-    });
 });

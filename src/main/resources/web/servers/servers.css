@@ -1,3 +1,36 @@
+#content {
+    position: relative;
+}
+
+#new-server {
+    position: absolute;
+    z-index: 100;
+    left: 0;
+    right: 0;
+}
+
+#new-server > a {
+    display: block;
+    width: 40px;
+    cursor: pointer;
+}
+
+#new-server > form {
+    width: 500px;
+}
+
+#new-server > * {
+    margin: 0 auto;
+    background-color: #e74c3c;
+    border: 2px solid #d91e18;
+    border-top-width: 0;
+    text-align: center;
+    color: white;
+}
+
+.hidden {
+    display: none;
+}
 #servers {
     height: 100%;
     overflow-y: scroll;

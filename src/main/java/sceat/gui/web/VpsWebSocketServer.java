@@ -2,6 +2,7 @@ package sceat.gui.web;
 
 import java.util.Map;
 
+import com.google.gson.stream.JsonReader;
 import org.glassfish.grizzly.websockets.Broadcaster;
 import org.glassfish.grizzly.websockets.OptimizedBroadcaster;
 import org.glassfish.grizzly.websockets.WebSocket;
@@ -10,6 +11,7 @@ import org.glassfish.grizzly.websockets.WebSocketApplication;
 import sceat.api.PhantomApi;
 import sceat.domain.network.Core;
 import sceat.domain.network.ServerProvider;
+import sceat.domain.network.server.Server;
 import sceat.domain.trigger.PhantomTrigger;
 
 import com.google.gson.Gson;
@@ -20,6 +22,23 @@ import com.google.gson.JsonPrimitive;
 
 public class VpsWebSocketServer extends WebSocketApplication implements PhantomTrigger.Trigger {
 
+	private static class VpsCreateResponse{
+		private Server.ServerType type;
+		private int amount;
+
+		public VpsCreateResponse(Server.ServerType type, int amount) {
+			this.type = type;
+			this.amount = amount;
+		}
+
+		public Server.ServerType getType() {
+			return type;
+		}
+
+		public int getAmount() {
+			return amount;
+		}
+	}
 	private Broadcaster broadcaster = new OptimizedBroadcaster();
 	private Gson gson = new GsonBuilder().create();
 
@@ -33,6 +52,14 @@ public class VpsWebSocketServer extends WebSocketApplication implements PhantomT
 		for (Map.Entry<String, PhantomApi.VpsApi> e : PhantomApi.getAllVps().entrySet())
 			socket.send(gson.toJson(toJsonObject(e.getKey(), e.getValue())));
 
+	}
+
+	@Override
+	public void onMessage(WebSocket socket, String text) {
+		VpsCreateResponse response = gson.fromJson(text , VpsCreateResponse.class);
+		if(response.getAmount() > 5)
+			return;
+		Core.getInstance().forceDeployServer(response.getType() , response.getAmount());
 	}
 
 	private JsonObject toJsonObject(String label, PhantomApi.VpsApi vps) {

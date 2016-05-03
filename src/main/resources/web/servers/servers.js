@@ -1,4 +1,6 @@
 var servers = $("#servers");
+var form = $(document.forms["newServer"]);
+var serverButton = $("#new-server > a");
 
 function addVps(vps) {
     $("#"+vps.label).remove();
@@ -58,6 +60,15 @@ $( document ).ready(function (){
     setupWebSockets()
 });
 
+function createServer(){
+    var domForm = form.get(0);
+    console.log(JSON.stringify({
+        type: domForm["serverType"].value,
+        amount: parseInt(domForm["amount"].value)
+    }));
+    return false;
+}
+
 function test() {
     var vps = {
         label: "vps01",
@@ -80,4 +91,18 @@ function createTestServer() {
         maxPlayers: 120,
         lastTimeout: 10
     };
+}
+
+
+function changeNewServerState() {
+
+    if(form.hasClass("hidden")){
+        form.removeClass("hidden");
+        serverButton.children().removeClass("fa-angle-double-down");
+        serverButton.children().addClass("fa-angle-double-up");
+    }else{
+        form.addClass("hidden");
+        serverButton.children().removeClass("fa-angle-double-up");
+        serverButton.children().addClass("fa-angle-double-down");
+    }
 }

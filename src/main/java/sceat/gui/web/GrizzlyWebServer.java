@@ -7,6 +7,7 @@ import org.glassfish.grizzly.websockets.WebSocketAddOn;
 import org.glassfish.grizzly.websockets.WebSocketEngine;
 
 import sceat.domain.shell.Input;
+import sceat.domain.trigger.PhantomTrigger;
 
 public class GrizzlyWebServer {
 
@@ -35,7 +36,8 @@ public class GrizzlyWebServer {
 	}
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        new GrizzlyWebServer(8080);
+        new PhantomTrigger();
+		new GrizzlyWebServer(8080);
         Thread.sleep(Long.MAX_VALUE);
     }
 

@@ -45,6 +45,7 @@ nav li a:hover:not(.active) {
 #nav-collapse {
     position: absolute;
     bottom: 0;
+    left: 0;
     color: white;
     width: 200px;
     height: 40px;

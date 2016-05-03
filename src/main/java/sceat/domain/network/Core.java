@@ -102,7 +102,7 @@ public class Core implements Scheduled {
 			boolean decrem = true;
 			int plTot = Manager.getInstance().getPlayersOnNetwork().size();
 			for (ServerType v : ServerType.values()) {
-				if (v == ServerType.Proxy) continue;
+				if (v == ServerType.PROXY) continue;
 				int playersCount = playersByType.get(v).size();
 				int totspace = SPhantom.getInstance().getSphantomConfig().getInstances().get(v).getMaxPlayers() * serversByType.get(v).size();
 				if (SPhantom.logDiv()) SPhantom.print("[FreeSpace CHECK] |" + v + "|players(" + playersCount + ")|totspace(" + totspace + ")");
@@ -325,7 +325,7 @@ public class Core implements Scheduled {
 	 * @param type
 	 */
 	public void forceDeployServer(ServerType type, int nbr) {
-		if (type == ServerType.Proxy) SPhantom.print("Can't deploy proxy forced !");
+		if (type == ServerType.PROXY) SPhantom.print("Can't deploy proxy forced !");
 		else {
 			SPhantom.print("Deploy Server |Type_" + type + "|Nbr(" + nbr + ")");
 			SPhantomConfig conf = SPhantom.getInstance().getSphantomConfig();
@@ -349,7 +349,7 @@ public class Core implements Scheduled {
 	}
 
 	private Set<Server> deployServer(ServerType type, int nbr) {
-		if (type == ServerType.Proxy) return deployProxy(nbr);
+		if (type == ServerType.PROXY) return deployProxy(nbr);
 		if (SPhantom.logDiv()) SPhantom.print("Deploy Server |Type_" + type + "|Nbr(" + nbr + ")");
 		SPhantomConfig conf = SPhantom.getInstance().getSphantomConfig();
 		McServerConfigObject obj = conf.getInstances().get(type);
@@ -369,7 +369,7 @@ public class Core implements Scheduled {
 	}
 
 	public void deployServerOnVps(ServerType type, Vps v, boolean fromBalk) {
-		if (type == ServerType.Proxy) {
+		if (type == ServerType.PROXY) {
 			deplyProxyOnVps(v);
 			return;
 		}
@@ -391,7 +391,7 @@ public class Core implements Scheduled {
 	 * @param type
 	 */
 	private void reduceServer(ServerType type) {
-		if (type == ServerType.Proxy) {
+		if (type == ServerType.PROXY) {
 			reduceProxy();
 			return;
 		}

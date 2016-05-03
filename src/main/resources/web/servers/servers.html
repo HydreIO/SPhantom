@@ -9,6 +9,24 @@
 <body>
     <INCLUDE>navigation/navigation.html</INCLUDE>
     <div id="content" class="nav-hideable">
+        <div id="new-server">
+            <form class="hidden" name="newServer" action="javascript: createServer();">
+                Type:
+                <select name="serverType">
+                    <option value="PROXY">Proxy</option>
+                    <option value="LOBBY">Lobby</option>
+                    <option value="AGARES">Agares</option>
+                    <option value="ARES_RPG">AresRpg</option>
+                    <option value="IRON">Iron</option>
+                </select>
+                <br/>
+                Amount:
+                <input type="number" name="amount" min="1" max="5" style="width: 50px" value="1">
+                <br/>
+                <input type="button" value="Create" onclick="createServer();">
+            </form>
+            <a role="button" onclick="changeNewServerState()"><i class="fa fa-angle-double-down"></i></a>
+        </div>
         <ul id="servers"></ul>
     </div>
     <script src="servers.js"></script>
