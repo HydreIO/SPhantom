@@ -61,11 +61,15 @@ $( document ).ready(function (){
 });
 
 function createServer(){
-    var domForm = form.get(0);
-    ws.send(JSON.stringify({
-        type: domForm["serverType"].value,
-        amount: parseInt(domForm["amount"].value)
-    }));
+    if (ws.readyState == 1) {
+        var domForm = form.get(0);
+        ws.send(JSON.stringify({
+            type: domForm["serverType"].value,
+            amount: parseInt(domForm["amount"].value)
+        }));
+     } else {
+     	alert("The websocket is not open! try refreshing your browser");
+     }
     return false;
 }
 
