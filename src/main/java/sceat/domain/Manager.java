@@ -48,5 +48,4 @@ public class Manager {
 	public Map<Grades, Set<UUID>> getPlayersPerGrade() {
 		return playersPerGrade;
 	}
-
 }

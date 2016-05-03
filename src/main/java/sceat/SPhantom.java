@@ -6,8 +6,6 @@ import java.net.Socket;
 import java.util.Calendar;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import sceat.api.PhantomApi;
 import sceat.api.PhantomApi.ServerApi;
@@ -26,6 +24,7 @@ import sceat.domain.protocol.handler.PacketHandler;
 import sceat.domain.protocol.packets.PacketPhantom;
 import sceat.domain.shell.Input;
 import sceat.domain.trigger.PhantomTrigger;
+import sceat.domain.utils.PhantomFactory;
 import sceat.gui.terminal.PhantomTui;
 import sceat.gui.web.GrizzlyWebServer;
 import sceat.infra.connector.general.VultrConnector;
@@ -65,33 +64,9 @@ public class SPhantom {
 		PacketPhantom.registerPkts();
 		this.running = true;
 		this.local = local;
-		this.pinger = Executors.newSingleThreadExecutor(new ThreadFactory() {
-			final AtomicInteger count = new AtomicInteger(0);
-
-			@Override
-			public Thread newThread(Runnable runnable) {
-				Thread thread = new Thread(runnable, "Pinger Pool - [Thrd: " + count.incrementAndGet() + "]");
-				return thread;
-			}
-		});
-		this.peaceMaker = Executors.newSingleThreadExecutor(new ThreadFactory() {
-			final AtomicInteger count = new AtomicInteger(0);
-
-			@Override
-			public Thread newThread(Runnable runnable) {
-				Thread thread = new Thread(runnable, "PeaceMaker Pool - [Thrd: " + count.incrementAndGet() + "]");
-				return thread;
-			}
-		});
-		this.executor = Executors.newFixedThreadPool(70, new ThreadFactory() {
-			final AtomicInteger count = new AtomicInteger(0);
-
-			@Override
-			public Thread newThread(Runnable runnable) {
-				Thread thread = new Thread(runnable, "Main Pool - [Thrd: " + count.incrementAndGet() + "]");
-				return thread;
-			}
-		});
+		this.pinger = Executors.newSingleThreadExecutor(PhantomFactory.create("Pinger Pool - [Thrd: $d]").build());
+		this.peaceMaker = Executors.newSingleThreadExecutor(PhantomFactory.create("PeaceMaker Pool - [Thrd: $d]").build());
+		this.executor = Executors.newFixedThreadPool(70, PhantomFactory.create("Main Pool - [Thrd: $d]").build());
 		this.config = new SPhantomConfig();
 		this.iphantom = new VultrConnector();
 		new PhantomTrigger();
