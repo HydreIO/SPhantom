@@ -1,9 +1,9 @@
-package sceat.domain.utils;
+package sceat.domain.common.thread;
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import sceat.domain.common.Joiner;
+import sceat.domain.common.java.Joiner;
 
 @FunctionalInterface
 public interface PhantomFactory {

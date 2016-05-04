@@ -3,7 +3,6 @@ package sceat.domain.protocol.packets;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -32,15 +31,13 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 	private int maxp;
 	private String ip;
 	private Map<Grades, Set<UUID>> players = new HashMap<Grades, Set<UUID>>();
-	private Set<String> keys = new HashSet<String>();
 	private Statut state;
 	private boolean fromSymbiote = false; // if the packet came from symbiote, then we must get from the map like a closing server and not from "Server.fromPacket"
 
-	public PacketPhantomServerInfo(Statut state, String label, String vpsLabel, InetAddress ip, ServerType type, int maxp, Map<Grades, Set<UUID>> pl, Set<String> keys, boolean fromSymbiote) {
+	public PacketPhantomServerInfo(Statut state, String label, String vpsLabel, InetAddress ip, ServerType type, int maxp, Map<Grades, Set<UUID>> pl, boolean fromSymbiote) {
 		this.ip = ip.getHostAddress();
 		this.vpsLabel = vpsLabel;
 		this.label = label;
-		this.keys = keys == null ? new HashSet<String>() : keys;
 		this.type = type;
 		this.players = pl == null ? new HashMap<Grades, Set<UUID>>() : pl;
 		if (pl == null) Arrays.stream(Grades.values()).forEach(g -> players.put(g, New.set()));
@@ -59,7 +56,6 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		writeInt(getMaxp());
 		writeString(this.ip);
 		writeMap(this.players, d -> writeString(d.name()), d -> writeCollection(d, e -> writeString(e.toString())));
-		writeCollection(this.keys, this::writeString);
 		writeString(getState().name());
 		writeBoolean(isFromSymbiote());
 	}
@@ -73,7 +69,6 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		this.ip = readString();
 		this.players = readMap(() -> Grades.valueOf(readString()), () -> readCollection(new HashSet<UUID>(), () -> UUID.fromString(readString())));
 		if (players.get(Grades.ADMIN) == null) Arrays.stream(Grades.values()).forEach(g -> players.put(g, New.set()));
-		this.keys = readCollection(new HashSet<String>(), this::readString);
 		this.state = Statut.valueOf(readString());
 		this.fromSymbiote = readBoolean();
 	}
@@ -126,7 +121,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 	}
 
 	public static PacketPhantomServerInfo fromServer(Server srv) {
-		return new PacketPhantomServerInfo(srv.getStatus(), srv.getLabel(), srv.getVpsLabel(), srv.getIpadress(), srv.getType(), srv.getMaxPlayers(), srv.getPlayersMap(), srv.getKeys(), false);
+		return new PacketPhantomServerInfo(srv.getStatus(), srv.getLabel(), srv.getVpsLabel(), srv.getIpadress(), srv.getType(), srv.getMaxPlayers(), srv.getPlayersMap(), false);
 	}
 
 	public boolean isFromSymbiote() {
@@ -135,10 +130,6 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 
 	public Statut getState() {
 		return state;
-	}
-
-	public Collection<String> getKeys() {
-		return keys;
 	}
 
 	public String getVpsLabel() {

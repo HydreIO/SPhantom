@@ -8,16 +8,19 @@ import sceat.domain.shell.Input.PhantomInput;
 
 public class ScannerInput implements PhantomInput {
 
-	private static ScannerInput instance;
+	private static final ScannerInput instance = new ScannerInput();
 	private ExecutorService exe = Executors.newSingleThreadExecutor();
 
-	public ScannerInput() {
-		instance = this;
-		exe.execute(() -> {
+	private ScannerInput() {
+	}
+
+	public static void init() {
+		final ScannerInput input = instance;
+		input.exe.execute(() -> {
 			@SuppressWarnings("resource")
 			Scanner scanner = new Scanner(System.in);
 			while (true)
-				push(scanner.next());
+				input.push(scanner.next());
 		});
 	}
 

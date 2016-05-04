@@ -2,13 +2,19 @@ package sceat.infra.connector.mq;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import sceat.Main;
 import sceat.SPhantom;
-import sceat.domain.common.mq.IMessaging;
-import sceat.domain.protocol.DestinationKey;
+import sceat.domain.common.java.Lambdas;
+import sceat.domain.common.mq.Broker;
+import sceat.domain.common.system.Config;
+import sceat.domain.common.system.Log;
+import sceat.domain.common.system.Root;
+import sceat.domain.common.thread.ScThread;
 import sceat.domain.protocol.MessagesType;
+import sceat.domain.protocol.RoutingKey;
 import sceat.domain.protocol.packets.PacketPhantomBootServer;
 import sceat.domain.protocol.packets.PacketPhantomDestroyInstance;
 import sceat.domain.protocol.packets.PacketPhantomGradeUpdate;
@@ -17,61 +23,53 @@ import sceat.domain.protocol.packets.PacketPhantomKillProcess;
 import sceat.domain.protocol.packets.PacketPhantomPlayer;
 import sceat.domain.protocol.packets.PacketPhantomReduceServer;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
+import sceat.domain.utils.Try;
+import sceat.domain.utils.Try.TryVoidRunnable;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
-public class RabbitMqConnector implements IMessaging {
+public class RabbitMqConnector implements Broker {
 
-	private static RabbitMqConnector instance;
+	private static final RabbitMqConnector instance = new RabbitMqConnector();
 	private RabbitMqReceiver receiver;
-
-	public static boolean routingEnabled = true;
-
 	private ConnectionFactory factory = new ConnectionFactory();
 	private static Connection connection;
-
 	private static Channel channel;
+	public static final String type = "direct";
 
-	public static final String type = routingEnabled ? "direct" : "fanout";
+	private RabbitMqConnector() {
+	}
 
-	public RabbitMqConnector(String user, String pass, boolean local) {
-		init(user, pass, local);
+	public static void init(String user, String pass, boolean local) {
+		instance.initt(user, pass, local);
 	}
 
 	public RabbitMqReceiver getReceiver() {
 		return this.receiver;
 	}
 
-	/**
-	 * Initialisation de la connection et du channel, ainsi que d�claration des messages json a envoyer (par leur nom : banP etc) On initialise aussi les receiver (une fois le channel cr��)
-	 */
-	public void init(String user, String passwd, boolean local) {
-		instance = this;
+	public void initt(String user, String passwd, boolean local) {
 		if (local) {
 			SPhantom.print("Local mode ! No messaging service.");
 			return;
 		}
-		getFactory().setHost(SPhantom.getInstance().getSphantomConfig().getRabbitAdress());
-		getFactory().setPort(SPhantom.getInstance().getSphantomConfig().getRabbitPort());
-		getFactory().setUsername(user);
-		getFactory().setPassword(passwd);
-		try {
+		Lambdas.<ConnectionFactory> emptyConsumer((f) -> {
+			f.setHost(Config.get().getRabbitAdress());
+			f.setPort(Config.get().getRabbitPort());
+			f.setUsername(user);
+			f.setPassword(passwd);
+		}).accept(getFactory());
+		Try.orVoidWithActions(TryVoidRunnable.empty(() -> {
 			connection = getFactory().newConnection();
-			channel = getConnection().createChannel();
-		} catch (IOException | TimeoutException e) {
-			SPhantom.print("Unable to access message broker RMQ, Sphantom is going down..", true);
-			Main.printStackTrace(e);
-			try {
-				Thread.sleep(3000);
-			} catch (InterruptedException e1) {
-				Main.printStackTrace(e);
-			}
-			Main.shutDown();
-			return;
-		}
-		SPhantom.print("Sucessfully connected to broker RMQ");
+			channel = connection.createChannel();
+		}), true, () -> {
+			Log.out("Unable to access message broker RMQ, ScorchedRoot is going down..");
+			ScThread.sleep(3, TimeUnit.SECONDS); // ultime swag !!!!!!
+				Root.exit(false);
+			});
+		Log.out("Sucessfully connected to broker RMQ");
 		Arrays.stream(MessagesType.values()).forEach(this::exchangeDeclare);
 		this.receiver = new RabbitMqReceiver();
 	}
@@ -133,55 +131,61 @@ public class RabbitMqConnector implements IMessaging {
 	 */
 	public void basicPublich(MessagesType msg, String key, byte[] array) {
 		try {
-			getChannel().basicPublish(msg.getName(), routingEnabled ? key : "", null, array);
+			getChannel().basicPublish(msg.getName(), key, null, array);
 		} catch (IOException e) {
 			Main.printStackTrace(e);
 		}
 	}
 
+	private final String SPHANTOM_key = RoutingKey.genKey(RoutingKey.SPHANTOM);
+	private final String ALL_SPHANTOM_key = RoutingKey.genKey(RoutingKey.SPHANTOM, RoutingKey.HUBS, RoutingKey.PROXY, RoutingKey.SERVERS);
+	private final String BOOTSERVER_key = RoutingKey.genKey(RoutingKey.HUBS, RoutingKey.PROXY, RoutingKey.SPHANTOM, RoutingKey.SYMBIOTE);
+	private final String SYMBIOTE_key = RoutingKey.genKey(RoutingKey.SYMBIOTE);
+	private final String SERVER_INFOS_key = RoutingKey.genKey(RoutingKey.HUBS, RoutingKey.PROXY, RoutingKey.SPHANTOM);
+
 	@Override
 	public void sendServer(PacketPhantomServerInfo pkt) {
-		basicPublich(MessagesType.UPDATE_SERVER, DestinationKey.HUBS_PROXY_SPHANTOM, pkt.toByteArray());
+		basicPublich(MessagesType.UPDATE_SERVER, this.SERVER_INFOS_key, pkt.toByteArray());
 	}
 
 	@Override
 	public void takeLead(PacketPhantomHeartBeat pkt) {
-		basicPublich(MessagesType.TAKE_LEAD, DestinationKey.SPHANTOM, pkt.toByteArray());
+		basicPublich(MessagesType.TAKE_LEAD, this.SPHANTOM_key, pkt.toByteArray());
 	}
 
 	@Override
 	public void heartBeat(PacketPhantomHeartBeat pkt) {
-		basicPublich(MessagesType.HEART_BEAT, DestinationKey.SPHANTOM, pkt.toByteArray());
+		basicPublich(MessagesType.HEART_BEAT, this.SPHANTOM_key, pkt.toByteArray());
 	}
 
 	@Override
 	public void sendPlayer(PacketPhantomPlayer pkt) {
-		basicPublich(MessagesType.UPDATE_PLAYER_ACTION, DestinationKey.ALL_SPHANTOM, pkt.toByteArray());
+		basicPublich(MessagesType.UPDATE_PLAYER_ACTION, this.ALL_SPHANTOM_key, pkt.toByteArray());
 	}
 
 	@Override
 	public void bootServer(PacketPhantomBootServer pkt) {
-		basicPublich(MessagesType.BOOT_SERVER, DestinationKey.HUBS_PROXY_SPHANTOM_SYMBIOTE, pkt.toByteArray());
+		basicPublich(MessagesType.BOOT_SERVER, this.BOOTSERVER_key, pkt.toByteArray());
 	}
 
 	@Override
 	public void destroyInstance(PacketPhantomDestroyInstance pkt) {
-		basicPublich(MessagesType.DESTROY_INSTANCE, DestinationKey.SPHANTOM, pkt.toByteArray());
+		basicPublich(MessagesType.DESTROY_INSTANCE, this.SPHANTOM_key, pkt.toByteArray());
 	}
 
 	@Override
 	public void reduceServer(PacketPhantomReduceServer pkt) {
-		basicPublich(MessagesType.REDUCE_SERVER, DestinationKey.ALL_SPHANTOM, pkt.toByteArray());
+		basicPublich(MessagesType.REDUCE_SERVER, this.ALL_SPHANTOM_key, pkt.toByteArray());
 	}
 
 	@Override
 	public void killProcess(PacketPhantomKillProcess pkt) {
-		basicPublich(MessagesType.KILL_PROCESS, DestinationKey.SYMBIOTE, pkt.toByteArray());
+		basicPublich(MessagesType.KILL_PROCESS, this.SYMBIOTE_key, pkt.toByteArray());
 	}
 
 	@Override
 	public void gradeUpdate(PacketPhantomGradeUpdate pkt) {
-		basicPublich(MessagesType.UPDATE_PLAYER_GRADE, DestinationKey.ALL_SPHANTOM, pkt.toByteArray());
+		basicPublich(MessagesType.UPDATE_PLAYER_GRADE, this.ALL_SPHANTOM_key, pkt.toByteArray());
 	}
 
 }

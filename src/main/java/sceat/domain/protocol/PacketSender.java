@@ -1,7 +1,7 @@
 package sceat.domain.protocol;
 
 import sceat.SPhantom;
-import sceat.domain.common.mq.IMessaging;
+import sceat.domain.common.mq.Broker;
 import sceat.domain.protocol.packets.PacketPhantom;
 import sceat.domain.protocol.packets.PacketPhantomBootServer;
 import sceat.domain.protocol.packets.PacketPhantomDestroyInstance;
@@ -11,6 +11,7 @@ import sceat.domain.protocol.packets.PacketPhantomKillProcess;
 import sceat.domain.protocol.packets.PacketPhantomPlayer;
 import sceat.domain.protocol.packets.PacketPhantomReduceServer;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
+import sceat.infra.connector.mq.RabbitMqConnector;
 
 /**
  * Je prefere avoir une class de centralisation pour l'envoi des packet plutot que Packet.send pour avoir une vue d'ensemble directe !
@@ -20,14 +21,17 @@ import sceat.domain.protocol.packets.PacketPhantomServerInfo;
  */
 public class PacketSender {
 
-	private static PacketSender instance;
-	private IMessaging broker;
+	private static PacketSender instance = new PacketSender();
+	private Broker broker;
 	private boolean allowed = false;
 
-	public PacketSender(String user, String pass, boolean local) {
-		instance = this;
-		broker = SPhantom.getInstance().initBroker(user, pass, local);
-		allowed = local;
+	private PacketSender() {
+	}
+
+	public static void init(String user, String pass, boolean local) {
+		RabbitMqConnector.init(user, pass, local);
+		instance.broker = RabbitMqConnector.getInstance();
+		instance.allowed = local;
 	}
 
 	public static PacketSender getInstance() {
@@ -44,8 +48,8 @@ public class PacketSender {
 		allowed = !pause;
 	}
 
-	public IMessaging getBroker() {
-		return broker;
+	public static Broker getBroker() {
+		return instance.broker;
 	}
 
 	private void setSecurity(PacketPhantom pkt) {

@@ -1,4 +1,4 @@
-package sceat.domain.common;
+package sceat.domain.common.java;
 
 @FunctionalInterface
 public interface Joiner {

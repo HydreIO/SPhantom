@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 
-import sceat.Main;
+import sceat.domain.common.system.Log;
 
 public class Try {
 
@@ -22,18 +22,30 @@ public class Try {
 	@FunctionalInterface
 	public interface TryRunnable<T> {
 		T run() throws Throwable;
+
 	}
 
 	@FunctionalInterface
 	public interface TryVoidRunnable {
 		void run() throws Exception;
+
+		public static TryVoidRunnable empty(TryVoidRunnable t) {
+			return t;
+		}
+
+		default TryVoidRunnable andThen(TryVoidRunnable runnable) {
+			return () -> {
+				run();
+				runnable.run();
+			};
+		}
 	}
 
 	public static <T> T or(TryRunnable<T> runnable, T defaultValue, boolean stackTrace) {
 		try {
 			return runnable.run();
 		} catch (Throwable e) {
-			if (stackTrace) Main.printStackTrace(e);
+			if (stackTrace) Log.trace(e);
 			return defaultValue;
 		}
 	}
@@ -46,8 +58,26 @@ public class Try {
 		try {
 			runnable.run();
 		} catch (Exception e) {
-			if (stackTrace) e.printStackTrace();
+			if (stackTrace) Log.trace(e);
 		}
+	}
+
+	/**
+	 * Execute actions if exceptions throwed
+	 * 
+	 * @param runnable
+	 * @param stackTrace
+	 * @param r
+	 *            actions
+	 */
+	public static void orVoidWithActions(TryVoidRunnable runnable, boolean stackTrace, Runnable r) {
+		try {
+			runnable.run();
+		} catch (Exception e) {
+			if (stackTrace) Log.trace(e);
+			r.run();
+		}
+
 	}
 
 	public static void orVoid(TryVoidRunnable runnable) {

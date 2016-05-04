@@ -50,7 +50,7 @@ public class Core implements Scheduled {
 	private OperatingMode mode = OperatingMode.Normal;
 	private boolean process = false;
 	private boolean initialised = false;
-	private static Core instance;
+	private static Core instance = new Core();
 	private int deployedInstances = -1;
 
 	/**
@@ -70,16 +70,19 @@ public class Core implements Scheduled {
 	 */
 	private ConcurrentHashMap<ServerType, Set<Server>> serversByType = new ConcurrentHashMap<Server.ServerType, Set<Server>>();
 
-	public Core() {
-		instance = this;
+	private Core() {
+	}
+
+	public static void init() {
+		Core core = getInstance();
 		Arrays.stream(ServerType.values()).forEach(t -> {
-			serversByType.put(t, new HashSet<Server>());
-			playersByType.put(t, new HashSet<UUID>());
+			core.serversByType.put(t, new HashSet<Server>());
+			core.playersByType.put(t, new HashSet<UUID>());
 		});
-		SPhantom.getInstance().getSphantomConfig().getServers().stream().map(vs -> new Vps(vs.getName(), vs.getRam(), getByName(vs.getIp()), New.set(), System.currentTimeMillis()))
+		SPhantom.getInstance().getSphantomConfig().getServers().stream().map(vs -> new Vps(vs.getName(), vs.getRam(), core.getByName(vs.getIp()), New.set(), System.currentTimeMillis()))
 				.forEach(v -> ServerProvider.getInstance().getConfigInstances().put(v.getLabel(), v.register()));
-		Scheduler.getScheduler().register(this);
-		initialised = true;
+		Scheduler.getScheduler().register(core);
+		core.initialised = true;
 	}
 
 	// internal use for bypass tryCatch block
@@ -337,7 +340,7 @@ public class Core implements Scheduled {
 					deployInstances(1);
 					break;
 				}
-				Server srv = Server.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, type.getKeys());
+				Server srv = Server.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT);
 				srv.setVpsLabel(vp.getLabel());
 				SPhantom.print("Deploying server [Label('" + srv.getLabel() + "')|State('" + srv.getStatus() + "')|MaxP(" + srv.getMaxPlayers() + ")]");
 				serversByType.get(type).add(srv);
@@ -357,7 +360,7 @@ public class Core implements Scheduled {
 		for (int i = 0; i < nbr; i++) {
 			Vps vp = ServerProvider.getInstance().getVps(type, Optional.empty());
 			if (vp == null) break;
-			Server srv = Server.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, type.getKeys());
+			Server srv = Server.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT);
 			set.add(srv);
 			srv.setVpsLabel(vp.getLabel());
 			serversByType.get(type).add(srv);
@@ -377,7 +380,7 @@ public class Core implements Scheduled {
 		McServerConfigObject obj = conf.getInstances().get(type);
 		if (fromBalk) SPhantom.print("[DEFRAGMENTATION SEQUENCING] | Transfert on " + v.getLabel() + " |Type : " + type + "\n_______________________________________________]");
 		else if (SPhantom.logDiv()) SPhantom.print("Deploy Server ON VPS |Type_" + type + "|Vps = " + v.getLabel());
-		Server srv = Server.fromScratch(type, obj.getMaxPlayers(), v.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, type.getKeys());
+		Server srv = Server.fromScratch(type, obj.getMaxPlayers(), v.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT);
 		serversByType.get(type).add(srv);
 		Manager.getInstance().getServersByLabel().put(srv.getLabel(), srv);
 		v.getServers().add(srv);

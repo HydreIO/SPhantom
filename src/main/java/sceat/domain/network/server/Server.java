@@ -8,8 +8,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -21,7 +19,7 @@ import sceat.domain.minecraft.Grades;
 import sceat.domain.minecraft.RessourcePack;
 import sceat.domain.minecraft.Statut;
 import sceat.domain.network.Core;
-import sceat.domain.protocol.DestinationKey;
+import sceat.domain.protocol.RoutingKey;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
 import sceat.domain.utils.ServerLabel;
 
@@ -47,8 +45,7 @@ public class Server implements ServerApi, IRegistrable<Server> {
 			if (sr.getStatus() != Statut.REDUCTION) sr.setStatus(pkt.getState()); // si on connait le serv et qu'il est en reduction alors on ne change pas le statut
 			if (!pkt.isFromSymbiote()) sr.setPlayers(pkt.getPlayersPerGrade()); // sa voudra dire qu'on a reçu un packet avant d'avoir pu informer le serveur qu'il devait se reduire
 		} else {
-			sr = canBeNull ? null : new Server(pkt.getLabel(), pkt.getType(), pkt.getState(), pkt.getMaxp(), pkt.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT, pkt.getKeys().stream()
-					.toArray(String[]::new)).setPlayers(pkt.getPlayersPerGrade());
+			sr = canBeNull ? null : new Server(pkt.getLabel(), pkt.getType(), pkt.getState(), pkt.getMaxp(), pkt.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT).setPlayers(pkt.getPlayersPerGrade());
 			neww = true; // si on créé on a pas besoin de verifier si le pkt vient du symbiote car de tt fa�on la liste des joueurs (seul field que le symbiote ne connait pas) devra attendre de se sync later
 		}
 		if (sr != null) {
@@ -62,8 +59,8 @@ public class Server implements ServerApi, IRegistrable<Server> {
 		return sr;
 	}
 
-	public static Server fromScratch(ServerType type, int maxPlayers, InetAddress ip, RessourcePack pack, String... destinationKeys) {
-		return new Server(ServerLabel.newLabel(type), type, Statut.CREATING, maxPlayers, ip, pack, destinationKeys);
+	public static Server fromScratch(ServerType type, int maxPlayers, InetAddress ip, RessourcePack pack) {
+		return new Server(ServerLabel.newLabel(type), type, Statut.CREATING, maxPlayers, ip, pack);
 	}
 
 	private String label;
@@ -73,18 +70,16 @@ public class Server implements ServerApi, IRegistrable<Server> {
 	private Statut status;
 	private RessourcePack pack;
 	private Map<Grades, Set<UUID>> players = new HashMap<Grades, Set<UUID>>();
-	private Set<String> keys = new HashSet<String>();
 	private InetAddress ipadress;
 	private long timeout;
 
-	public Server(String label, ServerType type, Statut state, int maxplayer, InetAddress ip, RessourcePack pack, String... destinationKeys) {
+	public Server(String label, ServerType type, Statut state, int maxplayer, InetAddress ip, RessourcePack pack) {
 		this.label = label;
 		this.type = type;
 		this.maxPlayers = maxplayer;
 		this.status = state;
 		this.pack = pack;
 		this.ipadress = ip;
-		Arrays.stream(destinationKeys).forEach(keys::add);
 	}
 
 	public Server setVpsLabel(String label) {
@@ -137,11 +132,6 @@ public class Server implements ServerApi, IRegistrable<Server> {
 		return this;
 	}
 
-	public Server setKeys(Set<String> keys) {
-		this.keys = keys;
-		return this;
-	}
-
 	public Server setIpadress(InetAddress ipadress) {
 		this.ipadress = ipadress;
 		return this;
@@ -153,10 +143,6 @@ public class Server implements ServerApi, IRegistrable<Server> {
 
 	public InetAddress getIpadress() {
 		return ipadress;
-	}
-
-	public Set<String> getKeys() {
-		return keys;
 	}
 
 	public ServerType getType() {
@@ -199,34 +185,18 @@ public class Server implements ServerApi, IRegistrable<Server> {
 	}
 
 	public enum ServerType {
-		PROXY(
-				(byte) 0,
-				RessourcePack.RESSOURCE_PACK_DEFAULT,
-				DestinationKey.PROXY,
-				DestinationKey.HUBS_AND_PROXY,
-				DestinationKey.HUBS_PROXY_SPHANTOM,
-				DestinationKey.HUBS_PROXY_SPHANTOM_SYMBIOTE,
-				DestinationKey.ALL,
-				DestinationKey.ALL_SPHANTOM),
-		LOBBY(
-				(byte) 1,
-				RessourcePack.RESSOURCE_PACK_DEFAULT,
-				DestinationKey.ALL,
-				DestinationKey.HUBS,
-				DestinationKey.HUBS_AND_PROXY,
-				DestinationKey.HUBS_PROXY_SPHANTOM,
-				DestinationKey.HUBS_PROXY_SPHANTOM_SYMBIOTE,
-				DestinationKey.ALL_SPHANTOM),
-		AGARES((byte) 2, RessourcePack.AGARES, DestinationKey.ALL, DestinationKey.SERVEURS, DestinationKey.SRV_AGARES, DestinationKey.ALL_SPHANTOM),
-		ARES_RPG((byte) 3, RessourcePack.ARESRPG, DestinationKey.ALL, DestinationKey.SERVEURS, DestinationKey.SRV_ARES, DestinationKey.ALL_SPHANTOM),
-		IRON((byte) 4, RessourcePack.IRON, DestinationKey.ALL, DestinationKey.SERVEURS, DestinationKey.SRV_IRON, DestinationKey.ALL_SPHANTOM);
+		PROXY((byte) 0, RessourcePack.RESSOURCE_PACK_DEFAULT, RoutingKey.PROXY),
+		LOBBY((byte) 1, RessourcePack.RESSOURCE_PACK_DEFAULT, RoutingKey.HUBS),
+		AGARES((byte) 2, RessourcePack.AGARES, RoutingKey.SERVERS),
+		ARES_RPG((byte) 3, RessourcePack.ARESRPG, RoutingKey.SERVERS),
+		IRON((byte) 4, RessourcePack.IRON, RoutingKey.SERVERS);
 
 		private byte id;
-		private String[] keys;
+		private RoutingKey key;
 		private RessourcePack pack;
 
-		private ServerType(byte id, RessourcePack pack, String... keys) {
-			this.keys = keys;
+		private ServerType(byte id, RessourcePack pack, RoutingKey key) {
+			this.key = key;
 			this.id = id;
 			this.pack = pack;
 		}
@@ -243,16 +213,8 @@ public class Server implements ServerApi, IRegistrable<Server> {
 			return Arrays.stream(values()).filter(i -> i.id == id).findFirst().orElse(null);
 		}
 
-		public String[] getKeys() {
-			return keys;
-		}
-
-		public List<String> getKeysAslist() {
-			return Arrays.asList(getKeys());
-		}
-
-		public Set<String> getKeysAsSet() {
-			return new HashSet<String>(getKeysAslist());
+		public RoutingKey getKey() {
+			return key;
 		}
 	}
 

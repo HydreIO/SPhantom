@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Calendar;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Supplier;
 
 import sceat.api.PhantomApi;
 import sceat.api.PhantomApi.ServerApi;
@@ -13,7 +15,10 @@ import sceat.api.PhantomApi.VpsApi;
 import sceat.domain.Heart;
 import sceat.domain.Manager;
 import sceat.domain.common.IPhantom;
-import sceat.domain.common.mq.IMessaging;
+import sceat.domain.common.system.Log;
+import sceat.domain.common.system.Root;
+import sceat.domain.common.thread.Async;
+import sceat.domain.common.thread.PhantomFactory;
 import sceat.domain.config.SPhantomConfig;
 import sceat.domain.network.Core;
 import sceat.domain.network.Core.OperatingMode;
@@ -24,21 +29,18 @@ import sceat.domain.protocol.handler.PacketHandler;
 import sceat.domain.protocol.packets.PacketPhantom;
 import sceat.domain.shell.Input;
 import sceat.domain.trigger.PhantomTrigger;
-import sceat.domain.utils.PhantomFactory;
 import sceat.gui.terminal.PhantomTui;
 import sceat.gui.web.GrizzlyWebServer;
 import sceat.infra.connector.general.VultrConnector;
-import sceat.infra.connector.mq.RabbitMqConnector;
 import sceat.infra.input.ScannerInput;
 
-public class SPhantom {
+public class SPhantom implements Async, Log, Root {
 
 	private static SPhantom instance;
 	private ExecutorService executor;
 	private ExecutorService pinger;
 	private ExecutorService peaceMaker;
 	boolean running;
-	private boolean brokerInit = false;
 	private SPhantomConfig config;
 	private boolean lead = false;
 	private boolean local = false;
@@ -69,13 +71,13 @@ public class SPhantom {
 		this.executor = Executors.newFixedThreadPool(70, PhantomFactory.create("Main Pool - [Thrd: $d]").build());
 		this.config = new SPhantomConfig();
 		this.iphantom = new VultrConnector();
-		new PhantomTrigger();
-		new Manager();
-		new ServerProvider();
-		new Core();
-		new ScannerInput();
-		new PacketHandler();
-		new PacketSender(getSphantomConfig().getRabbitUser(), getSphantomConfig().getRabbitPassword(), local);
+		PhantomTrigger.init();
+		Manager.init();
+		ServerProvider.init();
+		Core.init();
+		ScannerInput.init();
+		PacketHandler.init();
+		PacketSender.init(getSphantomConfig().getRabbitUser(), getSphantomConfig().getRabbitPassword(), local);
 		new Heart(local).takeLead();
 		startWebPanel(); // ne pas start deux sphantom sur la meme ip sinon le port va être déja utilisé abruti ! de tt façon quel interet d'un replica sur la meme machine..
 	}
@@ -180,12 +182,6 @@ public class SPhantom {
 	public boolean isTimeBetween(int var1, int var2) {
 		int h = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
 		return h >= var1 && h <= var2;
-	}
-
-	public IMessaging initBroker(String user, String pass, boolean local) {
-		if (brokerInit) throw new IllegalAccessError("Broker already initialised !");
-		brokerInit = true;
-		return new RabbitMqConnector(user, pass, local);
 	}
 
 	public SPhantomConfig getSphantomConfig() {
@@ -322,6 +318,41 @@ public class SPhantom {
 
 	public ExecutorService getExecutor() {
 		return executor;
+	}
+
+	@Override
+	public void logOut(String log) {
+		print(log);
+	}
+
+	@Override
+	public void logPkt(PacketPhantom pkt, boolean in) {
+		if (logPkt) logOut((in ? "<RECV] " : "[SEND> ") + pkt.toString());
+	}
+
+	@Override
+	public void logTrace(Exception e) {
+		Main.printStackTrace(e);
+	}
+
+	@Override
+	public void logTrace(Throwable t) {
+		Main.printStackTrace(t);
+	}
+
+	@Override
+	public void run(Runnable r) {
+		getExecutor().execute(r);
+	}
+
+	@Override
+	public <T> CompletableFuture<T> supply(Supplier<T> t) {
+		return CompletableFuture.<T> supplyAsync(t, getExecutor());
+	}
+
+	@Override
+	public void exit() {
+		Main.shutDown();
 	}
 
 }

@@ -1,5 +1,6 @@
 package sceat.domain.common.mq;
 
+import sceat.domain.protocol.PacketSender;
 import sceat.domain.protocol.packets.PacketPhantomBootServer;
 import sceat.domain.protocol.packets.PacketPhantomDestroyInstance;
 import sceat.domain.protocol.packets.PacketPhantomGradeUpdate;
@@ -9,7 +10,7 @@ import sceat.domain.protocol.packets.PacketPhantomPlayer;
 import sceat.domain.protocol.packets.PacketPhantomReduceServer;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
 
-public interface IMessaging {
+public interface Broker {
 
 	void sendServer(PacketPhantomServerInfo pkt);
 
@@ -28,5 +29,11 @@ public interface IMessaging {
 	void reduceServer(PacketPhantomReduceServer pkt);
 
 	void killProcess(PacketPhantomKillProcess pkt);
+	
+	void close();
+
+	public static Broker get() {
+		return PacketSender.getBroker();
+	}
 
 }

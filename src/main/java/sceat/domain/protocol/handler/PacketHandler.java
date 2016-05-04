@@ -53,7 +53,7 @@ public class PacketHandler {
 		}
 	}
 
-	private static PacketHandler instance;
+	private static final PacketHandler instance = new PacketHandler();
 
 	private List<RawPacket> rawPackets;
 	private PacketWatchDog watchDog;
@@ -64,11 +64,13 @@ public class PacketHandler {
 		return rawPackets;
 	}
 
-	public PacketHandler() {
-		instance = this;
-		rawPackets = new CopyOnWriteArrayList<>();
-		watchDog = new PacketWatchDog(this);
-		pool = new PhantomThreadPoolExecutor(50);
+	private PacketHandler() {
+	}
+
+	public static void init() {
+		instance.rawPackets = new CopyOnWriteArrayList<>();
+		instance.watchDog = new PacketWatchDog(instance);
+		instance.pool = new PhantomThreadPoolExecutor(50);
 	}
 
 	public static PacketHandler getInstance() {

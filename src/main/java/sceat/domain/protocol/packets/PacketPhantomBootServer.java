@@ -68,7 +68,7 @@ public class PacketPhantomBootServer extends PacketPhantom {
 		}
 		if (cameFromLocal()) return;
 		if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketBootServer [" + getLabel() + "|MaxP(" + getMaxP() + ")|Ram(" + getRam() + ")]");
-		Server.fromPacket(new PacketPhantomServerInfo(Statut.CREATING, label, vpsLabel, ip, type, maxP, new HashMap<>(), type.getKeysAsSet(), false), false);
+		Server.fromPacket(new PacketPhantomServerInfo(Statut.CREATING, label, vpsLabel, ip, type, maxP, new HashMap<>(), false), false);
 	}
 
 	public InetAddress getIp() {

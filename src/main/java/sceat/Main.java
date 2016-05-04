@@ -20,10 +20,11 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import sceat.domain.Heart;
+import sceat.domain.common.mq.Broker;
+import sceat.domain.common.system.Log;
 import sceat.domain.ressources.Constant;
 import sceat.domain.schedule.Scheduler;
 import sceat.gui.web.GrizzlyWebServer;
-import sceat.infra.connector.mq.RabbitMqConnector;
 import sceat.infra.input.ScannerInput;
 
 public class Main {
@@ -119,14 +120,14 @@ public class Main {
 	}
 
 	public static void shutDown() {
-		SPhantom.print("Shutdown..");
-		RabbitMqConnector.getInstance().close();
+		Log.out("Shutdown..");
+		Broker.get().close();
 		GrizzlyWebServer.stop();
 		ScannerInput.shutDown();
 		SPhantom.getInstance().getExecutor().shutdown();
 		Scheduler.getScheduler().shutdown();
 		if (Heart.getInstance() != null) Heart.getInstance().broke();
-		SPhantom.print("Bye.");
+		Log.out("Bye.");
 		SPhantom.getInstance().running = false;
 		System.exit(0);
 	}

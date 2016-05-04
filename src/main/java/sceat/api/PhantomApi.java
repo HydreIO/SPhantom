@@ -17,7 +17,6 @@ import sceat.domain.network.ServerProvider.Defqon;
 import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.network.server.Vps;
 import sceat.domain.network.server.Vps.VpsState;
-import sceat.domain.protocol.DestinationKey;
 
 public interface PhantomApi {
 
@@ -182,15 +181,6 @@ public interface PhantomApi {
 		 * @return the type of the server
 		 */
 		ServerType getType();
-
-		/**
-		 * A destinationKey is usef by rabbitMq to define wich message can be handled
-		 * <p>
-		 * for exemple a lobby have {@link DestinationKey#HUBS} ,{@link DestinationKey#All} , {@link DestinationKey#HUBS_AND_PROXY} etc..
-		 * 
-		 * @return a set of keys defined for the type of server
-		 */
-		Set<String> getKeys();
 
 		/**
 		 * 

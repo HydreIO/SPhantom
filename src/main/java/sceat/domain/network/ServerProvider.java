@@ -17,7 +17,7 @@ import sceat.domain.trigger.PhantomTrigger;
 @SuppressWarnings("unchecked")
 public class ServerProvider {
 
-	private static ServerProvider instance;
+	private static ServerProvider instance = new ServerProvider();
 	private int priority = 0;
 	private Defqon defqon = Defqon.FIVE;
 
@@ -32,9 +32,10 @@ public class ServerProvider {
 	 */
 	private ConcurrentHashMap<ServerType, Vps> ordered = new ConcurrentHashMap<ServerType, Vps>();
 
-	public ServerProvider() {
-		instance = this;
+	private ServerProvider() {
+	}
 
+	public static void init() {
 	}
 
 	public void incrementPriority() {

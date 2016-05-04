@@ -2,10 +2,11 @@ package sceat.infra.connector.mq;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 import sceat.Main;
-import sceat.domain.protocol.DestinationKey;
 import sceat.domain.protocol.MessagesType;
+import sceat.domain.protocol.RoutingKey;
 import sceat.domain.protocol.handler.PacketHandler;
 
 import com.rabbitmq.client.AMQP;
@@ -17,6 +18,8 @@ public class RabbitMqReceiver {
 
 	private static RabbitMqConnector connector;
 	private static String qname;
+	private static final List<String> routingKeys = RoutingKey.genKeys();
+	private static final RoutingKey current = RoutingKey.SPHANTOM;
 
 	public RabbitMqReceiver() {
 		init();
@@ -27,7 +30,7 @@ public class RabbitMqReceiver {
 		connector = RabbitMqConnector.getInstance();
 		try {
 			qname = getChannel().queueDeclare().getQueue();
-			if (RabbitMqConnector.routingEnabled) bind();
+			bind();
 			startReceiver();
 		} catch (IOException e) {
 			Main.printStackTrace(e);
@@ -51,10 +54,7 @@ public class RabbitMqReceiver {
 	 *            la destination
 	 */
 	private void bind(MessagesType msg) {
-		bind(DestinationKey.ALL_SPHANTOM, msg.getName());
-		bind(DestinationKey.SPHANTOM, msg.getName());
-		bind(DestinationKey.HUBS_PROXY_SPHANTOM_SYMBIOTE, msg.getName());
-		bind(DestinationKey.HUBS_PROXY_SPHANTOM, msg.getName());
+		routingKeys.stream().filter(key -> key.contains(current.getKey())).forEach(v -> bind(v, msg.getName()));
 	}
 
 	private void bind(String dek, String msg) {

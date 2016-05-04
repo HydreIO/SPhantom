@@ -14,15 +14,18 @@ import sceat.domain.network.server.Server;
 
 public class Manager {
 
-	private static Manager instance;
+	private static Manager instance = new Manager();
 
 	private ConcurrentHashMap<String, Server> serversByLabel = new ConcurrentHashMap<>();
 	private CopyOnWriteArraySet<UUID> playersOnNetwork = new CopyOnWriteArraySet<>();
 	private ConcurrentHashMap<Grades, Set<UUID>> playersPerGrade = new ConcurrentHashMap<>();
 
-	public Manager() {
-		instance = this;
-		Arrays.stream(Grades.values()).forEach(g -> playersPerGrade.put(g, new HashSet<>()));
+	private Manager() {
+	}
+
+	public static void init() {
+		Manager i = instance;
+		Arrays.stream(Grades.values()).forEach(g -> i.playersPerGrade.put(g, new HashSet<>()));
 	}
 
 	public static Manager getInstance() {
