@@ -6,14 +6,15 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import sceat.Main;
+import sceat.domain.common.system.Log;
 
 public class Scheduler {
 	private static ThreadFactory factory = new ThreadFactory() {
 		final AtomicInteger count = new AtomicInteger(0);
+
 		@Override
 		public Thread newThread(Runnable runnable) {
-			Thread thread = new Thread(runnable , "Scheduler pool - [Thrd: "+count+"]");
+			Thread thread = new Thread(runnable, "Scheduler pool - [Thrd: " + count + "]");
 			thread.setDaemon(true);
 			return thread;
 		}
@@ -42,8 +43,8 @@ public class Scheduler {
 				try {
 					m.invoke(scheduled, new Object[m.getParameterCount()]);
 				} catch (Exception e) {
-					Main.getLogger().info("[Scheduler] Error with " + "//: " + m.getDeclaringClass() + "//:" + m.getName());
-					Main.printStackTrace(e);
+					Log.out("[Scheduler] Error with " + "//: " + m.getDeclaringClass() + "//:" + m.getName());
+					Log.trace(e);
 				}
 			}, ns, ns, java.util.concurrent.TimeUnit.NANOSECONDS);
 		});
