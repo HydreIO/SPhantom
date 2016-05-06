@@ -38,7 +38,7 @@ public class Reflection {
 		if (clazz == null) return null;
 		Method method = Arrays.stream(clazz.getDeclaredMethods()).parallel()
 				.filter((m) -> m.getName().equals(methodName) && compare(m.getReturnType(), returnType) && compare(m.getParameterTypes(), parameterTypes)).parallel().findFirst()
-				.orElse(getMethod(clazz.getSuperclass(), methodName, returnType, parameterTypes));
+				.orElseGet(() -> getMethod(clazz.getSuperclass(), methodName, returnType, parameterTypes));
 		if (method != null) method.setAccessible(true);
 		return method;
 	}
@@ -67,7 +67,7 @@ public class Reflection {
 	public static Field getField(Class<?> clazz, String fieldName, Class<?> fieldType) {
 		if (clazz == null) return null;
 		Field field = Arrays.stream(clazz.getDeclaredFields()).parallel().filter((f) -> f.getName().equals(fieldName) && compare(f.getType(), fieldType)).findFirst()
-				.orElse(getField(clazz.getSuperclass(), fieldName, fieldType));
+				.orElseGet(() -> getField(clazz.getSuperclass(), fieldName, fieldType));
 		if (field != null) field.setAccessible(true);
 		return field;
 	}

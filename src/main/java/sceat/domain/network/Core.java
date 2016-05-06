@@ -189,7 +189,7 @@ public class Core implements Scheduled {
 			playersByType.put(v, serversByType.get(v).stream().filter(s -> (s.getStatus() == Statut.OPEN)).map(s -> s.getPlayers()).reduce((a, b) -> {
 				a.addAll(b);
 				return a;
-			}).orElse(New.set()));
+			}).orElseGet(New::set));
 		});
 	}
 

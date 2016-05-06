@@ -177,7 +177,7 @@ public class Server implements ServerApi, IRegistrable<Server> {
 		return getPlayersMap().values().stream().reduce((t, u) -> {
 			t.addAll(u);
 			return t;
-		}).orElse(Collections.emptySet());
+		}).orElseGet(Collections::emptySet);
 	}
 
 	public Vps getVps() {

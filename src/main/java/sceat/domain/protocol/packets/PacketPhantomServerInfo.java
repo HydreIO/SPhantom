@@ -101,7 +101,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 				SPhantom.print("PacketPhantomServerInfo : State Closing | the server " + getLabel() + " is registered but not in a Vps object | Info ! break");
 				return;
 			}
-			if (curr.getServers().contains(srv)) curr.getServers().remove(srv);
+			curr.getServers().remove(srv);
 			Vps vsss = curr;
 			PhantomTrigger.getAll().forEach(t -> t.handleVps(vsss)); // trigger
 			PacketSender.getInstance().sendServer(PacketPhantomServerInfo.fromServer(srv));
@@ -165,7 +165,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		return getPlayersPerGrade().values().stream().reduce((s1, s2) -> {
 			s1.addAll(s2);
 			return s1;
-		}).orElse(new HashSet<UUID>());
+		}).orElseGet(HashSet<UUID>::new);
 	}
 
 }

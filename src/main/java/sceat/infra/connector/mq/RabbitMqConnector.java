@@ -3,7 +3,6 @@ package sceat.infra.connector.mq;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import sceat.Main;
 import sceat.SPhantom;
@@ -67,7 +66,6 @@ public class RabbitMqConnector implements Broker {
 			Threads.sleep(3, TimeUnit.SECONDS);
 			Root.exit(false);
 		});
-
 		Log.out("Sucessfully connected to broker RMQ");
 		Arrays.stream(MessagesType.values()).forEach(this::exchangeDeclare);
 		this.receiver = new RabbitMqReceiver();
@@ -77,12 +75,10 @@ public class RabbitMqConnector implements Broker {
 	 * Utilis� pour fermer la connection onDisable // A METTRE ONDISABLE()
 	 */
 	public void close() {
-		try {
+		Try.test(() -> {
 			getChannel().close();
 			getConnection().close();
-		} catch (IOException | TimeoutException e) {
-			Main.printStackTrace(e);
-		}
+		}).catchEx(Log::trace);
 	}
 
 	// **************** Getters ***************

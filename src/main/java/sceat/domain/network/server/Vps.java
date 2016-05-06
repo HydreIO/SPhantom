@@ -100,7 +100,7 @@ public class Vps implements Comparable<Vps>, VpsApi, ICrash, IRegistrable<Vps> {
 	 */
 	public Vps unregister() {
 		if (isDaemon()) throw new IllegalAccessError("Cannot unregister a configured vps ! (" + getLabel() + ")");
-		if (Core.getInstance().getVps().containsKey(getLabel())) Core.getInstance().getVps().remove(getLabel());
+		Core.getInstance().getVps().remove(getLabel());
 		for (Entry<ServerType, Vps> e : ServerProvider.getInstance().getOrdered().entrySet())
 			if (e.getValue().getLabel().equals(getLabel())) ServerProvider.getInstance().getOrdered().put(e.getKey(), null);
 		return null;
