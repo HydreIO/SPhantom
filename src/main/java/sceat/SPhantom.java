@@ -57,7 +57,7 @@ public class SPhantom implements Async, Log, Root {
 	 * Init sphantom
 	 * 
 	 * @param local
-	 *            if true, allow the broker to send message (false for debugmode without broker)
+	 *            if true, allow the broker to send message (false for debugmode without broker).
 	 */
 	public SPhantom(Boolean local) { // don't change the implementation order !
 		instance = this;
