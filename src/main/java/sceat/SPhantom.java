@@ -18,7 +18,6 @@ import sceat.domain.common.IPhantom;
 import sceat.domain.common.system.Log;
 import sceat.domain.common.system.Root;
 import sceat.domain.common.thread.Async;
-import sceat.domain.common.thread.PhantomFactory;
 import sceat.domain.config.SPhantomConfig;
 import sceat.domain.network.Core;
 import sceat.domain.network.Core.OperatingMode;
@@ -33,6 +32,7 @@ import sceat.gui.terminal.PhantomTui;
 import sceat.gui.web.GrizzlyWebServer;
 import sceat.infra.connector.general.VultrConnector;
 import sceat.infra.input.ScannerInput;
+import fr.aresrpg.commons.util.concurrent.ThreadFactory;
 
 public class SPhantom implements Async, Log, Root {
 
@@ -66,9 +66,9 @@ public class SPhantom implements Async, Log, Root {
 		PacketPhantom.registerPkts();
 		this.running = true;
 		this.local = local;
-		this.pinger = Executors.newSingleThreadExecutor(PhantomFactory.create("Pinger Pool - [Thrd: $d]").build());
-		this.peaceMaker = Executors.newSingleThreadExecutor(PhantomFactory.create("PeaceMaker Pool - [Thrd: $d]").build());
-		this.executor = Executors.newFixedThreadPool(70, PhantomFactory.create("Main Pool - [Thrd: $d]").build());
+		this.pinger = Executors.newSingleThreadExecutor(ThreadFactory.create("Pinger Pool - [Thrd: $d]").build(false));
+		this.peaceMaker = Executors.newSingleThreadExecutor(ThreadFactory.create("PeaceMaker Pool - [Thrd: $d]").build(false));
+		this.executor = Executors.newFixedThreadPool(70, ThreadFactory.create("Main Pool - [Thrd: $d]").build(false));
 		this.config = new SPhantomConfig();
 		this.iphantom = new VultrConnector();
 		PhantomTrigger.init();
@@ -108,6 +108,7 @@ public class SPhantom implements Async, Log, Root {
 
 	public void setupIp() {
 		print("Oppening socket to get Ip...");
+
 		Socket s = null;
 		try {
 			s = new Socket("google.com", 80);

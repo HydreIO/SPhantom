@@ -7,12 +7,10 @@ import java.util.concurrent.TimeoutException;
 
 import sceat.Main;
 import sceat.SPhantom;
-import sceat.domain.common.java.Lambdas;
 import sceat.domain.common.mq.Broker;
 import sceat.domain.common.system.Config;
 import sceat.domain.common.system.Log;
 import sceat.domain.common.system.Root;
-import sceat.domain.common.thread.ScThread;
 import sceat.domain.protocol.MessagesType;
 import sceat.domain.protocol.RoutingKey;
 import sceat.domain.protocol.packets.PacketPhantomBootServer;
@@ -23,12 +21,13 @@ import sceat.domain.protocol.packets.PacketPhantomKillProcess;
 import sceat.domain.protocol.packets.PacketPhantomPlayer;
 import sceat.domain.protocol.packets.PacketPhantomReduceServer;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
-import sceat.domain.utils.Try;
-import sceat.domain.utils.Try.TryVoidRunnable;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+
+import fr.aresrpg.commons.condition.Try;
+import fr.aresrpg.commons.util.concurrent.Threads;
 
 public class RabbitMqConnector implements Broker {
 
@@ -55,20 +54,20 @@ public class RabbitMqConnector implements Broker {
 			SPhantom.print("Local mode ! No messaging service.");
 			return;
 		}
-		Lambdas.<ConnectionFactory> emptyConsumer((f) -> {
-			f.setHost(Config.get().getRabbitAdress());
-			f.setPort(Config.get().getRabbitPort());
-			f.setUsername(user);
-			f.setPassword(passwd);
-		}).accept(getFactory());
-		Try.orVoidWithActions(TryVoidRunnable.empty(() -> {
+		getFactory().setHost(Config.get().getRabbitAdress());
+		getFactory().setPort(Config.get().getRabbitPort());
+		getFactory().setUsername(user);
+		getFactory().setPassword(passwd);
+		Try.test(() -> {
 			connection = getFactory().newConnection();
 			channel = connection.createChannel();
-		}), true, () -> {
+		}).catchEx((a) -> {
 			Log.out("Unable to access message broker RMQ, ScorchedRoot is going down..");
-			ScThread.sleep(3, TimeUnit.SECONDS); // ultime swag !!!!!!
-				Root.exit(false);
-			});
+			Log.trace(a);
+			Threads.sleep(3, TimeUnit.SECONDS);
+			Root.exit(false);
+		});
+
 		Log.out("Sucessfully connected to broker RMQ");
 		Arrays.stream(MessagesType.values()).forEach(this::exchangeDeclare);
 		this.receiver = new RabbitMqReceiver();

@@ -6,7 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-import sceat.domain.utils.bistream.BiStream;
+import fr.aresrpg.commons.util.stream.bistream.BiStream;
 
 public class Reflection {
 
