@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
+import fr.aresrpg.commons.concurrent.Threads;
 import sceat.Main;
 import sceat.SPhantom;
 import sceat.domain.common.mq.Broker;
@@ -26,7 +27,6 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
 import fr.aresrpg.commons.condition.Try;
-import fr.aresrpg.commons.util.concurrent.Threads;
 
 public class RabbitMqConnector implements Broker {
 
@@ -63,7 +63,7 @@ public class RabbitMqConnector implements Broker {
 		}).catchEx((a) -> {
 			Log.out("Unable to access message broker RMQ, ScorchedRoot is going down..");
 			Log.trace(a);
-			Threads.sleep(3, TimeUnit.SECONDS);
+			Threads.uSleep(3, TimeUnit.SECONDS);
 			Root.exit(false);
 		});
 		Log.out("Sucessfully connected to broker RMQ");

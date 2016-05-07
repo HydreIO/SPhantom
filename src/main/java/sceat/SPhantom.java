@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
+import fr.aresrpg.commons.concurrent.ThreadBuilder;
 import sceat.api.PhantomApi;
 import sceat.api.PhantomApi.ServerApi;
 import sceat.api.PhantomApi.VpsApi;
@@ -32,7 +33,6 @@ import sceat.gui.terminal.PhantomTui;
 import sceat.gui.web.GrizzlyWebServer;
 import sceat.infra.connector.general.VultrConnector;
 import sceat.infra.input.ScannerInput;
-import fr.aresrpg.commons.util.concurrent.ThreadFactory;
 
 public class SPhantom implements Async, Log, Root {
 
@@ -66,9 +66,9 @@ public class SPhantom implements Async, Log, Root {
 		PacketPhantom.registerPkts();
 		this.running = true;
 		this.local = local;
-		this.pinger = Executors.newSingleThreadExecutor(ThreadFactory.create("Pinger Pool - [Thrd: $d]").build(false));
-		this.peaceMaker = Executors.newSingleThreadExecutor(ThreadFactory.create("PeaceMaker Pool - [Thrd: $d]").build(false));
-		this.executor = Executors.newFixedThreadPool(70, ThreadFactory.create("Main Pool - [Thrd: $d]").build(false));
+		this.pinger = Executors.newSingleThreadExecutor(new ThreadBuilder().setName("Pinger Pool - [Thrd: %1%]").toFactory());
+		this.peaceMaker = Executors.newSingleThreadExecutor(new ThreadBuilder().setName("PeaceMaker Pool - [Thrd: %1%]").toFactory());
+		this.executor = Executors.newFixedThreadPool(70, new ThreadBuilder().setName("Main Pool - [Thrd: %1%]").toFactory());
 		this.config = new SPhantomConfig();
 		this.iphantom = new VultrConnector();
 		PhantomTrigger.init();

@@ -1,19 +1,74 @@
+import proguard.gradle.ProGuardTask
+
+import java.util.concurrent.TimeUnit
+
+buildscript {
+    repositories(){
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'net.sf.proguard:proguard-gradle:5.2.1'
+    }
+}
+
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
+apply plugin: 'maven-publish'
 
 group = 'fr.aresrpg'
 version = '1.4'
 
 compileJava.options.encoding = 'UTF-8'
 
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+TimeUnit randomizeDictionaryUnit = TimeUnit.DAYS;
+long randomizeDictionaryValue = 7;
+long randomizeReleaseRandomNumber = 5467559;
+long randomizeDevelopRandomNumber = 6563486;
+boolean release = Boolean.valueOf(System.getProperty("release"));
+long randomizeRandomNumber = release ? randomizeReleaseRandomNumber : randomizeDevelopRandomNumber;
+String obfuscationOut = (jar.destinationDir.getPath() + "/" + jar.baseName + "-" + jar.version + "-obfuscated.jar");
+String shadedObfuscationOut = (jar.destinationDir.getPath() + "/" + jar.baseName + "-" + jar.version + "-shaded-obfuscated.jar");
+
+configurations {
+    mappings
+    obfuscated
+    compile.extendsFrom obfuscated
+}
 
 repositories {
     mavenLocal()
     mavenCentral()
+    maven {
+        name 'libraries'
+        url 'https://artifactory.aresrpg.fr/libraries'
+
+        credentials {
+            username project.hasProperty('aresuser') ? aresuser : System.getenv('aresuser')
+            password project.hasProperty('arespass') ? arespass : System.getenv('arespass')
+        }
+    }
+    maven {
+        name 'mapping'
+        if(release)
+            url 'https://artifactory.aresrpg.fr/mappings';
+        else
+            url 'https://artifactory.aresrpg.fr/developmappings';
+
+        credentials {
+            username project.hasProperty('aresuser') ? aresuser : System.getenv('aresuser')
+            password project.hasProperty('arespass') ? arespass : System.getenv('arespass')
+        }
+    }
+
 }
 
 dependencies {
+    mappings 'fr.aresrpg:AresCommons:0.5@map'
+    obfuscated 'fr.aresrpg:AresCommons:0.5'
     compile 'commons-cli:commons-cli:1.2'
     compile 'com.rabbitmq:amqp-client:3.6.1'
     compile 'org.yaml:snakeyaml:1.17'
@@ -23,4 +78,137 @@ dependencies {
     compile 'org.glassfish.grizzly:grizzly-http-server:2.3.24'
     compile 'org.glassfish.grizzly:grizzly-http-servlet:2.3.24'
     compile 'javax.servlet:javax.servlet-api:3.1.0'
+}
+
+task copyMappings() {
+    File out = file("proguard.mappings");
+    onlyIf{!out.exists()}
+    doLast {
+        out.createNewFile();
+        configurations.mappings.forEach{f->
+            out.append(f.getText())
+        }
+    }
+}
+
+task randomizeDictionary(){
+    File out = file("proguard.dictionary.random");
+    File inf = file("proguard.dictionary");
+    onlyIf{!out.exists()}
+    doLast {
+        Random rdm = new Random(((long)(System.currentTimeMillis()/randomizeDictionaryUnit.toMillis(randomizeDictionaryValue)))*randomizeRandomNumber/*time/unit*stupid number*/);
+        List<String> lines = inf.readLines();
+        def linesMap = [:]
+        lines.each { line -> linesMap.put(line , rdm.nextInt(Integer.MAX_VALUE)) };
+        lines.sort{a,b -> linesMap[a] <=> linesMap[b]}
+        out.createNewFile();
+        lines.each {line -> out.append(line + '\n'); }
+    }
+}
+
+task shadedTmp(type: Jar) {
+    classifier = 'tmp'
+    from { configurations.obfuscated.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+task shadedObfuscate(type: ProGuardTask , dependsOn:[shadedTmp, randomizeDictionary , copyMappings]){
+    configuration 'proguard.conf'
+    libraryjars (configurations.compile-configurations.obfuscated)
+
+    injars shadedTmp.archivePath.getPath()
+    outjars shadedObfuscationOut
+}
+
+task shaded(type: Jar , dependsOn:shadedObfuscate) {
+    manifest {
+        attributes 'Implementation-Title': 'SPhantom',
+                'Implementation-Version': version,
+                'Main-Class': 'sceat.Main'
+    }
+    classifier = 'shaded'
+    from { (configurations.compile - configurations.obfuscated).collect { it.isDirectory() ? it : zipTree(it) } }
+    from zipTree(shadedObfuscationOut)
+}
+
+task obfuscate(type: ProGuardTask , dependsOn:[jar, randomizeDictionary , copyMappings]){
+    applymapping 'proguard.mappings'
+    configuration 'proguard.conf'
+    libraryjars configurations.compile
+
+    injars jar.archivePath.getPath()
+    outjars obfuscationOut
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+publish.dependsOn obfuscate
+
+publishing {
+    repositories {
+        maven {
+            name 'main'
+            if(release)
+                url 'https://artifactory.aresrpg.fr/release';
+            else
+                url 'https://artifactory.aresrpg.fr/develop';
+            credentials {
+                username project.hasProperty('aresuser') ? aresuser : System.getenv('aresuser')
+                password project.hasProperty('arespass') ? arespass : System.getenv('arespass')
+            }
+        }
+
+        maven {
+            name 'mapping'
+            if(release)
+                url 'https://artifactory.aresrpg.fr/mappings';
+            else
+                url 'https://artifactory.aresrpg.fr/developmappings';
+
+            credentials {
+                username project.hasProperty('aresuser') ? aresuser : System.getenv('aresuser')
+                password project.hasProperty('arespass') ? arespass : System.getenv('arespass')
+            }
+        }
+        maven {
+            name 'libraries'
+            url 'https://artifactory.aresrpg.fr/libraries'
+
+            credentials {
+                username project.hasProperty('aresuser') ? aresuser : System.getenv('aresuser')
+                password project.hasProperty('arespass') ? arespass : System.getenv('arespass')
+            }
+        }
+
+    }
+
+    publications {
+        obf(MavenPublication) {
+            artifact file(obfuscationOut)
+            ext.repo = 'main'
+        }
+
+        lib(MavenPublication) {
+            artifact jar
+            artifact javadocJar
+            ext.repo = "libraries"
+        }
+
+        mapping(MavenPublication) {
+            artifact file('proguard.map')
+            ext.repo = 'mapping'
+        }
+    }
+}
+
+afterEvaluate {
+    tasks.withType(PublishToMavenRepository) { task ->
+        if (task.publication.hasProperty('repo') && task.publication.repo != task.repository.name) {
+            task.enabled = false
+            task.group = null
+        }
+    }
 }
