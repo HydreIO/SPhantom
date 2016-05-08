@@ -1,11 +1,9 @@
 package sceat.infra.connector.mq;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 import sceat.Main;
-import sceat.domain.protocol.RoutingKey;
 import sceat.domain.protocol.handler.PacketHandler;
 
 import com.rabbitmq.client.AMQP;
@@ -14,6 +12,7 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 
 import fr.aresrpg.sdk.protocol.MessagesType;
+import fr.aresrpg.sdk.protocol.RoutingKey;
 
 public class RabbitMqReceiver {
 
@@ -70,7 +69,15 @@ public class RabbitMqReceiver {
 	 * On s'occupe de bind les message en fonction du serveur actuel
 	 */
 	private void bind() {
-		Arrays.stream(MessagesType.values()).forEach(this::bind);
+		bind(MessagesType.BOOT_SERVER);
+		bind(MessagesType.DESTROY_INSTANCE);
+		bind(MessagesType.HEART_BEAT);
+		bind(MessagesType.REDUCE_SERVER);
+		bind(MessagesType.SYMBIOTE_INFOS);
+		bind(MessagesType.TAKE_LEAD);
+		bind(MessagesType.UPDATE_PLAYER_ACTION);
+		bind(MessagesType.UPDATE_PLAYER_GRADE);
+		bind(MessagesType.UPDATE_SERVER);
 	}
 
 	/**
