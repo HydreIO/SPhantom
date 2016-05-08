@@ -1,6 +1,6 @@
 package sceat.domain.protocol.packets;
 
-import sceat.domain.protocol.MessagesType;
+import fr.aresrpg.sdk.protocol.MessagesType;
 
 public class PacketPhantomBanned extends PacketPhantom {
 

@@ -2,13 +2,13 @@ package sceat.domain.protocol.packets;
 
 import java.util.UUID;
 
+import fr.aresrpg.sdk.protocol.MessagesType;
 import sceat.SPhantom;
 import sceat.domain.Manager;
 import sceat.domain.minecraft.Grades;
 import sceat.domain.network.Core;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Server.ServerType;
-import sceat.domain.protocol.MessagesType;
 import sceat.domain.protocol.PacketSender;
 import sceat.domain.utils.ServerLabel;
 

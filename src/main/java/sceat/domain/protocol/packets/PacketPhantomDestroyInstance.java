@@ -3,11 +3,11 @@ package sceat.domain.protocol.packets;
 import java.util.HashSet;
 import java.util.Set;
 
+import fr.aresrpg.sdk.protocol.MessagesType;
 import sceat.SPhantom;
 import sceat.domain.network.Core;
 import sceat.domain.network.ServerProvider;
 import sceat.domain.network.server.Vps;
-import sceat.domain.protocol.MessagesType;
 import sceat.domain.trigger.PhantomTrigger;
 
 public class PacketPhantomDestroyInstance extends PacketPhantom {

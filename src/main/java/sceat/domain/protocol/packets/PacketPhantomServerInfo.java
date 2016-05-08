@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import fr.aresrpg.sdk.protocol.MessagesType;
 import sceat.Main;
 import sceat.SPhantom;
 import sceat.domain.Manager;
@@ -18,7 +19,6 @@ import sceat.domain.network.Core;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.network.server.Vps;
-import sceat.domain.protocol.MessagesType;
 import sceat.domain.protocol.PacketSender;
 import sceat.domain.trigger.PhantomTrigger;
 import sceat.domain.utils.New;

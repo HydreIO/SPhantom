@@ -2,11 +2,11 @@ package sceat.domain.protocol.packets;
 
 import java.util.UUID;
 
+import fr.aresrpg.sdk.protocol.MessagesType;
 import sceat.SPhantom;
 import sceat.domain.Manager;
 import sceat.domain.minecraft.Grades;
 import sceat.domain.network.server.Server;
-import sceat.domain.protocol.MessagesType;
 
 public class PacketPhantomGradeUpdate extends PacketPhantom {
 	private UUID player;

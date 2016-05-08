@@ -5,13 +5,13 @@ import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 
+import fr.aresrpg.sdk.protocol.MessagesType;
 import sceat.Main;
 import sceat.SPhantom;
 import sceat.domain.network.Core;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Vps;
 import sceat.domain.network.server.Vps.VpsState;
-import sceat.domain.protocol.MessagesType;
 import sceat.domain.trigger.PhantomTrigger;
 
 public class PacketPhantomSymbiote extends PacketPhantom {

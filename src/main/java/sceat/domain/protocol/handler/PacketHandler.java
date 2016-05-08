@@ -3,9 +3,9 @@ package sceat.domain.protocol.handler;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import fr.aresrpg.sdk.protocol.MessagesType;
 import sceat.Main;
 import sceat.SPhantom;
-import sceat.domain.protocol.MessagesType;
 import sceat.domain.protocol.packets.PacketPhantom;
 import sceat.domain.utils.PhantomThreadPoolExecutor;
 

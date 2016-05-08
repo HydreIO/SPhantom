@@ -10,7 +10,6 @@ import sceat.domain.common.mq.Broker;
 import sceat.domain.common.system.Config;
 import sceat.domain.common.system.Log;
 import sceat.domain.common.system.Root;
-import sceat.domain.protocol.MessagesType;
 import sceat.domain.protocol.RoutingKey;
 import sceat.domain.protocol.packets.PacketPhantomBootServer;
 import sceat.domain.protocol.packets.PacketPhantomDestroyInstance;
@@ -27,6 +26,7 @@ import com.rabbitmq.client.ConnectionFactory;
 
 import fr.aresrpg.commons.condition.Try;
 import fr.aresrpg.commons.util.concurrent.Threads;
+import fr.aresrpg.sdk.protocol.MessagesType;
 
 public class RabbitMqConnector implements Broker {
 

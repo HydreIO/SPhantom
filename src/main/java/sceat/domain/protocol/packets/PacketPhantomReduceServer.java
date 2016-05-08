@@ -1,11 +1,11 @@
 package sceat.domain.protocol.packets;
 
+import fr.aresrpg.sdk.protocol.MessagesType;
 import sceat.SPhantom;
 import sceat.domain.Manager;
 import sceat.domain.minecraft.Statut;
 import sceat.domain.network.Core;
 import sceat.domain.network.server.Vps;
-import sceat.domain.protocol.MessagesType;
 import sceat.domain.trigger.PhantomTrigger;
 
 public class PacketPhantomReduceServer extends PacketPhantom {

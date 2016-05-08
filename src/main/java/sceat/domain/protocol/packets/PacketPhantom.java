@@ -9,9 +9,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import fr.aresrpg.sdk.protocol.MessagesType;
 import sceat.Main;
 import sceat.SPhantom;
-import sceat.domain.protocol.MessagesType;
 import sceat.domain.protocol.Security;
 
 public abstract class PacketPhantom {

@@ -4,6 +4,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 
+import fr.aresrpg.sdk.protocol.MessagesType;
 import sceat.Main;
 import sceat.SPhantom;
 import sceat.domain.minecraft.Statut;
@@ -11,7 +12,6 @@ import sceat.domain.network.Core;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.network.server.Vps;
-import sceat.domain.protocol.MessagesType;
 import sceat.domain.trigger.PhantomTrigger;
 
 public class PacketPhantomBootServer extends PacketPhantom {

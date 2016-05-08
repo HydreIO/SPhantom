@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import sceat.Main;
-import sceat.domain.protocol.MessagesType;
 import sceat.domain.protocol.RoutingKey;
 import sceat.domain.protocol.handler.PacketHandler;
 
@@ -13,6 +12,8 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
+
+import fr.aresrpg.sdk.protocol.MessagesType;
 
 public class RabbitMqReceiver {
 

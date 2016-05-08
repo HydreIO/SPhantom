@@ -1,8 +1,8 @@
 package sceat.domain.protocol.packets;
 
+import fr.aresrpg.sdk.protocol.MessagesType;
 import sceat.SPhantom;
 import sceat.domain.Heart;
-import sceat.domain.protocol.MessagesType;
 
 public class PacketPhantomHeartBeat extends PacketPhantom {
 
