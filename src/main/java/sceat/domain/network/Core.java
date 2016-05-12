@@ -12,6 +12,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import sceat.Main;
 import sceat.SPhantom;
@@ -31,13 +32,14 @@ import sceat.domain.protocol.PacketSender;
 import sceat.domain.protocol.packets.PacketPhantomBootServer;
 import sceat.domain.protocol.packets.PacketPhantomDestroyInstance;
 import sceat.domain.protocol.packets.PacketPhantomReduceServer;
-import sceat.domain.schedule.Schedule;
-import sceat.domain.schedule.Scheduled;
-import sceat.domain.schedule.Scheduler;
-import sceat.domain.schedule.TimeUnit;
 import sceat.domain.trigger.PhantomTrigger;
 import sceat.domain.utils.New;
 import sceat.domain.utils.ServerLabel;
+import fr.aresrpg.commons.util.schedule.Schedule;
+import fr.aresrpg.commons.util.schedule.Scheduled;
+import fr.aresrpg.commons.util.schedule.Scheduler;
+import fr.aresrpg.commons.util.schedule.TimeUnit;
+import fr.aresrpg.sdk.system.Log;
 
 /**
  * This is where the magic happens
@@ -108,11 +110,11 @@ public class Core implements Scheduled {
 				if (v == ServerType.PROXY) continue;
 				int playersCount = playersByType.get(v).size();
 				int totspace = SPhantom.getInstance().getSphantomConfig().getInstances().get(v).getMaxPlayers() * serversByType.get(v).size();
-				if (SPhantom.logDiv()) SPhantom.print("[FreeSpace CHECK] |" + v + "|players(" + playersCount + ")|totspace(" + totspace + ")");
+				if (SPhantom.logDiv()) Log.out("[FreeSpace CHECK] |" + v + "|players(" + playersCount + ")|totspace(" + totspace + ")");
 				if (totspace <= 0) continue;
 				if (totspace * getMode().getPercentPl() <= playersCount) {
 					ServerProvider.getInstance().incrementPriority();
-					if (SPhantom.logDiv()) SPhantom.print("[DEFQON |incrementPriority();");
+					if (SPhantom.logDiv()) Log.out("[DEFQON |incrementPriority();");
 					int nbr = 3;
 					if (plTot < 200) nbr = 1;
 					else if (plTot < 1000) nbr = 2;
@@ -122,7 +124,7 @@ public class Core implements Scheduled {
 			}
 			if (decrem) {
 				ServerProvider.getInstance().decrementPriority();
-				if (SPhantom.logDiv()) SPhantom.print("[DEFQON |decrementPriority(); /Yup/");
+				if (SPhantom.logDiv()) Log.out("[DEFQON |decrementPriority(); /Yup/");
 			}
 		} catch (Exception e) {
 			procc = false;
@@ -158,7 +160,7 @@ public class Core implements Scheduled {
 					(sz) -> sz.getStatus() != Statut.CLOSING && sz.getStatus() != Statut.REDUCTION && sz.getStatus() != Statut.CRASHED && sz.getStatus() != Statut.OVERHEAD, (vz, sr, predicate,
 							consume) -> (predicate.test(vz, sr) && consume.accept(vz, sr)), (vt, st) -> vt.canAccept(st), BoolBiConsumer.<Vps, Server> of((uv, ud) -> {
 						ud.setStatus(Statut.REDUCTION);
-						SPhantom.print("balk() [DEFRAGMENTATION SEQUENCING] | Reduction on " + ud.getLabel() + " |Actual Vps : " + ud.getVpsLabel());
+						Log.out("balk() [DEFRAGMENTATION SEQUENCING] | Reduction on " + ud.getLabel() + " |Actual Vps : " + ud.getVpsLabel());
 						PacketSender.getInstance().reduceServer(new PacketPhantomReduceServer(ud.getLabel(), uv.getLabel()));
 						Core.getInstance().deployServerOnVps(ud.getType(), uv, true);
 						return true;
@@ -184,7 +186,7 @@ public class Core implements Scheduled {
 	}
 
 	private void remapPlayersByType() {
-		if (SPhantom.logDiv()) SPhantom.print("[Map repairing] | /!\\ Remaping players /!\\ !");
+		if (SPhantom.logDiv()) Log.out("[Map repairing] | /!\\ Remaping players /!\\ !");
 		Arrays.stream(ServerType.values()).forEach(v -> {
 			playersByType.put(v, serversByType.get(v).stream().filter(s -> (s.getStatus() == Statut.OPEN)).map(s -> s.getPlayers()).reduce((a, b) -> {
 				a.addAll(b);
@@ -193,11 +195,11 @@ public class Core implements Scheduled {
 		});
 	}
 
-	public ConcurrentHashMap<String, Vps> getVps() {
+	public ConcurrentHashMap<String, Vps> getVps() { // NOSONAR ouai car la ConcurrentMap.mappingCount exist pas
 		return vps;
 	}
 
-	public ConcurrentHashMap<ServerType, Set<Server>> getServersByType() {
+	public ConcurrentHashMap<ServerType, Set<Server>> getServersByType() { // NOSONAR
 		return serversByType;
 	}
 
@@ -214,7 +216,7 @@ public class Core implements Scheduled {
 		return instance;
 	}
 
-	public ConcurrentHashMap<ServerType, Set<UUID>> getPlayersByType() {
+	public ConcurrentMap<ServerType, Set<UUID>> getPlayersByType() {
 		return playersByType;
 	}
 
@@ -242,7 +244,7 @@ public class Core implements Scheduled {
 	 *            true via sphantom, false via cmd
 	 */
 	public void setMode(OperatingMode mode, boolean auto) {
-		if (SPhantom.logDiv()) SPhantom.print("Setting mode " + mode + " [" + (auto ? "AUTO" : "MANUAL") + "]");
+		if (SPhantom.logDiv()) Log.out("Setting mode " + mode + " [" + (auto ? "AUTO" : "MANUAL") + "]");
 		PhantomTrigger.getAll().forEach(t -> t.handleOpMode(mode));
 		this.mode = mode;
 	}
@@ -263,7 +265,7 @@ public class Core implements Scheduled {
 		if (pro || SPhantom.getInstance().isLocal()) return;
 		pro = true;
 		this.deployedInstances = SPhantom.getInstance().getIphantom().countDeployedInstance();
-		if (SPhantom.logDiv()) SPhantom.print("[Network] Custom deployed instances = " + deployedInstances);
+		if (SPhantom.logDiv()) Log.out("[Network] Custom deployed instances = " + deployedInstances);
 		pro = false;
 	}
 
@@ -273,7 +275,7 @@ public class Core implements Scheduled {
 			if (isProcessing() || !this.initialised || !SPhantom.getInstance().isLeading() || SPhantom.getInstance().isLocal()) return;
 			setProcess(true);
 			Defqon defqon = ServerProvider.getInstance().getDefqon();
-			if (SPhantom.logDiv()) SPhantom.print("coreUpdate() | Actual defqon : " + defqon);
+			if (SPhantom.logDiv()) Log.out("coreUpdate() | Actual defqon : " + defqon);
 			switch (defqon) {
 				case FOUR:
 					deployInstances(1 + getMode().getVar());
@@ -288,10 +290,10 @@ public class Core implements Scheduled {
 					deployInstances(8 + getMode().getVar());
 					break;
 				default:
-					Set<String> torm = new HashSet<String>();
+					Set<String> torm = new HashSet<>();
 					getVps().forEach((k, v) -> {
 						if (v.canBeDestroyed() && v.getServers().isEmpty() && !ServerProvider.getInstance().getConfigInstances().containsKey(k)) {
-							if (SPhantom.logDiv()) SPhantom.print("Vps reduction |Destroying instance : " + k);
+							if (SPhantom.logDiv()) Log.out("Vps reduction |Destroying instance : " + k);
 							if (v != null) PhantomTrigger.getAll().forEach(t -> t.handleVps(v));
 							SPhantom.getInstance().getIphantom().destroyServer(k);
 							torm.add(k);
@@ -314,7 +316,7 @@ public class Core implements Scheduled {
 		int current = (int) (deployedInstances == -1 ? getVps().mappingCount() : deployedInstances);
 		for (int i = 0; i < nbr; i++) {
 			if (current >= max) {
-				SPhantom.print("[" + max + "] instances are already deployed ! For bypass this security please change the Sphantom config");
+				Log.out("[" + max + "] instances are already deployed ! For bypass this security please change the Sphantom config");
 				break;
 			}
 			vp.add(SPhantom.getInstance().getIphantom().deployInstance(ServerLabel.newVpsLabel(), SPhantom.getInstance().getSphantomConfig().getDeployedVpsRam()).register());
@@ -328,21 +330,21 @@ public class Core implements Scheduled {
 	 * @param type
 	 */
 	public void forceDeployServer(ServerType type, int nbr) {
-		if (type == ServerType.PROXY) SPhantom.print("Can't deploy proxy forced !");
+		if (type == ServerType.PROXY) Log.out("Can't deploy proxy forced !");
 		else {
-			SPhantom.print("Deploy Server |Type_" + type + "|Nbr(" + nbr + ")");
+			Log.out("Deploy Server |Type_" + type + "|Nbr(" + nbr + ")");
 			SPhantomConfig conf = SPhantom.getInstance().getSphantomConfig();
 			McServerConfigObject obj = conf.getInstances().get(type);
 			for (int i = 0; i < nbr; i++) {
 				Vps vp = ServerProvider.getInstance().getVps(type, Optional.empty());
 				if (vp == null) {
-					SPhantom.print("No vps available ! Deploying instance, please wait and retry in few minutes...");
+					Log.out("No vps available ! Deploying instance, please wait and retry in few minutes...");
 					deployInstances(1);
 					break;
 				}
 				Server srv = Server.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT);
 				srv.setVpsLabel(vp.getLabel());
-				SPhantom.print("Deploying server [Label('" + srv.getLabel() + "')|State('" + srv.getStatus() + "')|MaxP(" + srv.getMaxPlayers() + ")]");
+				Log.out("Deploying server [Label('" + srv.getLabel() + "')|State('" + srv.getStatus() + "')|MaxP(" + srv.getMaxPlayers() + ")]");
 				serversByType.get(type).add(srv);
 				Manager.getInstance().getServersByLabel().put(srv.getLabel(), srv);
 				vp.getServers().add(srv);
@@ -353,7 +355,7 @@ public class Core implements Scheduled {
 
 	private Set<Server> deployServer(ServerType type, int nbr) {
 		if (type == ServerType.PROXY) return deployProxy(nbr);
-		if (SPhantom.logDiv()) SPhantom.print("Deploy Server |Type_" + type + "|Nbr(" + nbr + ")");
+		if (SPhantom.logDiv()) Log.out("Deploy Server |Type_" + type + "|Nbr(" + nbr + ")");
 		SPhantomConfig conf = SPhantom.getInstance().getSphantomConfig();
 		McServerConfigObject obj = conf.getInstances().get(type);
 		Set<Server> set = new HashSet<Server>();
@@ -378,8 +380,8 @@ public class Core implements Scheduled {
 		}
 		SPhantomConfig conf = SPhantom.getInstance().getSphantomConfig();
 		McServerConfigObject obj = conf.getInstances().get(type);
-		if (fromBalk) SPhantom.print("[DEFRAGMENTATION SEQUENCING] | Transfert on " + v.getLabel() + " |Type : " + type + "\n_______________________________________________]");
-		else if (SPhantom.logDiv()) SPhantom.print("Deploy Server ON VPS |Type_" + type + "|Vps = " + v.getLabel());
+		if (fromBalk) Log.out("[DEFRAGMENTATION SEQUENCING] | Transfert on " + v.getLabel() + " |Type : " + type + "\n_______________________________________________]");
+		else if (SPhantom.logDiv()) Log.out("Deploy Server ON VPS |Type_" + type + "|Vps = " + v.getLabel());
 		Server srv = Server.fromScratch(type, obj.getMaxPlayers(), v.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT);
 		serversByType.get(type).add(srv);
 		Manager.getInstance().getServersByLabel().put(srv.getLabel(), srv);
@@ -409,12 +411,12 @@ public class Core implements Scheduled {
 	}
 
 	private Set<Server> deployProxy(int nbr) {
-		SPhantom.print("[DEPLOY PROXY] Not implemented Yet !");
+		Log.out("[DEPLOY PROXY] Not implemented Yet !");
 		return new HashSet<Server>();
 	}
 
 	private void deplyProxyOnVps(Vps v) {
-		SPhantom.print("[DEPLOY PROXY] Not implemented Yet !");
+		Log.out("[DEPLOY PROXY] Not implemented Yet !");
 	}
 
 	public static enum OperatingMode {

@@ -3,11 +3,11 @@ package sceat.domain.protocol.handler;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import fr.aresrpg.sdk.protocol.MessagesType;
 import sceat.Main;
-import sceat.SPhantom;
-import sceat.domain.protocol.packets.PacketPhantom;
 import sceat.domain.utils.PhantomThreadPoolExecutor;
+import fr.aresrpg.sdk.protocol.MessagesType;
+import fr.aresrpg.sdk.protocol.PacketPhantom;
+import fr.aresrpg.sdk.system.Log;
 
 /**
  * Le PacketSender peut se mettre en pause en cas de prise du lead par un autre replica,
@@ -58,13 +58,13 @@ public class PacketHandler {
 	private List<RawPacket> rawPackets;
 	private PacketWatchDog watchDog;
 	private PhantomThreadPoolExecutor pool;
-	public volatile boolean needToSort = false;
+	private volatile boolean needToSort = false;
+
+	private PacketHandler() {
+	}
 
 	public List<RawPacket> getRawPackets() {
 		return rawPackets;
-	}
-
-	private PacketHandler() {
 	}
 
 	public static void init() {
@@ -90,7 +90,7 @@ public class PacketHandler {
 	 */
 
 	public void handle(MessagesType type, byte[] msg) {
-		if (needToSort) reorganisePackets();
+		if (needToSort()) reorganisePackets();
 		RawPacket packet = new RawPacket(type, msg);
 		rawPackets.add(packet);
 		pool.execute(new PacketDeserializer(packet));
@@ -99,10 +99,18 @@ public class PacketHandler {
 
 	private void reorganisePackets() {
 		List<Runnable> drained = pool.safeDrain();// drain and ignore runnable (just for sys.print)
-		SPhantom.print("Reorganise Packets /!\\ [rawList(" + rawPackets.size() + ")|PoolActiveThreads(" + pool.getActiveCount() + ")|QueuedTaskRemaining(" + drained.size() + ")]");
+		Log.out("Reorganise Packets /!\\ [rawList(" + rawPackets.size() + ")|PoolActiveThreads(" + pool.getActiveCount() + ")|QueuedTaskRemaining(" + drained.size() + ")]");
 		pool = new PhantomThreadPoolExecutor(50);// Recreate
 		rawPackets.sort((i1, i2) -> Integer.compare(i1.type.getPriority(), i2.type.getPriority()));
 		rawPackets.forEach(e -> pool.execute(new PacketDeserializer(e)));
-		needToSort = false;
+		setNeedToSort(false);
+	}
+
+	public boolean needToSort() {
+		return needToSort;
+	}
+
+	public void setNeedToSort(boolean needToSort) {
+		this.needToSort = needToSort;
 	}
 }

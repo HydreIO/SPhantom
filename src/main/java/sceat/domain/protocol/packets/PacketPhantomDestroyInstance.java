@@ -3,12 +3,14 @@ package sceat.domain.protocol.packets;
 import java.util.HashSet;
 import java.util.Set;
 
-import fr.aresrpg.sdk.protocol.MessagesType;
-import sceat.SPhantom;
+import sceat.domain.common.mq.Broker;
 import sceat.domain.network.Core;
 import sceat.domain.network.ServerProvider;
 import sceat.domain.network.server.Vps;
 import sceat.domain.trigger.PhantomTrigger;
+import fr.aresrpg.sdk.protocol.MessagesType;
+import fr.aresrpg.sdk.protocol.PacketPhantom;
+import fr.aresrpg.sdk.system.Log;
 
 public class PacketPhantomDestroyInstance extends PacketPhantom {
 
@@ -38,15 +40,25 @@ public class PacketPhantomDestroyInstance extends PacketPhantom {
 			Vps v = Core.getInstance().getVps().getOrDefault(vpsLabel, null);
 			if (v != null) PhantomTrigger.getAll().forEach(t -> t.handleVps(v));
 		});
-		if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketDestroyInstance [" + getLabels().stream().reduce((a, b) -> a + " " + b) + "]");
+		Log.packet(this, true);
 		labels.forEach(s -> {
 			Core.getInstance().getVps().remove(s);
 			ServerProvider.getInstance().getOrdered().entrySet().stream().filter(e -> e.getValue().getLabel().equals(s)).forEach(e -> ServerProvider.getInstance().getOrdered().put(e.getKey(), null));
 		});
 	}
 
+	@Override
+	public String toString() {
+		return "PacketDestroyInstance [" + getLabels().stream().reduce((a, b) -> a + " " + b) + "]";
+	}
+
 	public Set<String> getLabels() {
 		return labels;
+	}
+
+	@Override
+	public void send() {
+		Broker.get().destroyInstance(this);
 	}
 
 }

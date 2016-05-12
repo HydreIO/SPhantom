@@ -1,8 +1,10 @@
 package sceat.domain.protocol.packets;
 
-import fr.aresrpg.sdk.protocol.MessagesType;
 import sceat.SPhantom;
 import sceat.domain.Heart;
+import fr.aresrpg.sdk.protocol.MessagesType;
+import fr.aresrpg.sdk.protocol.PacketPhantom;
+import fr.aresrpg.sdk.system.Log;
 
 public class PacketPhantomHeartBeat extends PacketPhantom {
 
@@ -28,11 +30,11 @@ public class PacketPhantomHeartBeat extends PacketPhantom {
 	@Override
 	public void handleData(MessagesType tp) {
 		if (tp == MessagesType.HEART_BEAT) {
-			if (SPhantom.getInstance().logHeart) SPhantom.print("<<<<]RECV] PacketHeartBeat [Last " + new java.sql.Timestamp(getLastHandShake()).toString().substring(0, 16) + "]");
+			if (SPhantom.getInstance().logHeart) Log.out("<<<<]RECV] PacketHeartBeat [Last " + new java.sql.Timestamp(getLastHandShake()).toString().substring(0, 16) + "]");
 			Heart.getInstance().transfuse(this);
 		} else if (tp == MessagesType.TAKE_LEAD) { // inutile mais en cas ou je rajoute un autre type pour ce pkt
 			if (cameFromLocal()) return;
-			if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketTakeLead []");
+			if (SPhantom.getInstance().logPkt()) Log.out("<<<<]RECV] PacketTakeLead []");
 			Heart.getInstance().transplant(this);
 		}
 	}
@@ -46,7 +48,7 @@ public class PacketPhantomHeartBeat extends PacketPhantom {
 		this.lastHandShake = lastHandShake;
 	}
 
-	public void resetHandShake(){
+	public void resetHandShake() {
 		this.lastHandShake = System.currentTimeMillis();
 	}
 
@@ -64,6 +66,11 @@ public class PacketPhantomHeartBeat extends PacketPhantom {
 
 	public boolean isRunning() {
 		return this.running;
+	}
+
+	@Override
+	public void send() {
+		throw new IllegalAccessError("PacketPhantomHeartBeat is a particular packet ! don't use this methode for send it !");
 	}
 
 }

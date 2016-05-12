@@ -1,28 +1,10 @@
 package sceat.domain.protocol.packets;
 
+import sceat.domain.common.mq.Broker;
 import fr.aresrpg.sdk.protocol.MessagesType;
+import fr.aresrpg.sdk.protocol.PacketPhantom;
 
 public class PacketPhantomKillProcess extends PacketPhantom {
-
-	@Override
-	protected void serialize_() {
-		writeString(serverLabel);
-		writeString(vpsLabel);
-		writeBoolean(removeFolder);
-		writeBoolean(extractLogs);
-	}
-
-	@Override
-	protected void deserialize_() {
-		this.serverLabel = readString();
-		this.vpsLabel = readString();
-		this.removeFolder = readBoolean();
-		this.extractLogs = readBoolean();
-	}
-
-	@Override
-	public void handleData(MessagesType type) {
-	}
 
 	private String serverLabel;
 	private String vpsLabel;
@@ -30,6 +12,7 @@ public class PacketPhantomKillProcess extends PacketPhantom {
 	private boolean extractLogs;
 
 	public PacketPhantomKillProcess() {
+		// deserial
 	}
 
 	/**
@@ -51,6 +34,27 @@ public class PacketPhantomKillProcess extends PacketPhantom {
 		this.extractLogs = extractLogs;
 	}
 
+	@Override
+	public void handleData(MessagesType type) {
+		throwCantHandle("packetKillProcess");
+	}
+
+	@Override
+	protected void serialize_() {
+		writeString(serverLabel);
+		writeString(vpsLabel);
+		writeBoolean(removeFolder);
+		writeBoolean(extractLogs);
+	}
+
+	@Override
+	protected void deserialize_() {
+		this.serverLabel = readString();
+		this.vpsLabel = readString();
+		this.removeFolder = readBoolean();
+		this.extractLogs = readBoolean();
+	}
+
 	public String getVpsLabel() {
 		return vpsLabel;
 	}
@@ -65,6 +69,11 @@ public class PacketPhantomKillProcess extends PacketPhantom {
 
 	public boolean extractLogs() {
 		return this.extractLogs;
+	}
+
+	@Override
+	public void send() {
+		Broker.get().killProcess(this);
 	}
 
 }

@@ -13,6 +13,7 @@ import sceat.domain.config.SPhantomConfig;
 import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.network.server.Vps;
 import sceat.domain.trigger.PhantomTrigger;
+import fr.aresrpg.sdk.system.Log;
 
 @SuppressWarnings("unchecked")
 public class ServerProvider {
@@ -103,7 +104,7 @@ public class ServerProvider {
 	public synchronized Vps getVps(ServerType type, Optional<Vps> exclude) {
 		boolean log = SPhantom.getInstance().logprovider;
 		long time = System.currentTimeMillis();
-		if (log) SPhantom.print("[Provider] Asking Vps for type : " + type.name());
+		if (log) Log.out("[Provider] Asking Vps for type : " + type.name());
 		SPhantomConfig sc = SPhantom.getInstance().getSphantomConfig();
 		Vps vp = null;
 		for (Vps vss : getConfigInstances().values())
@@ -118,16 +119,16 @@ public class ServerProvider {
 		Vps vf = getOrdered().get(type);
 		if (vp == null) vp = exclude.isPresent() ? vf == exclude.get() ? null : vf : vf;
 		if (vf != null && !vf.isUpdated()) vf = null;
-		if (log) SPhantom.print("Found vps : " + (vp == null ? "NULL :(" : vp.getLabel()));
+		if (log) Log.out("Found vps : " + (vp == null ? "NULL :(" : vp.getLabel()));
 		if (vp == null) {
 			vp = searchFirst(sc.getRamFor(type), exclude);
 			if (vp != null && !vp.isUpdated()) vp = null;
-			if (SPhantom.getInstance().logprovider) SPhantom.print("Force found vps : " + (vp == null ? "Not found again.. Wait for defqon to grow" : vp.getLabel()));
+			if (SPhantom.getInstance().logprovider) Log.out("Force found vps : " + (vp == null ? "Not found again.. Wait for defqon to grow" : vp.getLabel()));
 			if (vp == null) return null; // si on trouve vraiment pas de vps on return null et tant pis aucun serveur ne s'ouvrira il faudra attendre l'ouverture d'une instance automatiquement
 		}
 		int rfm = sc.getRamFor(type);
 		int availableRam = vp.getAvailableRam(true) - rfm;
-		if (log) SPhantom.print("Available ram : " + (availableRam + rfm));
+		if (log) Log.out("Available ram : " + (availableRam + rfm));
 		for (Entry<ServerType, Vps> e : ordered.entrySet()) {
 			Vps value = e.getValue();
 			ServerType key = e.getKey();
@@ -138,7 +139,7 @@ public class ServerProvider {
 				ordered.put(key, neew);
 			}
 		}
-		if (log) SPhantom.print("Founded in " + (System.currentTimeMillis() - time) + "ms");
+		if (log) Log.out("Founded in " + (System.currentTimeMillis() - time) + "ms");
 		return vp;
 	}
 

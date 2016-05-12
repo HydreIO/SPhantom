@@ -21,11 +21,10 @@ import org.apache.commons.cli.ParseException;
 
 import sceat.domain.Heart;
 import sceat.domain.common.mq.Broker;
-import sceat.domain.common.system.Log;
 import sceat.domain.ressources.Constant;
-import sceat.domain.schedule.Scheduler;
 import sceat.gui.web.GrizzlyWebServer;
 import sceat.infra.input.ScannerInput;
+import fr.aresrpg.commons.util.schedule.Scheduler;
 
 public class Main {
 
@@ -120,14 +119,14 @@ public class Main {
 	}
 
 	public static void shutDown() {
-		Log.out("Shutdown..");
+		fr.aresrpg.commons.log.Logger.log("Shutdown..");
 		Broker.get().close();
 		GrizzlyWebServer.stop();
 		ScannerInput.shutDown();
 		SPhantom.getInstance().getExecutor().shutdown();
 		Scheduler.getScheduler().shutdown();
 		if (Heart.getInstance() != null) Heart.getInstance().broke();
-		Log.out("Bye.");
+		fr.aresrpg.commons.log.Logger.log("Bye.");
 		SPhantom.getInstance().running = false;
 		System.exit(0);
 	}
@@ -138,7 +137,7 @@ public class Main {
 		try {
 			return new BasicParser().parse(opt, args);
 		} catch (ParseException e) {
-			e.printStackTrace();
+			fr.aresrpg.commons.log.Logger.trace(e);
 			return null;
 		}
 	}

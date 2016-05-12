@@ -1,12 +1,14 @@
 package sceat.domain.protocol.packets;
 
-import fr.aresrpg.sdk.protocol.MessagesType;
-import sceat.SPhantom;
 import sceat.domain.Manager;
+import sceat.domain.common.mq.Broker;
 import sceat.domain.minecraft.Statut;
 import sceat.domain.network.Core;
 import sceat.domain.network.server.Vps;
 import sceat.domain.trigger.PhantomTrigger;
+import fr.aresrpg.sdk.protocol.MessagesType;
+import fr.aresrpg.sdk.protocol.PacketPhantom;
+import fr.aresrpg.sdk.system.Log;
 
 public class PacketPhantomReduceServer extends PacketPhantom {
 
@@ -38,8 +40,13 @@ public class PacketPhantomReduceServer extends PacketPhantom {
 		Vps v = Core.getInstance().getVps().getOrDefault(vpsLabel, null);
 		if (v != null) PhantomTrigger.getAll().forEach(t -> t.handleVps(v));
 		if (cameFromLocal()) return;
-		if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketReduceServer [Srv: " + getLabel() + "|Vps: " + getVpsLabel() + "]");
+		Log.packet(this, true);
 		Manager.getInstance().getServersByLabel().get(label).setStatus(Statut.REDUCTION);
+	}
+
+	@Override
+	public String toString() {
+		return "PacketReduceServer [Srv: " + getLabel() + "|Vps: " + getVpsLabel() + "]";
 	}
 
 	public String getLabel() {
@@ -48,6 +55,11 @@ public class PacketPhantomReduceServer extends PacketPhantom {
 
 	public String getVpsLabel() {
 		return vpsLabel;
+	}
+
+	@Override
+	public void send() {
+		Broker.get().reduceServer(this);
 	}
 
 }

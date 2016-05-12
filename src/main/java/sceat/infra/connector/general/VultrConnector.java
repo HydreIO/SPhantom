@@ -24,6 +24,7 @@ import xyz.deltaevo.jvultr.api.JVultrServer;
 import xyz.deltaevo.jvultr.exception.JVultrException;
 import xyz.deltaevo.jvultr.utils.BiValue;
 import xyz.deltaevo.jvultr.utils.JVultrUtil;
+import fr.aresrpg.sdk.system.Log;
 
 public class VultrConnector implements IPhantom {
 
@@ -93,11 +94,11 @@ public class VultrConnector implements IPhantom {
 	public void destroyServer(String label) {
 		if (!checkReq()) sleep();
 		ConcurrentHashMap<String, Vps> vps = Core.getInstance().getVps();
-		if (!vps.containsKey(label)) SPhantom.print("Try destroying vps instance : [" + label + "] /!\\ This instance is not registered in Sphantom or already destroyed /!\\");
+		if (!vps.containsKey(label)) Log.out("Try destroying vps instance : [" + label + "] /!\\ This instance is not registered in Sphantom or already destroyed /!\\");
 		else {
 			Integer id = servers.get(label);
 			try {
-				if (SPhantom.logDiv()) SPhantom.print("Destroying instance : " + label);
+				if (SPhantom.logDiv()) Log.out("Destroying instance : " + label);
 				Vps vp = vps.get(label).setState(VpsState.DESTROYING);
 				if (id == null) {
 					for (Map.Entry<Integer, JVultrServer> servers : api.getSevers().entrySet()) {

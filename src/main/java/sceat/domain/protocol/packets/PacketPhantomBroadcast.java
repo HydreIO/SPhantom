@@ -1,28 +1,31 @@
 package sceat.domain.protocol.packets;
 
 import fr.aresrpg.sdk.protocol.MessagesType;
+import fr.aresrpg.sdk.protocol.PacketPhantom;
 
 public class PacketPhantomBroadcast extends PacketPhantom {
+	public PacketPhantomBroadcast() {
+		// unused
+	}
 
 	@Override
 	protected void serialize_() {
-		// TODO Auto-generated method stub
-
+		// unused
 	}
 
 	@Override
 	protected void deserialize_() {
-		// TODO Auto-generated method stub
-
-	}
-
-	public PacketPhantomBroadcast() {
+		// unused
 	}
 
 	@Override
 	public void handleData(MessagesType type) {
-		// TODO Auto-generated method stub
+		throwCantHandle("PacketBroadcast");
+	}
 
+	@Override
+	public void send() {
+		throwCantSend("PacketBroadcast");
 	}
 
 }

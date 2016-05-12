@@ -4,15 +4,18 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 
-import fr.aresrpg.sdk.protocol.MessagesType;
 import sceat.Main;
 import sceat.SPhantom;
+import sceat.domain.common.mq.Broker;
 import sceat.domain.minecraft.Statut;
 import sceat.domain.network.Core;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.network.server.Vps;
 import sceat.domain.trigger.PhantomTrigger;
+import fr.aresrpg.sdk.protocol.MessagesType;
+import fr.aresrpg.sdk.protocol.PacketPhantom;
+import fr.aresrpg.sdk.system.Log;
 
 public class PacketPhantomBootServer extends PacketPhantom {
 
@@ -67,8 +70,13 @@ public class PacketPhantomBootServer extends PacketPhantom {
 			if (v != null) PhantomTrigger.getAll().forEach(t -> t.handleVps(v));
 		}
 		if (cameFromLocal()) return;
-		if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketBootServer [" + getLabel() + "|MaxP(" + getMaxP() + ")|Ram(" + getRam() + ")]");
+		Log.packet(this, true);
 		Server.fromPacket(new PacketPhantomServerInfo(Statut.CREATING, label, vpsLabel, ip, type, maxP, new HashMap<>(), false), false);
+	}
+
+	@Override
+	public String toString() {
+		return "PacketBootServer [" + getLabel() + "|MaxP(" + getMaxP() + ")|Ram(" + getRam() + ")]";
 	}
 
 	public InetAddress getIp() {
@@ -93,6 +101,11 @@ public class PacketPhantomBootServer extends PacketPhantom {
 
 	public int getMaxP() {
 		return maxP;
+	}
+
+	@Override
+	public void send() {
+		Broker.get().bootServer(this);
 	}
 
 }

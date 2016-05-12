@@ -2,15 +2,17 @@ package sceat.domain.protocol.packets;
 
 import java.util.UUID;
 
-import fr.aresrpg.sdk.protocol.MessagesType;
-import sceat.SPhantom;
 import sceat.domain.Manager;
+import sceat.domain.common.mq.Broker;
 import sceat.domain.minecraft.Grades;
 import sceat.domain.network.Core;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.protocol.PacketSender;
 import sceat.domain.utils.ServerLabel;
+import fr.aresrpg.sdk.protocol.MessagesType;
+import fr.aresrpg.sdk.protocol.PacketPhantom;
+import fr.aresrpg.sdk.system.Log;
 
 public class PacketPhantomPlayer extends PacketPhantom {
 
@@ -29,6 +31,7 @@ public class PacketPhantomPlayer extends PacketPhantom {
 	}
 
 	public PacketPhantomPlayer() {
+		// deserialization
 	}
 
 	@Override
@@ -50,9 +53,14 @@ public class PacketPhantomPlayer extends PacketPhantom {
 	}
 
 	@Override
+	public String toString() {
+		return "PacketPlayer [" + getPlayer() + "|" + getAction().name() + "|Last(" + getServerLast() + ")|New(" + getServerNew() + ")]";
+	}
+
+	@Override
 	public void handleData(MessagesType type) {
 		if (cameFromLocal()) return;
-		if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketPlayer [" + getPlayer() + "|" + getAction().name() + "|Last(" + getServerLast() + ")|New(" + getServerNew() + ")]");
+		Log.packet(this, true);
 		Manager m = Manager.getInstance();
 		switch (action) {
 			case CONNECT:
@@ -62,10 +70,10 @@ public class PacketPhantomPlayer extends PacketPhantom {
 				Core.getInstance().getPlayersByType().get(getServerTypeNew()).add(getPlayer());
 				break;
 			case DISCONNECT:
-				m.getPlayersOnNetwork().removeIf(e -> e == getPlayer());
-				m.getPlayersPerGrade().get(getGrade()).removeIf(e -> e == getPlayer());
-				getServerLast().getPlayers().removeIf(e -> e == getPlayer());
-				Core.getInstance().getPlayersByType().get(getServerLast()).removeIf(e -> e == getPlayer());
+				m.getPlayersOnNetwork().remove(getPlayer());
+				m.getPlayersPerGrade().get(getGrade()).remove(getPlayer());
+				getServerLast().getPlayers().remove(getPlayer());
+				Core.getInstance().getPlayersByType().get(getServerLast()).remove(getPlayer());
 				break;
 			case SERVER_SWITCH:
 				getServerLast().getPlayersMap().get(getGrade()).removeIf(e -> e == getPlayer());
@@ -82,12 +90,12 @@ public class PacketPhantomPlayer extends PacketPhantom {
 	}
 
 	public ServerType getServerTypeLast() {
-		if (getAction() == PlayerAction.CONNECT) throw new NullPointerException("Impossible de r�cuperer le type de serveurLast car le joueur vient de se connecter sur le network !");
+		if (getAction() == PlayerAction.CONNECT) throw new NullPointerException("Impossible de récuperer le type de serveurLast car le joueur vient de se connecter sur le network !");
 		return ServerLabel.getTypeWithLabel(this.serverLabelLast);
 	}
 
 	public ServerType getServerTypeNew() {
-		if (getAction() == PlayerAction.DISCONNECT) throw new NullPointerException("Impossible de r�cuperer le type de serveurNew car le joueur vient de se d�connecter du network !");
+		if (getAction() == PlayerAction.DISCONNECT) throw new NullPointerException("Impossible de récuperer le type de serveurNew car le joueur vient de se d�connecter du network !");
 		return ServerLabel.getTypeWithLabel(this.serverLabelNew);
 	}
 
@@ -97,12 +105,12 @@ public class PacketPhantomPlayer extends PacketPhantom {
 	 * @return le serveur via le manager grace au label
 	 */
 	public Server getServerLast() {
-		if (getAction() == PlayerAction.CONNECT) throw new NullPointerException("Impossible de r�cuperer le serveurLast car le joueur vient de se connecter sur le network !");
+		if (getAction() == PlayerAction.CONNECT) throw new NullPointerException("Impossible de récuperer le serveurLast car le joueur vient de se connecter sur le network !");
 		return Manager.getInstance().getServersByLabel().get(this.serverLabelLast);
 	}
 
 	public Server getServerNew() {
-		if (getAction() == PlayerAction.DISCONNECT) throw new NullPointerException("Impossible de r�cuperer le serveurNew car le joueur vient de se d�connecter du network !");
+		if (getAction() == PlayerAction.DISCONNECT) throw new NullPointerException("Impossible de récuperer le serveurNew car le joueur vient de se déconnecter du network !");
 		return Manager.getInstance().getServersByLabel().get(this.serverLabelNew);
 	}
 
@@ -133,6 +141,11 @@ public class PacketPhantomPlayer extends PacketPhantom {
 				if (action.id == id) return action;
 			return null;
 		}
+	}
+
+	@Override
+	public void send() {
+		Broker.get().sendPlayer(this);
 	}
 
 }

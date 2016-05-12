@@ -8,10 +8,11 @@ import sceat.Main;
 import sceat.SPhantom;
 import sceat.domain.protocol.PacketSender;
 import sceat.domain.protocol.packets.PacketPhantomHeartBeat;
-import sceat.domain.schedule.Schedule;
-import sceat.domain.schedule.Scheduled;
-import sceat.domain.schedule.Scheduler;
-import sceat.domain.schedule.TimeUnit;
+import fr.aresrpg.commons.util.schedule.Schedule;
+import fr.aresrpg.commons.util.schedule.Scheduled;
+import fr.aresrpg.commons.util.schedule.Scheduler;
+import fr.aresrpg.commons.util.schedule.TimeUnit;
+import fr.aresrpg.sdk.system.Log;
 
 public class Heart implements Scheduled {
 
@@ -25,7 +26,7 @@ public class Heart implements Scheduled {
 		instance = this;
 		this.local = local;
 		this.alive = true;
-		if (local) SPhantom.print("Local mode ! No replicas service.");
+		if (local) Log.out("Local mode ! No replicas service.");
 		else Scheduler.getScheduler().register(this);
 		this.localBeat = new PacketPhantomHeartBeat();
 		this.localBeat.setSecu(SPhantom.getInstance().getSecurity());
@@ -46,10 +47,10 @@ public class Heart implements Scheduled {
 	public Heart takeLead() {
 		if (this.local) return this; // if local, disable rabbit & replica
 		if (SPhantom.getInstance().isLeading()) {
-			SPhantom.print("Already lead !");
+			Log.out("Already lead !");
 			return this;
 		}
-		SPhantom.print("Take lead !");
+		Log.out("Take lead !");
 		SPhantom.getInstance().setLead(true);
 		getReplicas().add(getLocalBeat().handshake());
 		PacketSender.getInstance().takeLead(getLocalBeat());
@@ -63,7 +64,7 @@ public class Heart implements Scheduled {
 	 *            packet to transplant
 	 */
 	public void transplant(PacketPhantomHeartBeat pkt) {
-		SPhantom.print("Another instance has taken the lead ! SPhantom is going to sleep");
+		Log.out("Another instance has taken the lead ! SPhantom is going to sleep");
 		SPhantom.getInstance().setLead(false);
 		getReplicas().addLast(pkt);
 	}
@@ -86,7 +87,7 @@ public class Heart implements Scheduled {
 	 * Kill this heart
 	 */
 	public void broke() {
-		SPhantom.print("Broking heart !");
+		Log.out("Broking heart !");
 		this.alive = false;
 		SPhantom.getInstance().getPeaceMaker().shutdown();
 	}

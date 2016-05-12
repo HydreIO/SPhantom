@@ -2,11 +2,13 @@ package sceat.domain.protocol.packets;
 
 import java.util.UUID;
 
-import fr.aresrpg.sdk.protocol.MessagesType;
-import sceat.SPhantom;
 import sceat.domain.Manager;
+import sceat.domain.common.mq.Broker;
 import sceat.domain.minecraft.Grades;
 import sceat.domain.network.server.Server;
+import fr.aresrpg.sdk.protocol.MessagesType;
+import fr.aresrpg.sdk.protocol.PacketPhantom;
+import fr.aresrpg.sdk.system.Log;
 
 public class PacketPhantomGradeUpdate extends PacketPhantom {
 	private UUID player;
@@ -43,11 +45,16 @@ public class PacketPhantomGradeUpdate extends PacketPhantom {
 	@Override
 	public void handleData(MessagesType tp) {
 		if (cameFromLocal()) return;
-		if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketPlayerGrade [" + getPlayer() + "|New(" + getNewGrade().name() + ")|Last(" + getLastGrade().name() + ")]");
-		Manager.getInstance().getPlayersPerGrade().get(lastGrade).removeIf(e -> e.equals(player));
+		Log.packet(this, true);
+		Manager.getInstance().getPlayersPerGrade().get(lastGrade).remove(getPlayer());
 		Manager.getInstance().getPlayersPerGrade().get(newGrade).add(player);
-		getServer().getPlayersMap().get(lastGrade).removeIf(e -> e.equals(player));
+		getServer().getPlayersMap().get(lastGrade).remove(getPlayer());
 		getServer().getPlayersMap().get(newGrade).add(player);
+	}
+
+	@Override
+	public String toString() {
+		return "PacketPlayerGrade [" + getPlayer() + "|New(" + getNewGrade().name() + ")|Last(" + getLastGrade().name() + ")]";
 	}
 
 	public String getServerLabel() {
@@ -68,6 +75,11 @@ public class PacketPhantomGradeUpdate extends PacketPhantom {
 
 	public Grades getNewGrade() {
 		return newGrade;
+	}
+
+	@Override
+	public void send() {
+		Broker.get().gradeUpdate(this);
 	}
 
 }

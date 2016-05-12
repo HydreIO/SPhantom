@@ -5,14 +5,15 @@ import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 
-import fr.aresrpg.sdk.protocol.MessagesType;
 import sceat.Main;
-import sceat.SPhantom;
 import sceat.domain.network.Core;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Vps;
 import sceat.domain.network.server.Vps.VpsState;
 import sceat.domain.trigger.PhantomTrigger;
+import fr.aresrpg.sdk.protocol.MessagesType;
+import fr.aresrpg.sdk.protocol.PacketPhantom;
+import fr.aresrpg.sdk.system.Log;
 
 public class PacketPhantomSymbiote extends PacketPhantom {
 
@@ -60,8 +61,13 @@ public class PacketPhantomSymbiote extends PacketPhantom {
 	}
 
 	@Override
+	public String toString() {
+		return "PacketSymbiote [" + getVpsLabel() + "|" + getState() + "|" + getIp().getHostAddress() + "|Ram(" + getRam() + ")]";
+	}
+
+	@Override
 	public void handleData(MessagesType type) {
-		if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketSymbiote [" + getVpsLabel() + "|" + getState() + "|" + getIp().getHostAddress() + "|Ram(" + getRam() + ")]");
+		Log.packet(this, true);
 		ConcurrentHashMap<String, Vps> varmap = Core.getInstance().getVps();
 		if (varmap.containsKey(getVpsLabel())) varmap.get(getVpsLabel()).setUpdated(true).setState(getState()).setCreatedMilli(getCreated());
 		else new Vps(getVpsLabel(), getRam(), getIp(), new HashSet<Server>(), getCreated()).register().setUpdated(true).setState(getState());
@@ -83,6 +89,11 @@ public class PacketPhantomSymbiote extends PacketPhantom {
 
 	public int getRam() {
 		return ram;
+	}
+
+	@Override
+	public void send() {
+		throwCantSend("PacketSymbiote");
 	}
 
 }

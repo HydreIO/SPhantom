@@ -9,10 +9,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import fr.aresrpg.sdk.protocol.MessagesType;
 import sceat.Main;
-import sceat.SPhantom;
 import sceat.domain.Manager;
+import sceat.domain.common.mq.Broker;
 import sceat.domain.minecraft.Grades;
 import sceat.domain.minecraft.Statut;
 import sceat.domain.network.Core;
@@ -22,6 +21,9 @@ import sceat.domain.network.server.Vps;
 import sceat.domain.protocol.PacketSender;
 import sceat.domain.trigger.PhantomTrigger;
 import sceat.domain.utils.New;
+import fr.aresrpg.sdk.protocol.MessagesType;
+import fr.aresrpg.sdk.protocol.PacketPhantom;
+import fr.aresrpg.sdk.system.Log;
 
 public class PacketPhantomServerInfo extends PacketPhantom {
 
@@ -39,7 +41,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		this.vpsLabel = vpsLabel;
 		this.label = label;
 		this.type = type;
-		this.players = pl == null ? new HashMap<Grades, Set<UUID>>() : pl;
+		this.players = pl == null ? new HashMap<>() : pl;
 		if (pl == null) Arrays.stream(Grades.values()).forEach(g -> players.put(g, New.set()));
 		this.maxp = maxp;
 		this.state = state;
@@ -74,15 +76,20 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 	}
 
 	@Override
+	public String toString() {
+		return "PacketUpdateServer [" + getLabel() + "|" + getState().name() + "|players(" + getPlayers().size() + ")]";
+	}
+
+	@Override
 	public void handleData(MessagesType tp) {
 		if (cameFromLocal()) return;
-		if (SPhantom.getInstance().logPkt()) SPhantom.print("<<<<]RECV] PacketUpdateServer [" + getLabel() + "|" + getState().name() + "|players(" + getPlayers().size() + ")]");
+		Log.packet(this, true);
 		Manager m = Manager.getInstance();
 		if (getState() == Statut.CLOSING) {
 			Server srv = Server.fromPacket(this, true);
 			Vps curr = null;
 			if (srv == null) {
-				SPhantom.print("PacketPhantomServerInfo : State Closing | the server " + getLabel() + " is not registered | Ignoring (cause closing) ! break");
+				Log.out("PacketPhantomServerInfo : State Closing | the server " + getLabel() + " is not registered | Ignoring (cause closing) ! break");
 				return;
 			} else if (getVpsLabel() == null) {
 				bite: for (Vps vps : Core.getInstance().getVps().values()) {
@@ -94,11 +101,11 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 				}
 			} else curr = srv.getVps();
 			Set<Server> ss = Core.getInstance().getServersByType().get(getType());
-			if (ss.contains(srv)) ss.remove(srv);
+			ss.remove(srv);
 			m.getServersByLabel().remove(getLabel());
 			if (curr == null) {
 				// vps not found osef car tt façon on le vire
-				SPhantom.print("PacketPhantomServerInfo : State Closing | the server " + getLabel() + " is registered but not in a Vps object | Info ! break");
+				Log.out("PacketPhantomServerInfo : State Closing | the server " + getLabel() + " is registered but not in a Vps object | Info ! break");
 				return;
 			}
 			curr.getServers().remove(srv);
@@ -166,6 +173,11 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 			s1.addAll(s2);
 			return s1;
 		}).orElseGet(HashSet<UUID>::new);
+	}
+
+	@Override
+	public void send() {
+		Broker.get().sendServer(this);
 	}
 
 }

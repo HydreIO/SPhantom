@@ -22,8 +22,8 @@ public class ShellExecuter {
 	 * 
 	 * private void disconnect() { getSsh().disconnect(); }
 	 * 
-	 * public boolean executeScript(String dir, String path, String args) { try { connect(); Result res = getSsh().exec(new ExecShellScript(dir, path, args)); if (res.isSuccess) { SPhantom.print("Return code: " + res.rc); SPhantom.print("sysout: " + res.sysout); } else {
-	 * SPhantom.print("Return code: " + res.rc); SPhantom.print("error message: " + res.error_msg); } return true; } catch (TaskExecFailException e) { SPhantom.print("Unable to execute script \"" + path + "\" with args \"" + args + "\""); return false; } finally { disconnect(); } }
+	 * public boolean executeScript(String dir, String path, String args) { try { connect(); Result res = getSsh().exec(new ExecShellScript(dir, path, args)); if (res.isSuccess) { Log.out("Return code: " + res.rc); Log.out("sysout: " + res.sysout); } else {
+	 * Log.out("Return code: " + res.rc); Log.out("error message: " + res.error_msg); } return true; } catch (TaskExecFailException e) { Log.out("Unable to execute script \"" + path + "\" with args \"" + args + "\""); return false; } finally { disconnect(); } }
 	 * 
 	 * public SSHExec getSsh() { return ssh; }
 	 */

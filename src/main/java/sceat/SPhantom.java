@@ -7,7 +7,10 @@ import java.util.Calendar;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 import sceat.api.PhantomApi;
 import sceat.api.PhantomApi.ServerApi;
@@ -15,24 +18,28 @@ import sceat.api.PhantomApi.VpsApi;
 import sceat.domain.Heart;
 import sceat.domain.Manager;
 import sceat.domain.common.IPhantom;
-import sceat.domain.common.system.Log;
 import sceat.domain.common.system.Root;
-import sceat.domain.common.thread.Async;
 import sceat.domain.config.SPhantomConfig;
 import sceat.domain.network.Core;
 import sceat.domain.network.Core.OperatingMode;
 import sceat.domain.network.ServerProvider;
 import sceat.domain.protocol.PacketSender;
-import sceat.domain.protocol.Security;
 import sceat.domain.protocol.handler.PacketHandler;
-import sceat.domain.protocol.packets.PacketPhantom;
+import sceat.domain.protocol.packets.PacketRegistry;
 import sceat.domain.shell.Input;
 import sceat.domain.trigger.PhantomTrigger;
 import sceat.gui.terminal.PhantomTui;
 import sceat.gui.web.GrizzlyWebServer;
 import sceat.infra.connector.general.VultrConnector;
 import sceat.infra.input.ScannerInput;
-import fr.aresrpg.commons.util.concurrent.ThreadFactory;
+import fr.aresrpg.commons.concurrent.ThreadBuilder;
+import fr.aresrpg.commons.concurrent.Threads;
+import fr.aresrpg.commons.condition.match.Matcher;
+import fr.aresrpg.commons.condition.match.Matcher.Case;
+import fr.aresrpg.sdk.concurrent.Async;
+import fr.aresrpg.sdk.protocol.PacketPhantom;
+import fr.aresrpg.sdk.protocol.Security;
+import fr.aresrpg.sdk.system.Log;
 
 public class SPhantom implements Async, Log, Root {
 
@@ -52,6 +59,9 @@ public class SPhantom implements Async, Log, Root {
 	private Security security;
 	private PhantomApi mainApi;
 	private InetAddress ip;
+	private final String enabled = "enabled";
+	private final String disabled = "disabled";
+	private final Pattern modeM = Pattern.compile("^setmode ((?:\\d))$");
 
 	/**
 	 * Init sphantom
@@ -63,12 +73,12 @@ public class SPhantom implements Async, Log, Root {
 		instance = this;
 		setupIp();
 		this.security = new Security(Main.serial, Main.security);
-		PacketPhantom.registerPkts();
+		PacketRegistry.registry();
 		this.running = true;
 		this.local = local;
-		this.pinger = Executors.newSingleThreadExecutor(ThreadFactory.create("Pinger Pool - [Thrd: $d]").build(false));
-		this.peaceMaker = Executors.newSingleThreadExecutor(ThreadFactory.create("PeaceMaker Pool - [Thrd: $d]").build(false));
-		this.executor = Executors.newFixedThreadPool(70, ThreadFactory.create("Main Pool - [Thrd: $d]").build(false));
+		this.pinger = Executors.newSingleThreadExecutor(new ThreadBuilder().setName("Pinger Pool - [Thrd: %1%]").toFactory());
+		this.peaceMaker = Executors.newSingleThreadExecutor(new ThreadBuilder().setName("PeaceMaker Pool - [Thrd: %1%]").toFactory());
+		this.executor = Executors.newFixedThreadPool(70, new ThreadBuilder().setName("Main Pool - [Thrd: %1%]").toFactory());
 		this.config = new SPhantomConfig();
 		this.iphantom = new VultrConnector();
 		PhantomTrigger.init();
@@ -117,17 +127,13 @@ public class SPhantom implements Async, Log, Root {
 		} catch (IOException e) {
 			Main.printStackTrace(e);
 			print("Unable to find the Ip !");
-			try {
-				Thread.sleep(3000);
-			} catch (InterruptedException e1) {
-				Main.printStackTrace(e1);
-			}
+			Threads.uSleep(3, TimeUnit.SECONDS);
 			Main.shutDown();
 		} finally {
 			try {
 				s.close();
 			} catch (IOException e) {
-				e.printStackTrace();
+				Log.trace(e);
 			}
 		}
 	}
@@ -197,95 +203,56 @@ public class SPhantom implements Async, Log, Root {
 		return peaceMaker;
 	}
 
+	private <T, R> Case<T, R> when(Predicate<T> p, Runnable r) {
+		return Matcher.when(p, r);
+	}
+
 	public void awaitForInput() {
 		Input input = Input.getInstance();
 		while (isRunning()) {
 			print("Send Input (type help for show cmds) :");
 			print(".. >_");
-			switch (input.next()) {
-				case "help":
-				case "Help":
-					print("> shutdown [Close this Sphantom instance]");
-					print("> forcelead [This instance will become the replica leader]");
-					print("> logpkt [Enable/Disable the packet logger]");
-					print("> logProvider [Enable/Disable the overspan logger]");
-					print("> setMode <1|2|3> [Set operating mode Eco|Normal|NoLag]");
-					print("> logHB [Enable/Disable the heartBeat logger]");
-					print("> logDiv [Enable/Disable the global logger]");
-					print("> vps [Show all vps]");
-					print("> create_server");
-					break;
-				case "create_srv":
-				case "create_server":
-					try {
-						PhantomTui.commandServ();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					break;
-				case "loghb":
-				case "logHB":
-					this.logHeart = !this.logHeart;
-					print("HeartBeat logger " + (this.logHeart ? "enabled" : "disabled") + " !");
-					break;
-				case "vps":
-					print("Vps registered : ");
-					Core.getInstance().getVps().values().forEach(v -> print(v.toString() + "\n"));
-					break;
-				case "logdiv":
-				case "logDiv":
-					this.logDiv = !this.logDiv;
-					print("Diver logger " + (this.logDiv ? "enabled" : "disabled") + " !");
-					break;
-				case "exit":
-				case "shutdown":
-					Main.shutDown();
-					break;
-				case "forcelead":
-					Heart.getInstance().takeLead();
-					break;
-				case "logpkt":
-					this.logPkt = !this.logPkt;
-					print("Packet logger " + (this.logPkt ? "enabled" : "disabled") + " !");
-					break;
-				case "logprovider":
-				case "logProvider":
-					this.logprovider = !this.logprovider;
-					print("ServerProvider logger " + (this.logprovider ? "enabled" : "disabled") + " !");
-					break;
-				case "setmode1": // olalala aucun parsing, pabo dutou !
-				case "setMode1":
-					if (Core.getInstance().getMode() == OperatingMode.Eco) {
-						print("Eco mode already enabled !");
-						break;
-					}
-					Core.getInstance().setMode(OperatingMode.Eco, false);
-					print("Eco mode enabled");
-					break;
-				case "setmode2":
-				case "setMode2":
-					if (Core.getInstance().getMode() == OperatingMode.Normal) {
-						print("Normal mode already enabled !");
-						break;
-					}
-					Core.getInstance().setMode(OperatingMode.Normal, false);
-					print("Normal mode enabled");
-					break;
-				case "setmode3":
-				case "setMode3":
-					if (Core.getInstance().getMode() == OperatingMode.NoLag) {
-						print("NoLag mode already enabled !");
-						break;
-					}
-					Core.getInstance().setMode(OperatingMode.NoLag, false);
-					print("NoLag mode enabled");
-					break;
-				default:
-					print("Unknow command!");
-					break;
-			}
+			Matcher.match(input.next(), when("help"::equalsIgnoreCase, () -> {
+				print("> shutdown [Close this Sphantom instance]");
+				print("> forcelead [This instance will become the replica leader]");
+				print("> logpkt [Enable/Disable the packet logger]");
+				print("> logProvider [Enable/Disable the overspan logger]");
+				print("> setMode <1|2|3> [Set operating mode Eco|Normal|NoLag]");
+				print("> logHB [Enable/Disable the heartBeat logger]");
+				print("> logDiv [Enable/Disable the global logger]");
+				print("> vps [Show all vps]");
+				print("> create_server");
+			}), when("loghb"::equalsIgnoreCase, () -> {
+				this.logHeart = !this.logHeart;
+				print("HeartBeat logger " + (this.logHeart ? enabled : disabled) + " !");
+			}), when("vps"::equalsIgnoreCase, () -> {
+				print("Vps registered : ");
+				Core.getInstance().getVps().values().forEach(v -> print(v.toString() + "\n"));
+			}), when("logdiv"::equalsIgnoreCase, () -> {
+				this.logDiv = !this.logDiv;
+				print("Diver logger " + (this.logDiv ? enabled : disabled) + " !");
+			}), when("exit"::equalsIgnoreCase, Main::shutDown), when("forcelead"::equalsIgnoreCase, Heart.getInstance()::takeLead), when("logpkt"::equalsIgnoreCase, () -> {
+				this.logPkt = !this.logPkt;
+				print("Packet logger " + (this.logPkt ? enabled : disabled) + " !");
+			}), when("logprovider"::equalsIgnoreCase, () -> {
+				this.logprovider = !this.logprovider;
+				print("ServerProvider logger " + (this.logprovider ? enabled : disabled) + " !");
+			}), when(a -> {
+				java.util.regex.Matcher m = modeM.matcher(a.toLowerCase());
+				if (m.matches()) {
+					m.start();
+					updateMode(Integer.parseInt(m.group(1)));
+				}
+				return false;
+			}, () -> {}), Matcher.def(() -> print("Unknow command!")));
 		}
 
+	}
+
+	private void updateMode(int var) {
+		OperatingMode m = var == 1 ? OperatingMode.Eco : var == 2 ? OperatingMode.NoLag : OperatingMode.NoLag;
+		if (Core.getInstance().getMode() == m) Log.out(m.name() + " mode is already enabled");
+		else Core.getInstance().setMode(OperatingMode.NoLag, false);
 	}
 
 	public void stackTrace(int maxline) {

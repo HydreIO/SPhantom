@@ -19,11 +19,30 @@ import sceat.domain.minecraft.Grades;
 import sceat.domain.minecraft.RessourcePack;
 import sceat.domain.minecraft.Statut;
 import sceat.domain.network.Core;
-import sceat.domain.protocol.RoutingKey;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
 import sceat.domain.utils.ServerLabel;
+import fr.aresrpg.sdk.protocol.RoutingKey;
 
 public class Server implements ServerApi, IRegistrable<Server> {
+
+	private String label;
+	private String vpsLabel;
+	private ServerType type;
+	private int maxPlayers;
+	private Statut status;
+	private RessourcePack pack;
+	private Map<Grades, Set<UUID>> players = new HashMap<Grades, Set<UUID>>();
+	private InetAddress ipadress;
+	private long timeout;
+
+	public Server(String label, ServerType type, Statut state, int maxplayer, InetAddress ip, RessourcePack pack) {
+		this.label = label;
+		this.type = type;
+		this.maxPlayers = maxplayer;
+		this.status = state;
+		this.pack = pack;
+		this.ipadress = ip;
+	}
 
 	/**
 	 * Au moment ou un packet server arrive c'est la qu'on synchronise les joueurs
@@ -63,25 +82,6 @@ public class Server implements ServerApi, IRegistrable<Server> {
 		return new Server(ServerLabel.newLabel(type), type, Statut.CREATING, maxPlayers, ip, pack);
 	}
 
-	private String label;
-	private String vpsLabel;
-	private ServerType type;
-	private int maxPlayers;
-	private Statut status;
-	private RessourcePack pack;
-	private Map<Grades, Set<UUID>> players = new HashMap<Grades, Set<UUID>>();
-	private InetAddress ipadress;
-	private long timeout;
-
-	public Server(String label, ServerType type, Statut state, int maxplayer, InetAddress ip, RessourcePack pack) {
-		this.label = label;
-		this.type = type;
-		this.maxPlayers = maxplayer;
-		this.status = state;
-		this.pack = pack;
-		this.ipadress = ip;
-	}
-
 	public Server setVpsLabel(String label) {
 		this.vpsLabel = label;
 		return this;
@@ -91,10 +91,12 @@ public class Server implements ServerApi, IRegistrable<Server> {
 		return timeout;
 	}
 
+	@Override
 	public String getLastTimeout() {
 		return LocalDateTime.ofInstant(Instant.ofEpochMilli(getTimeout()), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("dd/MM HH:mm"));
 	}
 
+	@Override
 	public String getVpsLabel() {
 		return vpsLabel;
 	}
@@ -137,26 +139,32 @@ public class Server implements ServerApi, IRegistrable<Server> {
 		return this;
 	}
 
+	@Override
 	public String getLabel() {
 		return label;
 	}
 
+	@Override
 	public InetAddress getIpadress() {
 		return ipadress;
 	}
 
+	@Override
 	public ServerType getType() {
 		return type;
 	}
 
+	@Override
 	public int getMaxPlayers() {
 		return maxPlayers;
 	}
 
+	@Override
 	public Statut getStatus() {
 		return status;
 	}
 
+	@Override
 	public RessourcePack getPack() {
 		return pack;
 	}
@@ -169,10 +177,12 @@ public class Server implements ServerApi, IRegistrable<Server> {
 		return players;
 	}
 
+	@Override
 	public int countPlayers() {
 		return getPlayersMap().entrySet().stream().mapToInt(e -> e.getValue().size()).reduce((a, b) -> a + b).getAsInt();
 	}
 
+	@Override
 	public Set<UUID> getPlayers() {
 		return getPlayersMap().values().stream().reduce((t, u) -> {
 			t.addAll(u);
@@ -216,6 +226,7 @@ public class Server implements ServerApi, IRegistrable<Server> {
 		public RoutingKey getKey() {
 			return key;
 		}
+
 	}
 
 	@Override

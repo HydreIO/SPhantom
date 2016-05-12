@@ -1,6 +1,7 @@
 package sceat.domain.protocol.packets;
 
 import fr.aresrpg.sdk.protocol.MessagesType;
+import fr.aresrpg.sdk.protocol.PacketPhantom;
 
 public class PacketPhantomBanned extends PacketPhantom {
 
@@ -17,6 +18,11 @@ public class PacketPhantomBanned extends PacketPhantom {
 
 	@Override
 	public void handleData(MessagesType type) {
+	}
+
+	@Override
+	public void send() {
+		throwCantSend("PacketPhantomBanned");
 	}
 
 }
