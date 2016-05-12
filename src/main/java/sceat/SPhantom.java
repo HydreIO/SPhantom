@@ -18,7 +18,6 @@ import sceat.api.PhantomApi.VpsApi;
 import sceat.domain.Heart;
 import sceat.domain.Manager;
 import sceat.domain.common.IPhantom;
-import sceat.domain.common.system.Root;
 import sceat.domain.config.SPhantomConfig;
 import sceat.domain.network.Core;
 import sceat.domain.network.Core.OperatingMode;
@@ -36,12 +35,15 @@ import fr.aresrpg.commons.concurrent.ThreadBuilder;
 import fr.aresrpg.commons.concurrent.Threads;
 import fr.aresrpg.commons.condition.match.Matcher;
 import fr.aresrpg.commons.condition.match.Matcher.Case;
+import fr.aresrpg.sdk.Weed;
 import fr.aresrpg.sdk.concurrent.Async;
+import fr.aresrpg.sdk.lang.BaseLang;
 import fr.aresrpg.sdk.protocol.PacketPhantom;
 import fr.aresrpg.sdk.protocol.Security;
 import fr.aresrpg.sdk.system.Log;
+import fr.aresrpg.sdk.system.Root;
 
-public class SPhantom implements Async, Log, Root {
+public class SPhantom implements Async, Log {
 
 	private static SPhantom instance;
 	private ExecutorService executor;
@@ -71,6 +73,28 @@ public class SPhantom implements Async, Log, Root {
 	 */
 	public SPhantom(Boolean local) { // don't change the implementation order !
 		instance = this;
+		Weed.init(new Root() {
+
+			@Override
+			public Log getLog() {
+				return getInstance();
+			}
+
+			@Override
+			public BaseLang getLang() {
+				return null;
+			}
+
+			@Override
+			public Async getAsync() {
+				return getInstance();
+			}
+
+			@Override
+			public void exit() {
+				Main.shutDown();
+			}
+		});
 		setupIp();
 		this.security = new Security(Main.serial, Main.security);
 		PacketRegistry.registry();
@@ -316,11 +340,6 @@ public class SPhantom implements Async, Log, Root {
 	@Override
 	public <T> CompletableFuture<T> supply(Supplier<T> t) {
 		return CompletableFuture.<T> supplyAsync(t, getExecutor());
-	}
-
-	@Override
-	public void exit() {
-		Main.shutDown();
 	}
 
 }
