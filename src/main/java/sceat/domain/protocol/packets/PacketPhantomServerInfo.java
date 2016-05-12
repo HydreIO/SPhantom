@@ -20,6 +20,8 @@ import fr.aresrpg.commons.util.collection.HashSet;
 import fr.aresrpg.commons.util.collection.Set;
 import fr.aresrpg.commons.util.map.EnumHashMap;
 import fr.aresrpg.commons.util.map.EnumMap;
+import fr.aresrpg.commons.util.map.HashMap;
+import fr.aresrpg.commons.util.map.Map;
 import fr.aresrpg.sdk.protocol.MessagesType;
 import fr.aresrpg.sdk.protocol.PacketPhantom;
 import fr.aresrpg.sdk.system.Log;
@@ -47,6 +49,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 	}
 
 	public PacketPhantomServerInfo() {
+		// deserial
 	}
 
 	@Override
@@ -72,6 +75,12 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		if (players.get(Grades.ADMIN) == null) Arrays.stream(Grades.values()).forEach(g -> players.put(g, New.set()));
 		this.state = Statut.valueOf(readString());
 		this.fromSymbiote = readBoolean();
+	}
+
+	public Map<UUID, String> getPlayersMap() {
+		HashMap<UUID, String> map = new HashMap<>();
+		getPlayers().forEach(p -> map.put(p, getLabel()));
+		return map;
 	}
 
 	@Override
@@ -118,7 +127,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		m.getServersByLabel().put(getLabel(), srvf);
 		Core.getInstance().getServersByType().get(getType()).add(srvf);
 		Set<UUID> players = getPlayers();
-		m.getPlayersOnNetwork().addAll(players);
+		m.getPlayersOnNetwork().putAll(getPlayersMap());
 		m.getPlayersPerGrade().entrySet().forEach(e -> e.getValue().addAll(getPlayersPerGrade().get(e.getKey())));
 		Core.getInstance().getPlayersByType().get(getType()).addAll(players);
 		PacketPhantomServerInfo.fromServer(srvf).send();

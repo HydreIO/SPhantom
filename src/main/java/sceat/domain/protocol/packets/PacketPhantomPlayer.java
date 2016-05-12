@@ -5,7 +5,6 @@ import java.util.UUID;
 import sceat.domain.Manager;
 import sceat.domain.common.mq.Broker;
 import sceat.domain.minecraft.Grades;
-import sceat.domain.network.Core;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.protocol.PacketSender;
@@ -64,19 +63,18 @@ public class PacketPhantomPlayer extends PacketPhantom {
 		Manager m = Manager.getInstance();
 		switch (action) {
 			case CONNECT:
-				m.getPlayersOnNetwork().add(getPlayer());
+				m.getPlayersOnNetwork().put(getPlayer(), serverLabelNew);
 				m.getPlayersPerGrade().get(getGrade()).add(getPlayer());
 				getServerNew().getPlayersMap().get(getGrade()).add(getPlayer());
-				Core.getInstance().getPlayersByType().get(getServerTypeNew()).add(getPlayer());
 				break;
 			case DISCONNECT:
 				m.getPlayersOnNetwork().safeRemove(getPlayer());
 				m.getPlayersPerGrade().get(getGrade()).safeRemove(getPlayer());
-				getServerLast().getPlayers().safeRemove(getPlayer());
-				Core.getInstance().getPlayersByType().get(getServerLast()).safeRemove(getPlayer());
+				getServerLast().getPlayers().removeIf(e -> e == getPlayer());
 				break;
 			case SERVER_SWITCH:
-				getServerLast().getPlayersMap().get(getGrade()).removeIf(e -> e == getPlayer());
+				m.getPlayersOnNetwork().put(getPlayer(), serverLabelNew);
+				getServerLast().getPlayersMap().get(getGrade()).safeRemove(getPlayer());
 				getServerNew().getPlayersMap().get(getGrade()).add(getPlayer());
 				break;
 			default:
