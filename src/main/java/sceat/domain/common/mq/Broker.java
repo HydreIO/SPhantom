@@ -29,7 +29,7 @@ public interface Broker {
 	void reduceServer(PacketPhantomReduceServer pkt);
 
 	void killProcess(PacketPhantomKillProcess pkt);
-	
+
 	void close();
 
 	public static Broker get() {

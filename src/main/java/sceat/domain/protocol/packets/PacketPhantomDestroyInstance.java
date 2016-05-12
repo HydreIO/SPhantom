@@ -1,7 +1,7 @@
 package sceat.domain.protocol.packets;
 
-import java.util.HashSet;
-import java.util.Set;
+import fr.aresrpg.commons.util.collection.HashSet;
+import fr.aresrpg.commons.util.collection.Set;
 
 import sceat.domain.common.mq.Broker;
 import sceat.domain.network.Core;

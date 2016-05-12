@@ -6,12 +6,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
 
 import sceat.Main;
 import sceat.SPhantom;
 import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.ressources.Constant;
+import fr.aresrpg.commons.util.map.EnumHashMap;
 import fr.aresrpg.sdk.system.Log;
 
 public class SPhantomConfig {
@@ -25,7 +25,7 @@ public class SPhantomConfig {
 	private String vultrKey = "key";
 	private int maxInstance = 10;
 	private List<VpsConfigObject> servers = new ArrayList<>();
-	private Map<ServerType, McServerConfigObject> instances = new EnumMap<>(ServerType.class);
+	private EnumMap<ServerType, McServerConfigObject> instances = new EnumHashMap<>(ServerType.class);
 	private final String path = "/SPhantom.yml";
 
 	public static boolean isReloading = false; // NOSONAR
@@ -146,7 +146,7 @@ public class SPhantomConfig {
 		return servers;
 	}
 
-	public Map<ServerType, McServerConfigObject> getInstances() {
+	public EnumMap<ServerType, McServerConfigObject> getInstances() {
 		return instances;
 	}
 

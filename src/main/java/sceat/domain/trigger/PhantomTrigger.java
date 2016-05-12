@@ -1,7 +1,7 @@
 package sceat.domain.trigger;
 
-import java.util.HashSet;
-import java.util.Set;
+import fr.aresrpg.commons.util.collection.HashSet;
+import fr.aresrpg.commons.util.collection.Set;
 
 import sceat.api.PhantomApi.VpsApi;
 import sceat.domain.network.Core.OperatingMode;

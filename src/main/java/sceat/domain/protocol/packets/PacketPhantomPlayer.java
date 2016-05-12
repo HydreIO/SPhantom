@@ -70,10 +70,10 @@ public class PacketPhantomPlayer extends PacketPhantom {
 				Core.getInstance().getPlayersByType().get(getServerTypeNew()).add(getPlayer());
 				break;
 			case DISCONNECT:
-				m.getPlayersOnNetwork().remove(getPlayer());
-				m.getPlayersPerGrade().get(getGrade()).remove(getPlayer());
-				getServerLast().getPlayers().remove(getPlayer());
-				Core.getInstance().getPlayersByType().get(getServerLast()).remove(getPlayer());
+				m.getPlayersOnNetwork().safeRemove(getPlayer());
+				m.getPlayersPerGrade().get(getGrade()).safeRemove(getPlayer());
+				getServerLast().getPlayers().safeRemove(getPlayer());
+				Core.getInstance().getPlayersByType().get(getServerLast()).safeRemove(getPlayer());
 				break;
 			case SERVER_SWITCH:
 				getServerLast().getPlayersMap().get(getGrade()).removeIf(e -> e == getPlayer());

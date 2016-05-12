@@ -46,9 +46,9 @@ public class PacketPhantomGradeUpdate extends PacketPhantom {
 	public void handleData(MessagesType tp) {
 		if (cameFromLocal()) return;
 		Log.packet(this, true);
-		Manager.getInstance().getPlayersPerGrade().get(lastGrade).remove(getPlayer());
+		Manager.getInstance().getPlayersPerGrade().get(lastGrade).safeRemove(getPlayer());
 		Manager.getInstance().getPlayersPerGrade().get(newGrade).add(player);
-		getServer().getPlayersMap().get(lastGrade).remove(getPlayer());
+		getServer().getPlayersMap().get(lastGrade).safeRemove(getPlayer());
 		getServer().getPlayersMap().get(newGrade).add(player);
 	}
 

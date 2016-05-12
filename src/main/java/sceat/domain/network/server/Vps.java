@@ -6,10 +6,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import sceat.SPhantom;
 import sceat.api.PhantomApi.ServerApi;
@@ -21,6 +18,8 @@ import sceat.domain.minecraft.Statut;
 import sceat.domain.network.Core;
 import sceat.domain.network.ServerProvider;
 import sceat.domain.network.server.Server.ServerType;
+import fr.aresrpg.commons.util.collection.HashSet;
+import fr.aresrpg.commons.util.collection.Set;
 
 public class Vps implements Comparable<Vps>, VpsApi, ICrash, IRegistrable<Vps> {
 
@@ -157,7 +156,7 @@ public class Vps implements Comparable<Vps>, VpsApi, ICrash, IRegistrable<Vps> {
 	}
 
 	public Set<ServerApi> getAllServers() {
-		return getServers().stream().map(s -> s).collect(Collectors.toSet());
+		return getServers().stream().map(s -> s).collect(fr.aresrpg.commons.util.stream.Collectors.toSet());
 	}
 
 	public long getCreatedMilli() {

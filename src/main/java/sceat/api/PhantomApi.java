@@ -1,10 +1,7 @@
 package sceat.api;
 
 import java.net.InetAddress;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import sceat.SPhantom;
 import sceat.domain.Manager;
@@ -17,6 +14,9 @@ import sceat.domain.network.ServerProvider.Defqon;
 import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.network.server.Vps;
 import sceat.domain.network.server.Vps.VpsState;
+import fr.aresrpg.commons.util.collection.Set;
+import fr.aresrpg.commons.util.map.Map;
+import fr.aresrpg.commons.util.stream.Collectors;
 
 public interface PhantomApi {
 

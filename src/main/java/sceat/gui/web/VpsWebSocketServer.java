@@ -1,6 +1,6 @@
 package sceat.gui.web;
 
-import java.util.Map;
+import fr.aresrpg.commons.util.map.Map;
 
 import org.glassfish.grizzly.websockets.Broadcaster;
 import org.glassfish.grizzly.websockets.OptimizedBroadcaster;

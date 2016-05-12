@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.HashMap;
-import java.util.Map;
+import fr.aresrpg.commons.util.map.HashMap;
+import fr.aresrpg.commons.util.map.Map;
 
 public abstract class ConfigurationProvider {
 

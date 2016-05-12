@@ -2,22 +2,22 @@ package sceat.domain;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import fr.aresrpg.commons.util.collection.HashSet;
+import fr.aresrpg.commons.util.collection.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 import sceat.domain.minecraft.Grades;
 import sceat.domain.network.server.Server;
+import fr.aresrpg.commons.concurrent.ConcurrentHashMap;
+import fr.aresrpg.commons.concurrent.ConcurrentMap;
+import fr.aresrpg.commons.concurrent.ConcurrentSet;
 
 public class Manager {
 
 	private static Manager instance = new Manager();
 
 	private ConcurrentHashMap<String, Server> serversByLabel = new ConcurrentHashMap<>();
-	private CopyOnWriteArraySet<UUID> playersOnNetwork = new CopyOnWriteArraySet<>();
+	private ConcurrentSet<UUID> playersOnNetwork = new ConcurrentSet<>();
 	private ConcurrentHashMap<Grades, Set<UUID>> playersPerGrade = new ConcurrentHashMap<>();
 
 	private Manager() {
@@ -40,7 +40,7 @@ public class Manager {
 		return getPlayersOnNetwork().size();
 	}
 
-	public Map<String, Server> getServersByLabel() {
+	public ConcurrentMap<String, Server> getServersByLabel() {
 		return serversByLabel;
 	}
 
@@ -48,7 +48,7 @@ public class Manager {
 		return playersOnNetwork;
 	}
 
-	public Map<Grades, Set<UUID>> getPlayersPerGrade() {
+	public ConcurrentMap<Grades, Set<UUID>> getPlayersPerGrade() {
 		return playersPerGrade;
 	}
 }

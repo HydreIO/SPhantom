@@ -2,8 +2,8 @@ package sceat.domain.protocol.packets;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.HashSet;
-import java.util.concurrent.ConcurrentHashMap;
+import fr.aresrpg.commons.util.collection.HashSet;
+import fr.aresrpg.commons.concurrent.ConcurrentHashMap;
 
 import sceat.Main;
 import sceat.domain.network.Core;

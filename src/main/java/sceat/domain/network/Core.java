@@ -5,14 +5,10 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Optional;
 import java.util.Queue;
-import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import sceat.Main;
 import sceat.SPhantom;
@@ -28,13 +24,16 @@ import sceat.domain.network.ServerProvider.Defqon;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.network.server.Vps;
-import sceat.domain.protocol.PacketSender;
 import sceat.domain.protocol.packets.PacketPhantomBootServer;
 import sceat.domain.protocol.packets.PacketPhantomDestroyInstance;
 import sceat.domain.protocol.packets.PacketPhantomReduceServer;
 import sceat.domain.trigger.PhantomTrigger;
 import sceat.domain.utils.New;
 import sceat.domain.utils.ServerLabel;
+import fr.aresrpg.commons.concurrent.ConcurrentHashMap;
+import fr.aresrpg.commons.concurrent.ConcurrentMap;
+import fr.aresrpg.commons.util.collection.HashSet;
+import fr.aresrpg.commons.util.collection.Set;
 import fr.aresrpg.commons.util.schedule.Schedule;
 import fr.aresrpg.commons.util.schedule.Scheduled;
 import fr.aresrpg.commons.util.schedule.Scheduler;
@@ -161,7 +160,7 @@ public class Core implements Scheduled {
 							consume) -> (predicate.test(vz, sr) && consume.accept(vz, sr)), (vt, st) -> vt.canAccept(st), BoolBiConsumer.<Vps, Server> of((uv, ud) -> {
 						ud.setStatus(Statut.REDUCTION);
 						Log.out("balk() [DEFRAGMENTATION SEQUENCING] | Reduction on " + ud.getLabel() + " |Actual Vps : " + ud.getVpsLabel());
-						PacketSender.getInstance().reduceServer(new PacketPhantomReduceServer(ud.getLabel(), uv.getLabel()));
+						new PacketPhantomReduceServer(ud.getLabel(), uv.getLabel()).send();
 						Core.getInstance().deployServerOnVps(ud.getType(), uv, true);
 						return true;
 					}));
@@ -199,7 +198,7 @@ public class Core implements Scheduled {
 		return vps;
 	}
 
-	public ConcurrentHashMap<ServerType, Set<Server>> getServersByType() { // NOSONAR
+	public ConcurrentMap<ServerType, Set<Server>> getServersByType() { // NOSONAR
 		return serversByType;
 	}
 
@@ -299,7 +298,7 @@ public class Core implements Scheduled {
 							torm.add(k);
 						}
 					});
-					PacketSender.getInstance().triggerDestroyInstance(new PacketPhantomDestroyInstance(torm));
+					new PacketPhantomDestroyInstance(torm).send();
 					break;
 			}
 
@@ -348,7 +347,7 @@ public class Core implements Scheduled {
 				serversByType.get(type).add(srv);
 				Manager.getInstance().getServersByLabel().put(srv.getLabel(), srv);
 				vp.getServers().add(srv);
-				PacketSender.getInstance().bootServer(new PacketPhantomBootServer(srv));
+				new PacketPhantomBootServer(srv).send();
 			}
 		}
 	}
@@ -368,7 +367,7 @@ public class Core implements Scheduled {
 			serversByType.get(type).add(srv);
 			Manager.getInstance().getServersByLabel().put(srv.getLabel(), srv);
 			vp.getServers().add(srv);
-			PacketSender.getInstance().bootServer(new PacketPhantomBootServer(srv));
+			new PacketPhantomBootServer(srv).send();
 		}
 		return set;
 	}
@@ -387,7 +386,7 @@ public class Core implements Scheduled {
 		Manager.getInstance().getServersByLabel().put(srv.getLabel(), srv);
 		v.getServers().add(srv);
 		srv.setVpsLabel(v.getLabel());
-		PacketSender.getInstance().bootServer(new PacketPhantomBootServer(srv));
+		new PacketPhantomBootServer(srv).send();
 	}
 
 	/**
@@ -403,7 +402,7 @@ public class Core implements Scheduled {
 		Optional<Server> s = getServersByType().get(type).stream().filter(sr -> sr.getStatus() == Statut.OPEN).min(Comparator.comparingInt(Server::countPlayers));
 		if (!s.isPresent()) return;
 		Server srv = s.get().setStatus(Statut.REDUCTION);
-		PacketSender.getInstance().reduceServer(new PacketPhantomReduceServer(srv.getLabel(), srv.getVpsLabel()));
+		new PacketPhantomReduceServer(srv.getLabel(), srv.getVpsLabel()).send();
 	}
 
 	private void reduceProxy() {

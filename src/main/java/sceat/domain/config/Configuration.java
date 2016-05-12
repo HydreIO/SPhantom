@@ -1,12 +1,13 @@
 package sceat.domain.config;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
+
+import fr.aresrpg.commons.util.collection.LinkedHashSet;
+import fr.aresrpg.commons.util.collection.Set;
+import fr.aresrpg.commons.util.map.LinkedHashMap;
+import fr.aresrpg.commons.util.map.Map;
 
 public final class Configuration {
 
@@ -74,7 +75,7 @@ public final class Configuration {
 		Configuration section = getSectionFor(path);
 		if (section == this) {
 			if (value == null) {
-				self.remove(path);
+				self.safeRemove(path);
 			} else {
 				self.put(path, value);
 			}
@@ -87,7 +88,7 @@ public final class Configuration {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Configuration getSection(String path) {
 		Object def = getDefault(path);
-		return new Configuration((Map) (get(path, (def instanceof Map) ? def : Collections.EMPTY_MAP)), (defaults == null) ? null : defaults.getSection(path));
+		return new Configuration((Map) (get(path, (def instanceof Map) ? def : Collections.emptyMap())), (defaults == null) ? null : defaults.getSection(path));
 	}
 
 	/**
@@ -95,7 +96,7 @@ public final class Configuration {
 	 *
 	 * @return top level keys for this section
 	 */
-	public Collection<String> getKeys() {
+	public Set<String> getKeys() {
 		return new LinkedHashSet<>(self.keySet());
 	}
 

@@ -3,10 +3,7 @@ package sceat.infra.connector.general;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import sceat.Main;
 import sceat.SPhantom;
@@ -24,6 +21,9 @@ import xyz.deltaevo.jvultr.api.JVultrServer;
 import xyz.deltaevo.jvultr.exception.JVultrException;
 import xyz.deltaevo.jvultr.utils.BiValue;
 import xyz.deltaevo.jvultr.utils.JVultrUtil;
+import fr.aresrpg.commons.concurrent.ConcurrentHashMap;
+import fr.aresrpg.commons.util.map.HashMap;
+import fr.aresrpg.commons.util.map.Map;
 import fr.aresrpg.sdk.system.Log;
 
 public class VultrConnector implements IPhantom {
@@ -109,7 +109,7 @@ public class VultrConnector implements IPhantom {
 					}
 					Main.printStackTrace(new IllegalStateException("VPS not found " + label));
 					return;
-				} else servers.remove(label);
+				} else servers.safeRemove(label);
 				api.destroyServer(id); // moment ou sa peut fail, on aura pas besoin de vp.register si sa fail car le vp.unregister est call si tout fonctionne
 				SPhantom.getInstance().getExecutor().execute(() -> {
 					try {

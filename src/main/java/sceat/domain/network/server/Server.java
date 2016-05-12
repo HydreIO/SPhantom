@@ -6,10 +6,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import sceat.api.PhantomApi.ServerApi;
@@ -21,6 +17,11 @@ import sceat.domain.minecraft.Statut;
 import sceat.domain.network.Core;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
 import sceat.domain.utils.ServerLabel;
+import fr.aresrpg.commons.concurrent.ConcurrentMap;
+import fr.aresrpg.commons.util.collection.HashSet;
+import fr.aresrpg.commons.util.collection.Set;
+import fr.aresrpg.commons.util.map.EnumHashMap;
+import fr.aresrpg.commons.util.map.EnumMap;
 import fr.aresrpg.sdk.protocol.RoutingKey;
 
 public class Server implements ServerApi, IRegistrable<Server> {
@@ -31,7 +32,7 @@ public class Server implements ServerApi, IRegistrable<Server> {
 	private int maxPlayers;
 	private Statut status;
 	private RessourcePack pack;
-	private Map<Grades, Set<UUID>> players = new HashMap<Grades, Set<UUID>>();
+	private EnumMap<Grades, Set<UUID>> players = new EnumHashMap<>(Grades.class);
 	private InetAddress ipadress;
 	private long timeout;
 
@@ -58,7 +59,7 @@ public class Server implements ServerApi, IRegistrable<Server> {
 	public static Server fromPacket(PacketPhantomServerInfo pkt, boolean canBeNull) {
 		Server sr = null; // je ne peut pas use la methode getOrDefault de la concurrentHashmap car je doit modif le serveur contenu dans la map :(
 		boolean neww = false;
-		Map<String, Server> sbl = Manager.getInstance().getServersByLabel();
+		ConcurrentMap<String, Server> sbl = Manager.getInstance().getServersByLabel();
 		if (sbl.containsKey(pkt.getLabel())) {
 			sr = sbl.get(pkt.getLabel());
 			if (sr.getStatus() != Statut.REDUCTION) sr.setStatus(pkt.getState()); // si on connait le serv et qu'il est en reduction alors on ne change pas le statut
@@ -129,7 +130,7 @@ public class Server implements ServerApi, IRegistrable<Server> {
 		return this;
 	}
 
-	public Server setPlayers(Map<Grades, Set<UUID>> players) {
+	public Server setPlayers(EnumMap<Grades, Set<UUID>> players) {
 		this.players = players;
 		return this;
 	}
@@ -173,7 +174,7 @@ public class Server implements ServerApi, IRegistrable<Server> {
 		return getPlayersMap().get(gr);
 	}
 
-	public Map<Grades, Set<UUID>> getPlayersMap() {
+	public EnumMap<Grades, Set<UUID>> getPlayersMap() {
 		return players;
 	}
 
@@ -187,7 +188,7 @@ public class Server implements ServerApi, IRegistrable<Server> {
 		return getPlayersMap().values().stream().reduce((t, u) -> {
 			t.addAll(u);
 			return t;
-		}).orElseGet(Collections::emptySet);
+		}).orElseGet(HashSet::new);
 	}
 
 	public Vps getVps() {
@@ -243,8 +244,8 @@ public class Server implements ServerApi, IRegistrable<Server> {
 
 	@Override
 	public Server unregister() {
-		Manager.getInstance().getServersByLabel().remove(getLabel());
-		Core.getInstance().getServersByType().get(getType()).remove(this);
+		Manager.getInstance().getServersByLabel().safeRemove(getLabel());
+		Core.getInstance().getServersByType().get(getType()).safeRemove(this);
 		return this;
 	}
 

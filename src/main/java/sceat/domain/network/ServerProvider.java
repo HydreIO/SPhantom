@@ -1,18 +1,18 @@
 package sceat.domain.network;
 
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import sceat.SPhantom;
 import sceat.domain.config.SPhantomConfig;
 import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.network.server.Vps;
 import sceat.domain.trigger.PhantomTrigger;
+import fr.aresrpg.commons.concurrent.ConcurrentHashMap;
+import fr.aresrpg.commons.concurrent.ConcurrentMap;
+import fr.aresrpg.commons.util.collection.HashSet;
+import fr.aresrpg.commons.util.collection.Set;
 import fr.aresrpg.sdk.system.Log;
 
 @SuppressWarnings("unchecked")
@@ -83,11 +83,11 @@ public class ServerProvider {
 		return instance;
 	}
 
-	public Map<ServerType, Vps> getOrdered() {
+	public ConcurrentMap<ServerType, Vps> getOrdered() {
 		return ordered;
 	}
 
-	public Map<String, Vps> getConfigInstances() {
+	public ConcurrentMap<String, Vps> getConfigInstances() {
 		return configInstances;
 	}
 
