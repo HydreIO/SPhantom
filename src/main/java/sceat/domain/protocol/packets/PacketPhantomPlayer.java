@@ -64,12 +64,10 @@ public class PacketPhantomPlayer extends PacketPhantom {
 		switch (action) {
 			case CONNECT:
 				m.getPlayersOnNetwork().put(getPlayer(), serverLabelNew);
-				m.getPlayersPerGrade().get(getGrade()).add(getPlayer());
 				getServerNew().getPlayersMap().get(getGrade()).add(getPlayer());
 				break;
 			case DISCONNECT:
 				m.getPlayersOnNetwork().safeRemove(getPlayer());
-				m.getPlayersPerGrade().get(getGrade()).safeRemove(getPlayer());
 				getServerLast().getPlayers().removeIf(e -> e == getPlayer());
 				break;
 			case SERVER_SWITCH:
@@ -104,12 +102,12 @@ public class PacketPhantomPlayer extends PacketPhantom {
 	 */
 	public Server getServerLast() {
 		if (getAction() == PlayerAction.CONNECT) throw new NullPointerException("Impossible de récuperer le serveurLast car le joueur vient de se connecter sur le network !");
-		return Manager.getInstance().getServersByLabel().get(this.serverLabelLast);
+		return Manager.getInstance().getServersByLabel().safeGet(this.serverLabelLast);
 	}
 
 	public Server getServerNew() {
 		if (getAction() == PlayerAction.DISCONNECT) throw new NullPointerException("Impossible de récuperer le serveurNew car le joueur vient de se déconnecter du network !");
-		return Manager.getInstance().getServersByLabel().get(this.serverLabelNew);
+		return Manager.getInstance().getServersByLabel().safeGet(this.serverLabelNew);
 	}
 
 	public UUID getPlayer() {

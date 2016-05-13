@@ -220,7 +220,7 @@ public class Core implements Scheduled {
 	}
 
 	public int countPlayers(ServerType type) {
-		return getPlayersByType().get(type).size();
+		return getPlayersByType().safeGet(type).size();
 	}
 
 	public OperatingMode getMode() {
@@ -399,7 +399,7 @@ public class Core implements Scheduled {
 			reduceProxy();
 			return;
 		}
-		Optional<Server> s = getServersByType().get(type).stream().filter(sr -> sr.getStatus() == Statut.OPEN).min(Comparator.comparingInt(Server::countPlayers));
+		Optional<Server> s = getServersByType().safeGet(type).stream().filter(sr -> sr.getStatus() == Statut.OPEN).min(Comparator.comparingInt(Server::countPlayers));
 		if (!s.isPresent()) return;
 		Server srv = s.get().setStatus(Statut.REDUCTION);
 		new PacketPhantomReduceServer(srv.getLabel(), srv.getVpsLabel()).send();

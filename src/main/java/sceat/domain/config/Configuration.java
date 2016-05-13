@@ -34,7 +34,7 @@ public final class Configuration {
 		if (index == -1) { return this; }
 
 		String root = path.substring(0, index);
-		Object section = self.get(root);
+		Object section = self.safeGet(root);
 		if (section == null) {
 			section = new LinkedHashMap<>();
 			self.put(root, section);
@@ -55,7 +55,7 @@ public final class Configuration {
 		Configuration section = getSectionFor(path);
 		Object val;
 		if (section == this) {
-			val = self.get(path);
+			val = self.safeGet(path);
 		} else {
 			val = section.get(getChild(path), def);
 		}

@@ -96,7 +96,7 @@ public class VultrConnector implements IPhantom {
 		ConcurrentHashMap<String, Vps> vps = Core.getInstance().getVps();
 		if (!vps.containsKey(label)) Log.out("Try destroying vps instance : [" + label + "] /!\\ This instance is not registered in Sphantom or already destroyed /!\\");
 		else {
-			Integer id = servers.get(label);
+			Integer id = servers.safeGet(label);
 			try {
 				if (SPhantom.logDiv()) Log.out("Destroying instance : " + label);
 				Vps vp = vps.get(label).setState(VpsState.DESTROYING);

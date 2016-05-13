@@ -41,7 +41,7 @@ public class PacketPhantomReduceServer extends PacketPhantom {
 		if (v != null) PhantomTrigger.getAll().forEach(t -> t.handleVps(v));
 		if (cameFromLocal()) return;
 		Log.packet(this, true);
-		Manager.getInstance().getServersByLabel().get(label).setStatus(Statut.REDUCTION);
+		Manager.getInstance().getServersByLabel().safeGet(label).setStatus(Statut.REDUCTION);
 	}
 
 	@Override

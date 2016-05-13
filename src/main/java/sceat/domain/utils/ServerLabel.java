@@ -15,7 +15,7 @@ public class ServerLabel {
 
 	public static String newLabel(ServerType type) {
 		String label;
-		while (Manager.getInstance().getServersByLabel().containsKey(label = type.name() + "-" + r.nextInt(5000)))
+		while (Manager.getInstance().getServersByLabel().containsKey(label = type.name().toLowerCase() + "-" + r.nextInt(5000)))
 			;
 		return label;
 	}

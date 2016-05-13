@@ -116,7 +116,7 @@ public class ServerProvider {
 				}
 				break;
 			}
-		Vps vf = getOrdered().get(type);
+		Vps vf = getOrdered().safeGet(type);
 		if (vp == null) vp = exclude.isPresent() ? vf == exclude.get() ? null : vf : vf;
 		if (vf != null && !vf.isUpdated()) vf = null;
 		if (log) Log.out("Found vps : " + (vp == null ? "NULL :(" : vp.getLabel()));

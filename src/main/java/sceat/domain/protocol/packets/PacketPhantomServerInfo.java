@@ -108,7 +108,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 						}
 				}
 			} else curr = srv.getVps();
-			Set<Server> ss = Core.getInstance().getServersByType().get(getType());
+			Set<Server> ss = Core.getInstance().getServersByType().safeGet(getType());
 			ss.safeRemove(srv);
 			m.getServersByLabel().safeRemove(getLabel());
 			if (curr == null) {
@@ -125,11 +125,10 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		Server srvf = Server.fromPacket(this, false);
 		srvf.heartBeat();
 		m.getServersByLabel().put(getLabel(), srvf);
-		Core.getInstance().getServersByType().get(getType()).add(srvf);
+		Core.getInstance().getServersByType().safeGet(getType()).add(srvf);
 		Set<UUID> players = getPlayers();
 		m.getPlayersOnNetwork().putAll(getPlayersMap());
-		m.getPlayersPerGrade().entrySet().forEach(e -> e.getValue().addAll(getPlayersPerGrade().get(e.getKey())));
-		Core.getInstance().getPlayersByType().get(getType()).addAll(players);
+		Core.getInstance().getPlayersByType().safeGet(getType()).addAll(players);
 		PacketPhantomServerInfo.fromServer(srvf).send();
 		Vps v = Core.getInstance().getVps().getOrDefault(vpsLabel, null);
 		if (v != null) PhantomTrigger.getAll().forEach(t -> t.handleVps(v));

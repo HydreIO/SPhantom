@@ -61,7 +61,7 @@ public class Server implements ServerApi, IRegistrable<Server> {
 		boolean neww = false;
 		ConcurrentMap<String, Server> sbl = Manager.getInstance().getServersByLabel();
 		if (sbl.containsKey(pkt.getLabel())) {
-			sr = sbl.get(pkt.getLabel());
+			sr = sbl.safeGet(pkt.getLabel());
 			if (sr.getStatus() != Statut.REDUCTION) sr.setStatus(pkt.getState()); // si on connait le serv et qu'il est en reduction alors on ne change pas le statut
 			if (!pkt.isFromSymbiote()) sr.setPlayers(pkt.getPlayersPerGrade()); // sa voudra dire qu'on a reçu un packet avant d'avoir pu informer le serveur qu'il devait se reduire
 		} else {
@@ -233,7 +233,7 @@ public class Server implements ServerApi, IRegistrable<Server> {
 	@Override
 	public Server register() {
 		Manager.getInstance().getServersByLabel().put(getLabel(), this);
-		Core.getInstance().getServersByType().get(getType()).add(this);
+		Core.getInstance().getServersByType().safeGet(getType()).add(this);
 		return this;
 	}
 
@@ -245,7 +245,7 @@ public class Server implements ServerApi, IRegistrable<Server> {
 	@Override
 	public Server unregister() {
 		Manager.getInstance().getServersByLabel().safeRemove(getLabel());
-		Core.getInstance().getServersByType().get(getType()).safeRemove(this);
+		Core.getInstance().getServersByType().safeGet(getType()).safeRemove(this);
 		return this;
 	}
 

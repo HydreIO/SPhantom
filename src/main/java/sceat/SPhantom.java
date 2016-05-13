@@ -167,7 +167,7 @@ public class SPhantom implements Async, Log {
 	}
 
 	public ServerApi getServerApi(String srv) {
-		return Manager.getInstance().getServersByLabel().getOrDefault(srv, null);
+		return Manager.getInstance().getServersByLabel().safeGetOrDefault(srv, null);
 	}
 
 	public VpsApi getVpsApi(String vps) {
