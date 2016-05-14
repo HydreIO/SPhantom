@@ -18,8 +18,6 @@ import sceat.domain.compute.Sequencer.BoolBiConsumer;
 import sceat.domain.compute.Sequencer.Chainer;
 import sceat.domain.config.SPhantomConfig;
 import sceat.domain.config.SPhantomConfig.McServerConfigObject;
-import sceat.domain.minecraft.RessourcePack;
-import sceat.domain.minecraft.Statut;
 import sceat.domain.network.ServerProvider.Defqon;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Server.ServerType;
@@ -38,6 +36,8 @@ import fr.aresrpg.commons.util.schedule.Schedule;
 import fr.aresrpg.commons.util.schedule.Scheduled;
 import fr.aresrpg.commons.util.schedule.Scheduler;
 import fr.aresrpg.commons.util.schedule.TimeUnit;
+import fr.aresrpg.sdk.mc.RessourcePack;
+import fr.aresrpg.sdk.mc.Statut;
 import fr.aresrpg.sdk.system.Log;
 
 /**
@@ -329,6 +329,7 @@ public class Core implements Scheduled {
 	 * @param type
 	 */
 	public void forceDeployServer(ServerType type, int nbr) {
+		if (!checkSynchronized()) return;
 		if (type == ServerType.PROXY) Log.out("Can't deploy proxy forced !");
 		else {
 			Log.out("Deploy Server |Type_" + type + "|Nbr(" + nbr + ")");
@@ -341,7 +342,12 @@ public class Core implements Scheduled {
 					deployInstances(1);
 					break;
 				}
-				Server srv = Server.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT);
+				int port = Manager.getInstance().genPort(type);
+				if (port == -1) {
+					Log.out("[DeployForced] Can't deploy server ! All port fort the type('" + type.name() + "') are already in use");
+					return;
+				}
+				Server srv = Server.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), port, RessourcePack.RESSOURCE_PACK_DEFAULT);
 				srv.setVpsLabel(vp.getLabel());
 				Log.out("Deploying server [Label('" + srv.getLabel() + "')|State('" + srv.getStatus() + "')|MaxP(" + srv.getMaxPlayers() + ")]");
 				serversByType.get(type).add(srv);
@@ -352,7 +358,16 @@ public class Core implements Scheduled {
 		}
 	}
 
+	private boolean checkSynchronized() {
+		if (!SPhantom.isSynchronized()) {
+			Log.out("Sphantom is not synchronized yet ! server/instance deploying cancelled");
+			return false;
+		}
+		return true;
+	}
+
 	private Set<Server> deployServer(ServerType type, int nbr) {
+		if (!checkSynchronized()) return null;
 		if (type == ServerType.PROXY) return deployProxy(nbr);
 		if (SPhantom.logDiv()) Log.out("Deploy Server |Type_" + type + "|Nbr(" + nbr + ")");
 		SPhantomConfig conf = SPhantom.getInstance().getSphantomConfig();
@@ -361,7 +376,12 @@ public class Core implements Scheduled {
 		for (int i = 0; i < nbr; i++) {
 			Vps vp = ServerProvider.getInstance().getVps(type, Optional.empty());
 			if (vp == null) break;
-			Server srv = Server.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT);
+			int port = Manager.getInstance().genPort(type);
+			if (port == -1) {
+				Log.out("[DeployAuto] Can't deploy server ! All port fort the type('" + type.name() + "') are already in use");
+				break;
+			}
+			Server srv = Server.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), port, RessourcePack.RESSOURCE_PACK_DEFAULT);
 			set.add(srv);
 			srv.setVpsLabel(vp.getLabel());
 			serversByType.get(type).add(srv);
@@ -381,7 +401,12 @@ public class Core implements Scheduled {
 		McServerConfigObject obj = conf.getInstances().get(type);
 		if (fromBalk) Log.out("[DEFRAGMENTATION SEQUENCING] | Transfert on " + v.getLabel() + " |Type : " + type + "\n_______________________________________________]");
 		else if (SPhantom.logDiv()) Log.out("Deploy Server ON VPS |Type_" + type + "|Vps = " + v.getLabel());
-		Server srv = Server.fromScratch(type, obj.getMaxPlayers(), v.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT);
+		int port = Manager.getInstance().genPort(type);
+		if (port == -1) {
+			Log.out("[DeployOnVps] Can't deploy server ! All port fort the type('" + type.name() + "') are already in use");
+			return;
+		}
+		Server srv = Server.fromScratch(type, obj.getMaxPlayers(), v.getIp(), port, RessourcePack.RESSOURCE_PACK_DEFAULT);
 		serversByType.get(type).add(srv);
 		Manager.getInstance().getServersByLabel().put(srv.getLabel(), srv);
 		v.getServers().add(srv);

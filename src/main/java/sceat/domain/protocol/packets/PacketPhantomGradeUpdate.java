@@ -4,8 +4,8 @@ import java.util.UUID;
 
 import sceat.domain.Manager;
 import sceat.domain.common.mq.Broker;
-import sceat.domain.minecraft.Grades;
 import sceat.domain.network.server.Server;
+import fr.aresrpg.sdk.mc.Grades;
 import fr.aresrpg.sdk.protocol.MessagesType;
 import fr.aresrpg.sdk.protocol.PacketPhantom;
 import fr.aresrpg.sdk.system.Log;

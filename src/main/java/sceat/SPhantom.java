@@ -46,6 +46,7 @@ import fr.aresrpg.sdk.system.Root;
 public class SPhantom implements Async, Log {
 
 	private static SPhantom instance;
+	private static boolean $ynchronized = false;
 	private ExecutorService executor;
 	private ExecutorService pinger;
 	private ExecutorService peaceMaker;
@@ -105,6 +106,10 @@ public class SPhantom implements Async, Log {
 		this.executor = Executors.newFixedThreadPool(70, new ThreadBuilder().setName("Main Pool - [Thrd: %1%]").toFactory());
 		this.config = new SPhantomConfig();
 		this.iphantom = new VultrConnector();
+		CompletableFuture.runAsync(() -> {
+			Threads.uSleep(2, TimeUnit.MINUTES);
+			$ynchronized = true;
+		});
 		PhantomTrigger.init();
 		Manager.init();
 		ServerProvider.init();
@@ -114,6 +119,10 @@ public class SPhantom implements Async, Log {
 		PacketSender.init(getSphantomConfig().getRabbitUser(), getSphantomConfig().getRabbitPassword(), local);
 		new Heart(local).takeLead();
 		startWebPanel(); // ne pas start deux sphantom sur la meme ip sinon le port va être déja utilisé abruti ! de tt façon quel interet d'un replica sur la meme machine..
+	}
+
+	public static boolean isSynchronized() {
+		return $ynchronized;
 	}
 
 	public void startWebPanel() {
@@ -320,11 +329,6 @@ public class SPhantom implements Async, Log {
 	@Override
 	public void logPkt(PacketPhantom pkt, boolean in) {
 		if (logPkt) logOut((in ? "<RECV] " : "[SEND> ") + pkt.toString());
-	}
-
-	@Override
-	public void logTrace(Exception e) {
-		Main.printStackTrace(e);
 	}
 
 	@Override

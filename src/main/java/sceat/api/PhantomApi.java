@@ -5,8 +5,6 @@ import java.util.UUID;
 
 import sceat.SPhantom;
 import sceat.domain.Manager;
-import sceat.domain.minecraft.RessourcePack;
-import sceat.domain.minecraft.Statut;
 import sceat.domain.network.Core;
 import sceat.domain.network.Core.OperatingMode;
 import sceat.domain.network.ServerProvider;
@@ -17,6 +15,8 @@ import sceat.domain.network.server.Vps.VpsState;
 import fr.aresrpg.commons.util.collection.Set;
 import fr.aresrpg.commons.util.map.Map;
 import fr.aresrpg.commons.util.stream.Collectors;
+import fr.aresrpg.sdk.mc.RessourcePack;
+import fr.aresrpg.sdk.mc.Statut;
 
 public interface PhantomApi {
 

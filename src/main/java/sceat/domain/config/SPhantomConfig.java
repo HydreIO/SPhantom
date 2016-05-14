@@ -43,7 +43,7 @@ public class SPhantomConfig {
 		if (mkdir) {
 			this.servers.add(new VpsConfigObject("Ovh_001", "127.0.0.1", "user", "pass", 21, 16)); // NOSONAR
 			this.servers.add(new VpsConfigObject("Vultr_001", "127.0.0.2", "user", "pass", 21, 8)); // NOSONAR
-			Arrays.stream(ServerType.values()).forEach(v -> this.instances.put(v, new McServerConfigObject(75, 50, 2)));
+			Arrays.stream(ServerType.values()).forEach(v -> this.instances.put(v, new McServerConfigObject(75, 50, 2, new PortRange(25565, 26000))));
 			getConfig().set("Broker.User", rabbitUser);
 			getConfig().set("Broker.Pass", rabbitPass);
 			getConfig().set("Broker.Adress", rabbitAdress);
@@ -59,6 +59,10 @@ public class SPhantomConfig {
 			Log.out("SPhantom.yml found in " + cong.getAbsolutePath() + " !");
 		}
 		load(false);
+	}
+
+	public static SPhantomConfig get() {
+		return SPhantom.getInstance().getSphantomConfig();
 	}
 
 	public int getRamFor(ServerType type) {
@@ -118,10 +122,12 @@ public class SPhantomConfig {
 			Log.out("Servers list [ok]");
 			Log.out("Instances config map filling");
 			Configuration cc2 = getConfig().getSection("Instances.Types");
-			cc2.getKeys().forEach(k -> {
-				Configuration section = cc2.getSection(k);
-				this.instances.put(ServerType.valueOf(k), new McServerConfigObject(section.getInt("maxPlayers"), section.getInt("playersBeforeNewInstance"), section.getInt("ram")));
-			});
+			cc2.getKeys().forEach(
+					k -> {
+						Configuration section = cc2.getSection(k);
+						this.instances.put(ServerType.valueOf(k), new McServerConfigObject(section.getInt("maxPlayers"), section.getInt("playersBeforeNewInstance"), section.getInt("ram"),
+								new PortRange(section.getInt("ports.portMin"), section.getInt("ports.portMax"))));
+					});
 			Log.out("Instances config map [ok]");
 			Log.out("Done ! (" + (System.currentTimeMillis() - cur) + "ms)");
 			isReloading = false;
@@ -223,14 +229,42 @@ public class SPhantomConfig {
 		}
 	}
 
+	public static class PortRange extends ConfigurationWrite {
+		private int minPort;
+		private int maxPort;
+
+		public PortRange(int min, int max) {
+			this.maxPort = max;
+			this.minPort = min;
+		}
+
+		public int getMaxPort() {
+			return maxPort;
+		}
+
+		public int getMinPort() {
+			return minPort;
+		}
+
+		static PortRange fromStrings(String min, String max) {
+			return new PortRange(Integer.parseInt(min), Integer.parseInt(max));
+		}
+
+		public void write(Configuration c, String path) {
+			super.write(c, path + ".ports.portMin", getMinPort());
+			super.write(c, path + ".ports.portMax", getMaxPort());
+		}
+	}
+
 	public static class McServerConfigObject extends ConfigurationWrite {
 
 		private ServerType type;
 		private int maxPlayers;
 		private int percentplayersBeforeNewInstance;
 		private int ramNeeded;
+		private PortRange portRange;
 
-		public McServerConfigObject(int maxplayer, int playerbeforOpennew, int ramMax) {
+		public McServerConfigObject(int maxplayer, int playerbeforOpennew, int ramMax, PortRange range) {
 			this.maxPlayers = maxplayer;
 			this.percentplayersBeforeNewInstance = playerbeforOpennew;
 			this.ramNeeded = ramMax;
@@ -253,6 +287,14 @@ public class SPhantomConfig {
 			return ramNeeded;
 		}
 
+		public int getPortMin() {
+			return getPortRange().getMinPort();
+		}
+
+		public int getPortMax() {
+			return getPortRange().getMaxPort();
+		}
+
 		public ServerType getType() {
 			return type;
 		}
@@ -261,10 +303,15 @@ public class SPhantomConfig {
 			return "Instances.Types." + getType().name() + ".";
 		}
 
+		public PortRange getPortRange() {
+			return portRange;
+		}
+
 		public void write(Configuration c) {
 			super.write(c, getPath() + "maxPlayers", getMaxPlayers());
 			super.write(c, getPath() + "PercentplayersBeforeNewInstance", getPercentPlayersBeforeOpenNewInstance());
 			super.write(c, getPath() + "ram", getRamNeeded());
+			getPortRange().write(c, getPath());
 		}
 	}
 

@@ -8,8 +8,6 @@ import java.util.UUID;
 import sceat.Main;
 import sceat.domain.Manager;
 import sceat.domain.common.mq.Broker;
-import sceat.domain.minecraft.Grades;
-import sceat.domain.minecraft.Statut;
 import sceat.domain.network.Core;
 import sceat.domain.network.server.Server;
 import sceat.domain.network.server.Server.ServerType;
@@ -22,6 +20,8 @@ import fr.aresrpg.commons.util.map.EnumHashMap;
 import fr.aresrpg.commons.util.map.EnumMap;
 import fr.aresrpg.commons.util.map.HashMap;
 import fr.aresrpg.commons.util.map.Map;
+import fr.aresrpg.sdk.mc.Grades;
+import fr.aresrpg.sdk.mc.Statut;
 import fr.aresrpg.sdk.protocol.MessagesType;
 import fr.aresrpg.sdk.protocol.PacketPhantom;
 import fr.aresrpg.sdk.system.Log;
@@ -32,12 +32,13 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 	private String vpsLabel;
 	private ServerType type;
 	private int maxp;
+	private int port;
 	private String ip;
 	private EnumMap<Grades, Set<UUID>> players = new EnumHashMap<>(Grades.class);
 	private Statut state;
 	private boolean fromSymbiote = false; // if the packet came from symbiote, then we must get from the map like a closing server and not from "Server.fromPacket"
 
-	public PacketPhantomServerInfo(Statut state, String label, String vpsLabel, InetAddress ip, ServerType type, int maxp, EnumMap<Grades, Set<UUID>> pl, boolean fromSymbiote) {
+	public PacketPhantomServerInfo(Statut state, String label, String vpsLabel, InetAddress ip, ServerType type, int maxp, int port, EnumMap<Grades, Set<UUID>> pl, boolean fromSymbiote) {
 		this.ip = ip.getHostAddress();
 		this.vpsLabel = vpsLabel;
 		this.label = label;
@@ -46,6 +47,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		if (pl == null) Arrays.stream(Grades.values()).forEach(g -> players.put(g, new HashSet<>()));
 		this.maxp = maxp;
 		this.state = state;
+		this.port = port;
 	}
 
 	public PacketPhantomServerInfo() {
@@ -62,6 +64,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		writeEnumMap(this.players, d -> writeString(d.name()), d -> writeCollection(d, e -> writeString(e.toString())));
 		writeString(getState().name());
 		writeBoolean(isFromSymbiote());
+		writeInt(getPort());
 	}
 
 	@Override
@@ -75,6 +78,11 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		if (players.get(Grades.ADMIN) == null) Arrays.stream(Grades.values()).forEach(g -> players.put(g, New.set()));
 		this.state = Statut.valueOf(readString());
 		this.fromSymbiote = readBoolean();
+		this.port = readInt();
+	}
+
+	public int getPort() {
+		return port;
 	}
 
 	public Map<UUID, String> getPlayersMap() {
@@ -135,7 +143,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 	}
 
 	public static PacketPhantomServerInfo fromServer(Server srv) {
-		return new PacketPhantomServerInfo(srv.getStatus(), srv.getLabel(), srv.getVpsLabel(), srv.getIpadress(), srv.getType(), srv.getMaxPlayers(), srv.getPlayersMap(), false);
+		return new PacketPhantomServerInfo(srv.getStatus(), srv.getLabel(), srv.getVpsLabel(), srv.getIpadress(), srv.getType(), srv.getMaxPlayers(), srv.getMaxPlayers(), srv.getPlayersMap(), false);
 	}
 
 	public boolean isFromSymbiote() {

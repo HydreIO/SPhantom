@@ -14,12 +14,12 @@ import sceat.api.PhantomApi.VpsApi;
 import sceat.domain.common.IPhantom;
 import sceat.domain.common.utils.ICrash;
 import sceat.domain.common.utils.IRegistrable;
-import sceat.domain.minecraft.Statut;
 import sceat.domain.network.Core;
 import sceat.domain.network.ServerProvider;
 import sceat.domain.network.server.Server.ServerType;
 import fr.aresrpg.commons.util.collection.HashSet;
 import fr.aresrpg.commons.util.collection.Set;
+import fr.aresrpg.sdk.mc.Statut;
 
 public class Vps implements Comparable<Vps>, VpsApi, ICrash, IRegistrable<Vps> {
 

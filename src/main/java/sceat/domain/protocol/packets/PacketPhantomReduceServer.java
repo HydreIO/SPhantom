@@ -2,10 +2,10 @@ package sceat.domain.protocol.packets;
 
 import sceat.domain.Manager;
 import sceat.domain.common.mq.Broker;
-import sceat.domain.minecraft.Statut;
 import sceat.domain.network.Core;
 import sceat.domain.network.server.Vps;
 import sceat.domain.trigger.PhantomTrigger;
+import fr.aresrpg.sdk.mc.Statut;
 import fr.aresrpg.sdk.protocol.MessagesType;
 import fr.aresrpg.sdk.protocol.PacketPhantom;
 import fr.aresrpg.sdk.system.Log;

@@ -11,9 +11,6 @@ import java.util.UUID;
 import sceat.api.PhantomApi.ServerApi;
 import sceat.domain.Manager;
 import sceat.domain.common.utils.IRegistrable;
-import sceat.domain.minecraft.Grades;
-import sceat.domain.minecraft.RessourcePack;
-import sceat.domain.minecraft.Statut;
 import sceat.domain.network.Core;
 import sceat.domain.protocol.packets.PacketPhantomServerInfo;
 import sceat.domain.utils.ServerLabel;
@@ -22,6 +19,9 @@ import fr.aresrpg.commons.util.collection.HashSet;
 import fr.aresrpg.commons.util.collection.Set;
 import fr.aresrpg.commons.util.map.EnumHashMap;
 import fr.aresrpg.commons.util.map.EnumMap;
+import fr.aresrpg.sdk.mc.Grades;
+import fr.aresrpg.sdk.mc.RessourcePack;
+import fr.aresrpg.sdk.mc.Statut;
 import fr.aresrpg.sdk.protocol.RoutingKey;
 
 public class Server implements ServerApi, IRegistrable<Server> {
@@ -30,13 +30,14 @@ public class Server implements ServerApi, IRegistrable<Server> {
 	private String vpsLabel;
 	private ServerType type;
 	private int maxPlayers;
+	private int port;
 	private Statut status;
 	private RessourcePack pack;
 	private EnumMap<Grades, Set<UUID>> players = new EnumHashMap<>(Grades.class);
 	private InetAddress ipadress;
 	private long timeout;
 
-	public Server(String label, ServerType type, Statut state, int maxplayer, InetAddress ip, RessourcePack pack) {
+	public Server(String label, ServerType type, Statut state, int maxplayer, int port, InetAddress ip, RessourcePack pack) {
 		this.label = label;
 		this.type = type;
 		this.maxPlayers = maxplayer;
@@ -65,7 +66,8 @@ public class Server implements ServerApi, IRegistrable<Server> {
 			if (sr.getStatus() != Statut.REDUCTION) sr.setStatus(pkt.getState()); // si on connait le serv et qu'il est en reduction alors on ne change pas le statut
 			if (!pkt.isFromSymbiote()) sr.setPlayers(pkt.getPlayersPerGrade()); // sa voudra dire qu'on a reçu un packet avant d'avoir pu informer le serveur qu'il devait se reduire
 		} else {
-			sr = canBeNull ? null : new Server(pkt.getLabel(), pkt.getType(), pkt.getState(), pkt.getMaxp(), pkt.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT).setPlayers(pkt.getPlayersPerGrade());
+			sr = canBeNull ? null : new Server(pkt.getLabel(), pkt.getType(), pkt.getState(), pkt.getMaxp(), pkt.getPort(), pkt.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT).setPlayers(pkt
+					.getPlayersPerGrade());
 			neww = true; // si on créé on a pas besoin de verifier si le pkt vient du symbiote car de tt fa�on la liste des joueurs (seul field que le symbiote ne connait pas) devra attendre de se sync later
 		}
 		if (sr != null) {
@@ -79,8 +81,12 @@ public class Server implements ServerApi, IRegistrable<Server> {
 		return sr;
 	}
 
-	public static Server fromScratch(ServerType type, int maxPlayers, InetAddress ip, RessourcePack pack) {
-		return new Server(ServerLabel.newLabel(type), type, Statut.CREATING, maxPlayers, ip, pack);
+	public int getPort() {
+		return port;
+	}
+
+	public static Server fromScratch(ServerType type, int maxPlayers, InetAddress ip, int port, RessourcePack pack) {
+		return new Server(ServerLabel.newLabel(type), type, Statut.CREATING, maxPlayers, port, ip, pack);
 	}
 
 	public Server setVpsLabel(String label) {
