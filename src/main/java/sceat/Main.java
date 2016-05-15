@@ -21,10 +21,10 @@ import org.apache.commons.cli.ParseException;
 
 import sceat.domain.Heart;
 import sceat.domain.common.mq.Broker;
-import sceat.domain.ressources.Constant;
 import sceat.gui.web.GrizzlyWebServer;
 import sceat.infra.input.ScannerInput;
 import fr.aresrpg.commons.util.schedule.Scheduler;
+import fr.aresrpg.sdk.util.Constant;
 
 public class Main {
 
