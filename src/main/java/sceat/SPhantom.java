@@ -3,6 +3,7 @@ package sceat;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.util.Calendar;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -12,6 +13,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
+import fr.aresrpg.commons.condition.functional.Executable;
 import sceat.api.PhantomApi;
 import sceat.api.PhantomApi.ServerApi;
 import sceat.api.PhantomApi.VpsApi;
@@ -151,9 +153,7 @@ public class SPhantom implements Async, Log {
 	public void setupIp() {
 		print("Oppening socket to get Ip...");
 
-		Socket s = null;
-		try {
-			s = new Socket("google.com", 80);
+		try(Socket s = new Socket("google.com", 80)){
 			print("Ip founded ! [" + s.getLocalAddress().getHostName() + "]");
 			this.ip = s.getLocalAddress();
 		} catch (IOException e) {
@@ -161,12 +161,6 @@ public class SPhantom implements Async, Log {
 			print("Unable to find the Ip !");
 			Threads.uSleep(3, TimeUnit.SECONDS);
 			Main.shutDown();
-		} finally {
-			try {
-				s.close();
-			} catch (IOException e) {
-				Log.trace(e);
-			}
 		}
 	}
 
@@ -235,8 +229,8 @@ public class SPhantom implements Async, Log {
 		return peaceMaker;
 	}
 
-	private <T, R> Case<T, R> when(Predicate<T> p, Runnable r) {
-		return Matcher.when(p, r);
+	private <T, R> Case<T, R> when(Predicate<T> p, Executable e) {
+		return Matcher.when(p, e);
 	}
 
 	public void awaitForInput() {

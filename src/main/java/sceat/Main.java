@@ -119,14 +119,14 @@ public class Main {
 	}
 
 	public static void shutDown() {
-		fr.aresrpg.commons.log.Logger.log("Shutdown..");
+		fr.aresrpg.commons.log.Logger.MAIN_LOGGER.info("Bye.");
 		Broker.get().close();
 		GrizzlyWebServer.stop();
 		ScannerInput.shutDown();
 		SPhantom.getInstance().getExecutor().shutdown();
 		Scheduler.getScheduler().shutdown();
 		if (Heart.getInstance() != null) Heart.getInstance().broke();
-		fr.aresrpg.commons.log.Logger.log("Bye.");
+		fr.aresrpg.commons.log.Logger.MAIN_LOGGER.info("Bye.");
 		SPhantom.getInstance().running = false;
 		System.exit(0);
 	}
@@ -137,7 +137,7 @@ public class Main {
 		try {
 			return new BasicParser().parse(opt, args);
 		} catch (ParseException e) {
-			fr.aresrpg.commons.log.Logger.trace(e);
+			fr.aresrpg.commons.log.Logger.MAIN_LOGGER.info(e);
 			return null;
 		}
 	}
