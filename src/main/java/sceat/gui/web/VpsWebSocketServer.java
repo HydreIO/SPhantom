@@ -1,7 +1,5 @@
 package sceat.gui.web;
 
-import fr.aresrpg.commons.util.map.Map;
-
 import org.glassfish.grizzly.websockets.Broadcaster;
 import org.glassfish.grizzly.websockets.OptimizedBroadcaster;
 import org.glassfish.grizzly.websockets.WebSocket;
@@ -10,7 +8,6 @@ import org.glassfish.grizzly.websockets.WebSocketApplication;
 import sceat.api.PhantomApi;
 import sceat.domain.network.Core;
 import sceat.domain.network.ServerProvider;
-import sceat.domain.network.server.Server;
 import sceat.domain.trigger.PhantomTrigger;
 
 import com.google.gson.Gson;
@@ -19,19 +16,22 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
+import fr.aresrpg.commons.util.map.Map;
+import fr.aresrpg.sdk.mc.ServerType;
+
 public class VpsWebSocketServer extends WebSocketApplication implements PhantomTrigger.Trigger {
 
 	private static class VpsCreateResponse {
-		private Server.ServerType type;
+		private ServerType type;
 		private int amount;
 
 		@SuppressWarnings("unused")
-		public VpsCreateResponse(Server.ServerType type, int amount) {
+		public VpsCreateResponse(ServerType type, int amount) {
 			this.type = type;
 			this.amount = amount;
 		}
 
-		public Server.ServerType getType() {
+		public ServerType getType() {
 			return type;
 		}
 

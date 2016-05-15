@@ -27,7 +27,6 @@ import sceat.domain.protocol.handler.PacketHandler;
 import sceat.domain.protocol.packets.PacketRegistry;
 import sceat.domain.shell.Input;
 import sceat.domain.trigger.PhantomTrigger;
-import sceat.gui.terminal.PhantomTui;
 import sceat.gui.web.GrizzlyWebServer;
 import sceat.infra.connector.general.VultrConnector;
 import sceat.infra.input.ScannerInput;
@@ -304,7 +303,6 @@ public class SPhantom implements Async, Log {
 	}
 
 	public static void print(String txt, boolean log) {
-		if (!PhantomTui.canlog) return;
 		if (log) Main.getLogger().info(txt);
 		else System.out.println(new java.sql.Timestamp(System.currentTimeMillis()).toString().substring(0, 16) + " | [Sphantom] > " + txt);
 	}

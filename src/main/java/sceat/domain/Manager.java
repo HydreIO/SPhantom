@@ -8,9 +8,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import sceat.domain.config.SPhantomConfig;
 import sceat.domain.config.SPhantomConfig.PortRange;
 import sceat.domain.network.server.Server;
-import sceat.domain.network.server.Server.ServerType;
 import fr.aresrpg.commons.concurrent.ConcurrentHashMap;
 import fr.aresrpg.commons.concurrent.ConcurrentMap;
+import fr.aresrpg.sdk.mc.ServerType;
 
 public class Manager {
 

@@ -5,7 +5,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.UUID;
 
 import sceat.api.PhantomApi.ServerApi;
@@ -21,8 +20,8 @@ import fr.aresrpg.commons.util.map.EnumHashMap;
 import fr.aresrpg.commons.util.map.EnumMap;
 import fr.aresrpg.sdk.mc.Grades;
 import fr.aresrpg.sdk.mc.RessourcePack;
+import fr.aresrpg.sdk.mc.ServerType;
 import fr.aresrpg.sdk.mc.Statut;
-import fr.aresrpg.sdk.protocol.RoutingKey;
 
 public class Server implements ServerApi, IRegistrable<Server> {
 
@@ -199,41 +198,6 @@ public class Server implements ServerApi, IRegistrable<Server> {
 
 	public Vps getVps() {
 		return Core.getInstance().getVps().getOrDefault(getVpsLabel(), null);
-	}
-
-	public enum ServerType {
-		PROXY((byte) 0, RessourcePack.RESSOURCE_PACK_DEFAULT, RoutingKey.PROXY),
-		LOBBY((byte) 1, RessourcePack.RESSOURCE_PACK_DEFAULT, RoutingKey.HUBS),
-		AGARES((byte) 2, RessourcePack.AGARES, RoutingKey.SERVERS),
-		ARES_RPG((byte) 3, RessourcePack.ARESRPG, RoutingKey.SERVERS),
-		IRON((byte) 4, RessourcePack.IRON, RoutingKey.SERVERS);
-
-		private byte id;
-		private RoutingKey key;
-		private RessourcePack pack;
-
-		private ServerType(byte id, RessourcePack pack, RoutingKey key) {
-			this.key = key;
-			this.id = id;
-			this.pack = pack;
-		}
-
-		public byte getId() {
-			return id;
-		}
-
-		public RessourcePack getPack() {
-			return pack;
-		}
-
-		public static ServerType fromByte(byte id) {
-			return Arrays.stream(values()).filter(i -> i.id == id).findFirst().orElse(null);
-		}
-
-		public RoutingKey getKey() {
-			return key;
-		}
-
 	}
 
 	@Override

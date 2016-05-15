@@ -6,13 +6,13 @@ import java.util.Optional;
 
 import sceat.SPhantom;
 import sceat.domain.config.SPhantomConfig;
-import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.network.server.Vps;
 import sceat.domain.trigger.PhantomTrigger;
 import fr.aresrpg.commons.concurrent.ConcurrentHashMap;
 import fr.aresrpg.commons.concurrent.ConcurrentMap;
 import fr.aresrpg.commons.util.collection.HashSet;
 import fr.aresrpg.commons.util.collection.Set;
+import fr.aresrpg.sdk.mc.ServerType;
 import fr.aresrpg.sdk.system.Log;
 
 @SuppressWarnings("unchecked")

@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import sceat.domain.Manager;
 import sceat.domain.network.Core;
-import sceat.domain.network.server.Server.ServerType;
+import fr.aresrpg.sdk.mc.ServerType;
 
 public class ServerLabel {
 	private static Random r = new Random();

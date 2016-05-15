@@ -20,7 +20,6 @@ import sceat.domain.config.SPhantomConfig;
 import sceat.domain.config.SPhantomConfig.McServerConfigObject;
 import sceat.domain.network.ServerProvider.Defqon;
 import sceat.domain.network.server.Server;
-import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.network.server.Vps;
 import sceat.domain.protocol.packets.PacketPhantomBootServer;
 import sceat.domain.protocol.packets.PacketPhantomDestroyInstance;
@@ -37,6 +36,7 @@ import fr.aresrpg.commons.util.schedule.Scheduled;
 import fr.aresrpg.commons.util.schedule.Scheduler;
 import fr.aresrpg.commons.util.schedule.TimeUnit;
 import fr.aresrpg.sdk.mc.RessourcePack;
+import fr.aresrpg.sdk.mc.ServerType;
 import fr.aresrpg.sdk.mc.Statut;
 import fr.aresrpg.sdk.system.Log;
 
@@ -59,7 +59,7 @@ public class Core implements Scheduled {
 	 * <p>
 	 * plus il y en a plus je decrement
 	 */
-	private ConcurrentHashMap<ServerType, Set<UUID>> playersByType = new ConcurrentHashMap<Server.ServerType, Set<UUID>>();
+	private ConcurrentHashMap<ServerType, Set<UUID>> playersByType = new ConcurrentHashMap<>();
 
 	/**
 	 * Les vps via leur label
@@ -69,7 +69,7 @@ public class Core implements Scheduled {
 	/**
 	 * Servers par type pour la gestion d'ouverture d'instance et de servers, remplis dans le packetHandler
 	 */
-	private ConcurrentHashMap<ServerType, Set<Server>> serversByType = new ConcurrentHashMap<Server.ServerType, Set<Server>>();
+	private ConcurrentHashMap<ServerType, Set<Server>> serversByType = new ConcurrentHashMap<>();
 
 	private Core() {
 	}

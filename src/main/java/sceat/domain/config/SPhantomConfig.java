@@ -9,9 +9,9 @@ import java.util.List;
 
 import sceat.Main;
 import sceat.SPhantom;
-import sceat.domain.network.server.Server.ServerType;
 import sceat.domain.ressources.Constant;
 import fr.aresrpg.commons.util.map.EnumHashMap;
+import fr.aresrpg.sdk.mc.ServerType;
 import fr.aresrpg.sdk.system.Log;
 
 public class SPhantomConfig {
