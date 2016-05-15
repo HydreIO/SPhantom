@@ -3,7 +3,6 @@ package sceat;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.util.Calendar;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -13,7 +12,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
-import fr.aresrpg.commons.condition.functional.Executable;
 import sceat.api.PhantomApi;
 import sceat.api.PhantomApi.ServerApi;
 import sceat.api.PhantomApi.VpsApi;
@@ -34,6 +32,7 @@ import sceat.infra.connector.general.VultrConnector;
 import sceat.infra.input.ScannerInput;
 import fr.aresrpg.commons.concurrent.ThreadBuilder;
 import fr.aresrpg.commons.concurrent.Threads;
+import fr.aresrpg.commons.condition.functional.Executable;
 import fr.aresrpg.commons.condition.match.Matcher;
 import fr.aresrpg.commons.condition.match.Matcher.Case;
 import fr.aresrpg.sdk.Weed;
@@ -47,7 +46,7 @@ import fr.aresrpg.sdk.system.Root;
 public class SPhantom implements Async, Log {
 
 	private static SPhantom instance;
-	private static boolean $ynchronized = false;
+	private static boolean $ynchronized = false; // NOSONAR laisse mon swag
 	private ExecutorService executor;
 	private ExecutorService pinger;
 	private ExecutorService peaceMaker;
@@ -153,7 +152,7 @@ public class SPhantom implements Async, Log {
 	public void setupIp() {
 		print("Oppening socket to get Ip...");
 
-		try(Socket s = new Socket("google.com", 80)){
+		try (Socket s = new Socket("google.com", 80)) {
 			print("Ip founded ! [" + s.getLocalAddress().getHostName() + "]");
 			this.ip = s.getLocalAddress();
 		} catch (IOException e) {
