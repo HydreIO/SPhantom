@@ -57,9 +57,9 @@ repositories {
 }
 
 dependencies {
-    mappings 'fr.aresrpg:AresCommons:0.5@map'
+    mappings 'fr.aresrpg:AresCommons:0.6@map'
     mappings 'fr.aresrpg:Snoopet:1.4@map'
-    obfuscated 'fr.aresrpg:AresCommons:0.5@jar'
+    obfuscated 'fr.aresrpg:AresCommons:0.6@jar'
     obfuscated 'fr.aresrpg:Snooppet:1.4@jar'
     compile 'commons-cli:commons-cli:1.2'
     compile 'com.rabbitmq:amqp-client:3.6.1'
