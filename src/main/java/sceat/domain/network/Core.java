@@ -35,7 +35,6 @@ import fr.aresrpg.commons.util.schedule.Schedule;
 import fr.aresrpg.commons.util.schedule.Scheduled;
 import fr.aresrpg.commons.util.schedule.Scheduler;
 import fr.aresrpg.commons.util.schedule.TimeUnit;
-import fr.aresrpg.sdk.mc.RessourcePack;
 import fr.aresrpg.sdk.mc.ServerType;
 import fr.aresrpg.sdk.mc.Statut;
 import fr.aresrpg.sdk.system.Log;
@@ -347,7 +346,7 @@ public class Core implements Scheduled {
 					Log.out("[DeployForced] Can't deploy server ! All port fort the type('" + type.name() + "') are already in use");
 					return;
 				}
-				Server srv = Server.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), port, RessourcePack.RESSOURCE_PACK_DEFAULT);
+				Server srv = Server.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), port);
 				srv.setVpsLabel(vp.getLabel());
 				Log.out("Deploying server [Label('" + srv.getLabel() + "')|State('" + srv.getStatus() + "')|MaxP(" + srv.getMaxPlayers() + ")]");
 				serversByType.get(type).add(srv);
@@ -381,7 +380,7 @@ public class Core implements Scheduled {
 				Log.out("[DeployAuto] Can't deploy server ! All port fort the type('" + type.name() + "') are already in use");
 				break;
 			}
-			Server srv = Server.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), port, RessourcePack.RESSOURCE_PACK_DEFAULT);
+			Server srv = Server.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), port);
 			set.add(srv);
 			srv.setVpsLabel(vp.getLabel());
 			serversByType.get(type).add(srv);
@@ -406,7 +405,7 @@ public class Core implements Scheduled {
 			Log.out("[DeployOnVps] Can't deploy server ! All port fort the type('" + type.name() + "') are already in use");
 			return;
 		}
-		Server srv = Server.fromScratch(type, obj.getMaxPlayers(), v.getIp(), port, RessourcePack.RESSOURCE_PACK_DEFAULT);
+		Server srv = Server.fromScratch(type, obj.getMaxPlayers(), v.getIp(), port);
 		serversByType.get(type).add(srv);
 		Manager.getInstance().getServersByLabel().put(srv.getLabel(), srv);
 		v.getServers().add(srv);

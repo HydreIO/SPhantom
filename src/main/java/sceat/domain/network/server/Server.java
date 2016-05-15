@@ -31,17 +31,15 @@ public class Server implements ServerApi, IRegistrable<Server> {
 	private int maxPlayers;
 	private int port;
 	private Statut status;
-	private RessourcePack pack;
 	private EnumMap<Grades, Set<UUID>> players = new EnumHashMap<>(Grades.class);
 	private InetAddress ipadress;
 	private long timeout;
 
-	public Server(String label, ServerType type, Statut state, int maxplayer, int port, InetAddress ip, RessourcePack pack) {
+	public Server(String label, ServerType type, Statut state, int maxplayer, int port, InetAddress ip) {
 		this.label = label;
 		this.type = type;
 		this.maxPlayers = maxplayer;
 		this.status = state;
-		this.pack = pack;
 		this.ipadress = ip;
 	}
 
@@ -65,8 +63,7 @@ public class Server implements ServerApi, IRegistrable<Server> {
 			if (sr.getStatus() != Statut.REDUCTION) sr.setStatus(pkt.getState()); // si on connait le serv et qu'il est en reduction alors on ne change pas le statut
 			if (!pkt.isFromSymbiote()) sr.setPlayers(pkt.getPlayersPerGrade()); // sa voudra dire qu'on a reçu un packet avant d'avoir pu informer le serveur qu'il devait se reduire
 		} else {
-			sr = canBeNull ? null : new Server(pkt.getLabel(), pkt.getType(), pkt.getState(), pkt.getMaxp(), pkt.getPort(), pkt.getIp(), RessourcePack.RESSOURCE_PACK_DEFAULT).setPlayers(pkt
-					.getPlayersPerGrade());
+			sr = canBeNull ? null : new Server(pkt.getLabel(), pkt.getType(), pkt.getState(), pkt.getMaxp(), pkt.getPort(), pkt.getIp()).setPlayers(pkt.getPlayersPerGrade());
 			neww = true; // si on créé on a pas besoin de verifier si le pkt vient du symbiote car de tt fa�on la liste des joueurs (seul field que le symbiote ne connait pas) devra attendre de se sync later
 		}
 		if (sr != null) {
@@ -84,8 +81,8 @@ public class Server implements ServerApi, IRegistrable<Server> {
 		return port;
 	}
 
-	public static Server fromScratch(ServerType type, int maxPlayers, InetAddress ip, int port, RessourcePack pack) {
-		return new Server(ServerLabel.newLabel(type), type, Statut.CREATING, maxPlayers, port, ip, pack);
+	public static Server fromScratch(ServerType type, int maxPlayers, InetAddress ip, int port) {
+		return new Server(ServerLabel.newLabel(type), type, Statut.CREATING, maxPlayers, port, ip);
 	}
 
 	public Server setVpsLabel(String label) {
@@ -130,11 +127,6 @@ public class Server implements ServerApi, IRegistrable<Server> {
 		return this;
 	}
 
-	public Server setPack(RessourcePack pack) {
-		this.pack = pack;
-		return this;
-	}
-
 	public Server setPlayers(EnumMap<Grades, Set<UUID>> players) {
 		this.players = players;
 		return this;
@@ -168,11 +160,6 @@ public class Server implements ServerApi, IRegistrable<Server> {
 	@Override
 	public Statut getStatus() {
 		return status;
-	}
-
-	@Override
-	public RessourcePack getPack() {
-		return pack;
 	}
 
 	public Set<UUID> getPlayers(Grades gr) {
@@ -217,6 +204,11 @@ public class Server implements ServerApi, IRegistrable<Server> {
 		Manager.getInstance().getServersByLabel().safeRemove(getLabel());
 		Core.getInstance().getServersByType().safeGet(getType()).safeRemove(this);
 		return this;
+	}
+
+	@Override
+	public RessourcePack getPack() {
+		return getType().getPack();
 	}
 
 }
