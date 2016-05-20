@@ -1,7 +1,9 @@
 package sceat.gui.web;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
+import fr.aresrpg.commons.concurrent.Threads;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.websockets.WebSocketAddOn;
 import org.glassfish.grizzly.websockets.WebSocketEngine;
@@ -32,6 +34,11 @@ public class GrizzlyWebServer {
 
 	public static void stop() {
 		instance.server.shutdown();
+	}
+
+	public static void main(String[] args) throws IOException {
+		new GrizzlyWebServer(8080);
+		Threads.uSleep(Integer.MAX_VALUE , TimeUnit.DAYS);
 	}
 
 }

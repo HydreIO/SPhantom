@@ -43,7 +43,7 @@ public class Main {
 		Options opt = new Options();
 		CommandLine cmd = setupOptions(opt, args);
 		if (cmd == null) throw new NullPointerException("Unable to setup the commandLine.. Aborting..");
-		Constant.sphantom.forEach(SPhantom::print);
+		Constant.SPHANTOM.forEach(SPhantom::print);
 		GUImode = cmd.hasOption("gui");
 		LocalMode = cmd.hasOption("local");
 		ClassLoader loader = ClassLoader.getSystemClassLoader();
