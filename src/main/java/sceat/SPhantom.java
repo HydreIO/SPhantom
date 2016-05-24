@@ -62,9 +62,9 @@ public class SPhantom implements Async, Log {
 	private Security security;
 	private PhantomApi mainApi;
 	private InetAddress ip;
-	private final String enabled = "enabled";
-	private final String disabled = "disabled";
-	private final Pattern modeM = Pattern.compile("^setmode ((?:\\d))$");
+	private static final String ENABLED = "enabled";
+	private static final String DISABLED = "disabled";
+	private static final Pattern modeM = Pattern.compile("^setmode ((?:\\d))$");
 
 	/**
 	 * Init sphantom
@@ -249,19 +249,19 @@ public class SPhantom implements Async, Log {
 				print("> create_server");
 			}), when("loghb"::equalsIgnoreCase, () -> {
 				this.logHeart = !this.logHeart;
-				print("HeartBeat logger " + (this.logHeart ? enabled : disabled) + " !");
+				print("HeartBeat logger " + (this.logHeart ? ENABLED : DISABLED) + " !");
 			}), when("vps"::equalsIgnoreCase, () -> {
 				print("Vps registered : ");
 				Core.getInstance().getVps().values().forEach(v -> print(v.toString() + "\n"));
 			}), when("logdiv"::equalsIgnoreCase, () -> {
 				this.logDiv = !this.logDiv;
-				print("Diver logger " + (this.logDiv ? enabled : disabled) + " !");
+				print("Diver logger " + (this.logDiv ? ENABLED : DISABLED) + " !");
 			}), when("exit"::equalsIgnoreCase, Main::shutDown), when("forcelead"::equalsIgnoreCase, Heart.getInstance()::takeLead), when("logpkt"::equalsIgnoreCase, () -> {
 				this.logPkt = !this.logPkt;
-				print("Packet logger " + (this.logPkt ? enabled : disabled) + " !");
+				print("Packet logger " + (this.logPkt ? ENABLED : DISABLED) + " !");
 			}), when("logprovider"::equalsIgnoreCase, () -> {
 				this.logprovider = !this.logprovider;
-				print("ServerProvider logger " + (this.logprovider ? enabled : disabled) + " !");
+				print("ServerProvider logger " + (this.logprovider ? ENABLED : DISABLED) + " !");
 			}), when(a -> {
 				java.util.regex.Matcher m = modeM.matcher(a.toLowerCase());
 				if (m.matches()) {

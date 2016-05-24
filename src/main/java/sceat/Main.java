@@ -10,9 +10,7 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -23,18 +21,20 @@ import sceat.domain.Heart;
 import sceat.domain.common.mq.Broker;
 import sceat.gui.web.GrizzlyWebServer;
 import sceat.infra.input.ScannerInput;
+import fr.aresrpg.commons.log.Logger;
 import fr.aresrpg.commons.util.schedule.Scheduler;
 import fr.aresrpg.sdk.util.Constant;
 
 public class Main {
 
-	public static Logger logger = Logger.getLogger("SPhantom.class");
-	public static File folder;
+	private static File folder;
 	public static final UUID serial = UUID.randomUUID();
 	public static final UUID security = UUID.randomUUID();
 
-	public static boolean GUImode = false;
-	public static boolean LocalMode = false;
+	private static boolean localMode = false;
+
+	private Main() {
+	}
 
 	public static void main(String[] args) {
 		assert false;
@@ -44,44 +44,26 @@ public class Main {
 		CommandLine cmd = setupOptions(opt, args);
 		if (cmd == null) throw new NullPointerException("Unable to setup the commandLine.. Aborting..");
 		Constant.SPHANTOM.forEach(SPhantom::print);
-		GUImode = cmd.hasOption("gui");
-		LocalMode = cmd.hasOption("local");
+		localMode = cmd.hasOption("local");
 		ClassLoader loader = ClassLoader.getSystemClassLoader();
 		loader.setDefaultAssertionStatus(true);
 		try {
-			loader.loadClass("sceat.SPhantom").getConstructor(Boolean.class).newInstance(LocalMode);
+			loader.loadClass("sceat.SPhantom").getConstructor(Boolean.class).newInstance(localMode);
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException | ClassNotFoundException e) {
-			e.printStackTrace();
+			Logger.MAIN_LOGGER.error(e);
 		}
 		SPhantom.getInstance().awaitForInput();
 	}
 
-	public static Logger getLogger() {
-		return logger;
-	}
-
-	public static void printStackTrace(Exception e) {
-		getLogger().log(Level.SEVERE, "[Trace] > " + stackTrace(e));
-	}
-
 	public static void printStackTrace(Throwable e) {
-		getLogger().log(Level.SEVERE, "[Trace] > " + stackTrace(e));
+		Logger.MAIN_LOGGER.severe("[Trace] > " + stackTrace(e));
 	}
 
 	private static String stackTrace(Throwable cause) {
 		if (cause == null) return "";
 		StringWriter sw = new StringWriter(1024);
 		final PrintWriter pw = new PrintWriter(sw);
-		cause.printStackTrace(pw);
-		pw.flush();
-		return sw.toString();
-	}
-
-	private static String stackTrace(Exception cause) {
-		if (cause == null) return "";
-		StringWriter sw = new StringWriter(1024);
-		final PrintWriter pw = new PrintWriter(sw);
-		cause.printStackTrace(pw);
+		cause.printStackTrace(pw); // NOSONAR no need to use a logger here !
 		pw.flush();
 		return sw.toString();
 	}
@@ -128,12 +110,11 @@ public class Main {
 		if (Heart.getInstance() != null) Heart.getInstance().broke();
 		fr.aresrpg.commons.log.Logger.MAIN_LOGGER.info("Bye.");
 		SPhantom.getInstance().running = false;
-		System.exit(0);
+		System.exit(0); // NOSONAR system.exit is required here
 	}
 
 	public static CommandLine setupOptions(Options opt, String[] args) {
 		opt.addOption("local", false, "Disable messaging for local test");
-		opt.addOption("gui", false, "boot has gui (if not specified Sphantom will boot has tui)");
 		try {
 			return new BasicParser().parse(opt, args);
 		} catch (ParseException e) {

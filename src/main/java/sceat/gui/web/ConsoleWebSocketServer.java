@@ -18,57 +18,57 @@ import org.glassfish.grizzly.websockets.WebSocketApplication;
 import sceat.Main;
 import sceat.domain.shell.Input;
 
-public class ConsoleWebSocketServer extends WebSocketApplication implements Input.PhantomInput{
-    private class LoggerHandler extends Handler{
-        @Override
-        public void publish(LogRecord record) {
-            String l = '[' + FORMAT.format(new Date(record.getMillis())) + "]["
-                    + Thread.currentThread().getName() + "][" + record.getLevel() +"]: "
-                    + record.getMessage() + '\n' + throwableToString(record.getThrown());
-            broadcaster.broadcast(getWebSockets() , l);
-            logs.append(l);
-        }
+public class ConsoleWebSocketServer extends WebSocketApplication implements Input.PhantomInput {
+	private class LoggerHandler extends Handler {
+		@Override
+		public void publish(LogRecord record) {
+			String l = '[' + FORMAT.format(new Date(record.getMillis())) + "][" + Thread.currentThread().getName() + "][" + record.getLevel() + "]: " + record.getMessage() + '\n'
+					+ throwableToString(record.getThrown());
+			broadcaster.broadcast(getWebSockets(), l);
+			logs.append(l);
+		}
 
-        @Override
-        public void flush() {
-            //No
-        }
+		@Override
+		public void flush() {
+			// No
+		}
 
-        @Override
-        public void close() throws SecurityException {
-            //no
-        }
-    }
-    private static final DateFormat FORMAT = new SimpleDateFormat("HH:mm:ss");
-    private StringBuilder logs = new StringBuilder();
-    private Broadcaster broadcaster = new OptimizedBroadcaster();
+		@Override
+		public void close() throws SecurityException { // NOSONAR jsai pas c ton code david
+			// no
+		}
 
-    public ConsoleWebSocketServer() {
-        Main.getLogger().addHandler(new LoggerHandler());
-    }
+		private String throwableToString(Throwable throwable) {
+			if (throwable == null) return "";
+			try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
+				throwable.printStackTrace(new PrintStream(stream));// NOSONAR
+				return new String(stream.toByteArray());
+			} catch (IOException e) {
+				Main.getLogger().log(Level.WARNING, "Could'not close stream", e);
+				return null;
+			}
+		}
+	}
 
-    @Override
-    public void onMessage(WebSocket socket, String text) {
-        super.onMessage(socket, text);
-        Main.getLogger().log(Level.INFO , text);
-        push(text);
-    }
+	private static final DateFormat FORMAT = new SimpleDateFormat("HH:mm:ss");
+	private StringBuilder logs = new StringBuilder();
+	private Broadcaster broadcaster = new OptimizedBroadcaster();
 
-    @Override
-    public void onConnect(WebSocket socket) {
-        super.onConnect(socket);
-        socket.send(logs.toString());
-    }
+	public ConsoleWebSocketServer() {
+		Main.getLogger().addHandler(new LoggerHandler());
+	}
 
-    private String throwableToString(Throwable throwable){
-        if(throwable == null)
-            return "";
-        try(ByteArrayOutputStream stream = new ByteArrayOutputStream()){
-            throwable.printStackTrace(new PrintStream(stream));//NOSONAR
-            return new String(stream.toByteArray());
-        } catch (IOException e) {
-            Main.getLogger().log(Level.WARNING , "Could'not close stream" , e);
-            return null;
-        }
-    }
+	@Override
+	public void onMessage(WebSocket socket, String text) {
+		super.onMessage(socket, text);
+		Main.getLogger().log(Level.INFO, text);
+		push(text);
+	}
+
+	@Override
+	public void onConnect(WebSocket socket) {
+		super.onConnect(socket);
+		socket.send(logs.toString());
+	}
+
 }

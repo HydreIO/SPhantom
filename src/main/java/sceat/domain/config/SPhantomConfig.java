@@ -19,20 +19,20 @@ public class SPhantomConfig {
 	private Configuration config;
 	private String rabbitUser = "user";
 	private String rabbitPass = "pass";
-	private String rabbitAdress = "127.0.0.1"; // NOSONAR
+	private String rabbitAdress = "127.0.0..";
 	private int rabbitPort = 0000;
 	private int deployedVpsRam = 8;
 	private String vultrKey = "key";
 	private int maxInstance = 10;
 	private List<VpsConfigObject> servers = new ArrayList<>();
 	private EnumMap<ServerType, McServerConfigObject> instances = new EnumHashMap<>(ServerType.class);
-	private final String path = "/SPhantom.yml";
+	private static final String PATH = "/SPhantom.yml";
 
-	public static boolean isReloading = false; // NOSONAR
+	private static boolean reloading = false;
 
 	public SPhantomConfig() {
 		Log.out("Searching SPhantom.yml..");
-		File cong = new File(Main.folder.getAbsolutePath() + this.path);
+		File cong = new File(Main.getFolder().getAbsolutePath() + PATH);
 		boolean mkdir = true;
 		try {
 			mkdir = cong.exists() ? false : cong.createNewFile();
@@ -41,9 +41,9 @@ public class SPhantomConfig {
 			Main.printStackTrace(e3);
 		}
 		if (mkdir) {
-			this.servers.add(new VpsConfigObject("Ovh_001", "127.0.0.1", "user", "pass", 21, 16)); // NOSONAR
-			this.servers.add(new VpsConfigObject("Vultr_001", "127.0.0.2", "user", "pass", 21, 8)); // NOSONAR
-			Arrays.stream(ServerType.values()).forEach(v -> this.instances.put(v, new McServerConfigObject(75, 50, 2, new PortRange(25565, 26000))));
+			this.servers.add(new VpsConfigObject("Ovh_001", "127.0.0.", "user", "pass", 21, 16));
+			this.servers.add(new VpsConfigObject("Vultr_001", "127.0.0.", "user", "pass", 21, 8));
+			Arrays.stream(ServerType.values()).forEach(v -> this.instances.put(v, new McServerConfigObject(75, 50, 2, new PortRange(25565, 26000)))); // NOSONAR j'attend tjr ton stream closer
 			getConfig().set("Broker.User", rabbitUser);
 			getConfig().set("Broker.Pass", rabbitPass);
 			getConfig().set("Broker.Adress", rabbitAdress);
@@ -86,7 +86,11 @@ public class SPhantomConfig {
 	}
 
 	public static boolean isReloading() {
-		return isReloading;
+		return reloading;
+	}
+
+	public static void setReloading(boolean var) {
+		reloading = var;
 	}
 
 	public void load(boolean async) {
@@ -95,7 +99,7 @@ public class SPhantomConfig {
 			long cur = System.currentTimeMillis();
 			loadConfig();
 			Log.out("Applying changes...");
-			isReloading = true;
+			setReloading(true);
 			this.maxInstance = getConfig().getInt("MaxDeployedInstances");
 			this.rabbitUser = getConfig().getString("Broker.User");
 			Log.out("Broker_user [ok]");
@@ -130,7 +134,7 @@ public class SPhantomConfig {
 					});
 			Log.out("Instances config map [ok]");
 			Log.out("Done ! (" + (System.currentTimeMillis() - cur) + "ms)");
-			isReloading = false;
+			setReloading(false);
 		};
 		if (async) SPhantom.getInstance().getExecutor().execute(r);
 		else r.run();
@@ -152,12 +156,12 @@ public class SPhantomConfig {
 		return servers;
 	}
 
-	public EnumMap<ServerType, McServerConfigObject> getInstances() {
+	public EnumMap<ServerType, McServerConfigObject> getInstances() { // NOSONAR enumMap is already a interface implem
 		return instances;
 	}
 
 	public void write() {
-
+		// unused
 	}
 
 	/**
@@ -213,11 +217,11 @@ public class SPhantomConfig {
 		}
 
 		public void write(Configuration c) {
-			write(c, getPath() + "ip", getIp());
-			write(c, getPath() + "user", getUser());
-			write(c, getPath() + "pass", getPass());
-			write(c, getPath() + "port", getPort());
-			write(c, getPath() + "ram", getRam());
+			super.write(c, getPath() + "ip", getIp());
+			super.write(c, getPath() + "user", getUser());
+			super.write(c, getPath() + "pass", getPass());
+			super.write(c, getPath() + "port", getPort());
+			super.write(c, getPath() + "ram", getRam());
 		}
 
 	}
@@ -266,6 +270,7 @@ public class SPhantomConfig {
 
 		public McServerConfigObject(int maxplayer, int playerbeforOpennew, int ramMax, PortRange range) {
 			this.maxPlayers = maxplayer;
+			this.portRange = range;
 			this.percentplayersBeforeNewInstance = playerbeforOpennew;
 			this.ramNeeded = ramMax;
 		}
@@ -321,7 +326,7 @@ public class SPhantomConfig {
 
 	private void loadConfig() {
 		try {
-			this.config = ConfigurationProvider.getProvider(YamlConfiguration.class).load(new File(Main.folder.getAbsolutePath() + this.path));
+			this.config = ConfigurationProvider.getProvider(YamlConfiguration.class).load(new File(Main.getFolder().getAbsolutePath() + PATH));
 		} catch (IOException e) {
 			Main.printStackTrace(e);
 		}
@@ -329,7 +334,7 @@ public class SPhantomConfig {
 	}
 
 	public void saveConfig() {
-		saveConfig(getConfig(), Main.getFolder().getAbsolutePath() + this.path);
+		saveConfig(getConfig(), Main.getFolder().getAbsolutePath() + PATH);
 		Log.out("Config saved");
 	}
 
