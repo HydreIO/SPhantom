@@ -12,7 +12,7 @@ import sceat.Main;
 
 public class PhantomThreadPoolExecutor extends ThreadPoolExecutor {
 
-	private static final int bts = Integer.SIZE - 3;
+	private static final int BTS = Integer.SIZE - 3;
 
 	public PhantomThreadPoolExecutor(int nThreads) {
 		super(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
@@ -28,9 +28,9 @@ public class PhantomThreadPoolExecutor extends ThreadPoolExecutor {
 	 * @return all the task who weren't processed
 	 */
 	public List<Runnable> safeDrain() {
-		ArrayList<Runnable> taskList = new ArrayList<Runnable>();
+		ArrayList<Runnable> taskList = new ArrayList<>();
 		try {
-			pause(1 << bts);
+			pause(1 << BTS);
 			BlockingQueue<Runnable> q = getQueue();
 			q.drainTo(taskList);
 			if (!q.isEmpty()) {
@@ -41,7 +41,7 @@ public class PhantomThreadPoolExecutor extends ThreadPoolExecutor {
 		} catch (Exception e) {
 			Main.printStackTrace(e);
 		} finally {
-			pause(-1 << bts);
+			pause(-1 << BTS);
 		}
 		return taskList;
 	}

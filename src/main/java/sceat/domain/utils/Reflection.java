@@ -7,14 +7,19 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import fr.aresrpg.commons.util.stream.bistream.BiStream;
+import fr.aresrpg.sdk.system.Log;
 
 public class Reflection {
 
-	public static boolean debug = false;
+	private static boolean debug = false;
+
+	private Reflection() {
+
+	}
 
 	@SuppressWarnings("unchecked")
 	public static <T> Constructor<T> getConstructor(Class<T> clazz, Class<?>... parameterTypes) {
-		return (Constructor<T>) Arrays.stream(clazz.getConstructors()).parallel().filter((c) -> compare(c.getParameterTypes(), parameterTypes)).findFirst().orElse(null);
+		return (Constructor<T>) Arrays.stream(clazz.getConstructors()).parallel().filter(c -> compare(c.getParameterTypes(), parameterTypes)).findFirst().orElse(null); // NOSONAR auto closeable
 	}
 
 	public static <T> Constructor<T> getConstructor(ParamClass<T> type, Class<?>... parameterTypes) {
@@ -25,7 +30,7 @@ public class Reflection {
 		try {
 			return getConstructor(clazz, getClass(arguments)).newInstance(arguments);
 		} catch (InstantiationException | InvocationTargetException | IllegalAccessException | NullPointerException e) {
-			if (debug) e.printStackTrace();
+			if (debug) Log.trace(e);
 			return null;
 		}
 	}
@@ -36,8 +41,8 @@ public class Reflection {
 
 	public static Method getMethod(Class<?> clazz, String methodName, Class<?> returnType, Class<?>... parameterTypes) {
 		if (clazz == null) return null;
-		Method method = Arrays.stream(clazz.getDeclaredMethods()).parallel()
-				.filter((m) -> m.getName().equals(methodName) && compare(m.getReturnType(), returnType) && compare(m.getParameterTypes(), parameterTypes)).parallel().findFirst()
+		Method method = Arrays.stream(clazz.getDeclaredMethods()).parallel()/* NOSONAR auto closeable */
+		.filter(m -> m.getName().equals(methodName) && compare(m.getReturnType(), returnType) && compare(m.getParameterTypes(), parameterTypes)).parallel().findFirst()
 				.orElseGet(() -> getMethod(clazz.getSuperclass(), methodName, returnType, parameterTypes));
 		if (method != null) method.setAccessible(true);
 		return method;
@@ -51,7 +56,7 @@ public class Reflection {
 		try {
 			return returnType.cast(getMethod(instance.getClass(), methodName, returnType, getClass(arguments)).invoke(instance, arguments));
 		} catch (IllegalAccessException | InvocationTargetException | NullPointerException e) {
-			if (debug) e.printStackTrace();
+			if (debug) Log.trace(e);
 			return null;
 		}
 	}
@@ -66,7 +71,7 @@ public class Reflection {
 
 	public static Field getField(Class<?> clazz, String fieldName, Class<?> fieldType) {
 		if (clazz == null) return null;
-		Field field = Arrays.stream(clazz.getDeclaredFields()).parallel().filter((f) -> f.getName().equals(fieldName) && compare(f.getType(), fieldType)).findFirst()
+		Field field = Arrays.stream(clazz.getDeclaredFields()).parallel().filter((f) -> f.getName().equals(fieldName) && compare(f.getType(), fieldType)).findFirst()// NOSONAR auto closeable
 				.orElseGet(() -> getField(clazz.getSuperclass(), fieldName, fieldType));
 		if (field != null) field.setAccessible(true);
 		return field;
@@ -76,7 +81,7 @@ public class Reflection {
 		try {
 			return fieldType.cast(getField(fieldClass, fieldName, fieldType).get(null));
 		} catch (IllegalAccessException | NullPointerException e) {
-			if (debug) e.printStackTrace();
+			if (debug) Log.trace(e);
 			return null;
 		}
 	}
@@ -89,7 +94,7 @@ public class Reflection {
 		try {
 			return fieldType.cast(getField(instance.getClass(), fieldName, fieldType).get(instance));
 		} catch (IllegalAccessException | NullPointerException e) {
-			if (debug) e.printStackTrace();
+			if (debug) Log.trace(e);
 			return null;
 		}
 	}
@@ -106,7 +111,7 @@ public class Reflection {
 		try {
 			getField(fieldClass, fieldName, value.getClass()).set(null, value);
 		} catch (IllegalAccessException | NullPointerException e) {
-			if (debug) e.printStackTrace();
+			if (debug) Log.trace(e);
 		}
 	}
 
@@ -114,12 +119,12 @@ public class Reflection {
 		try {
 			getField(instance.getClass(), fieldName, value.getClass()).set(instance, value);
 		} catch (IllegalAccessException | NullPointerException e) {
-			if (debug) e.printStackTrace();
+			if (debug) Log.trace(e);
 		}
 	}
 
 	public static Class<?>[] getClass(Object... objs) {
-		return (Class<?>[]) Arrays.stream(objs).map((o) -> o == null ? Object.class : o.getClass()).toArray(Class[]::new);
+		return (Class<?>[]) Arrays.stream(objs).map((o) -> o == null ? Object.class : o.getClass()).toArray(Class[]::new); // NOSONAR auto closeable
 	}
 
 	public static boolean compare(Class<?> clazz, Class<?> clazz2) {
@@ -128,7 +133,7 @@ public class Reflection {
 	}
 
 	public static boolean compare(Class<?>[] clazz, Class<?>[] clazz2) {
-		return clazz.length == clazz2.length && BiStream.wrap(clazz, clazz2).filter(Reflection::compare).count() == clazz.length;
+		return clazz.length == clazz2.length && BiStream.wrap(clazz, clazz2).filter(Reflection::compare).count() == clazz.length;// NOSONAR auto closeable
 	}
 
 	public static Class<?> getPrimitive(Class<?> clazz) {

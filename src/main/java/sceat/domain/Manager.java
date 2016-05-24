@@ -1,7 +1,6 @@
 package sceat.domain;
 
 import java.util.Collection;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -15,7 +14,6 @@ import fr.aresrpg.sdk.mc.ServerType;
 public class Manager {
 
 	private static Manager instance = new Manager();
-	final static Random r = new Random();
 	private ConcurrentHashMap<String, Server> serversByLabel = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<UUID, String> playersOnNetwork = new ConcurrentHashMap<>();
 	private CopyOnWriteArrayList<Integer> usedPorts = new CopyOnWriteArrayList<>();
@@ -24,9 +22,10 @@ public class Manager {
 	}
 
 	public static void init() {
+		// nobitchies
 	}
 
-	public CopyOnWriteArrayList<Integer> getUsedPorts() {
+	public CopyOnWriteArrayList<Integer> getUsedPorts() { // NOSONAR non je peut pas mettre list
 		return usedPorts;
 	}
 

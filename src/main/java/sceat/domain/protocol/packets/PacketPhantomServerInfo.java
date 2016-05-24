@@ -135,9 +135,9 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		srvf.heartBeat();
 		m.getServersByLabel().put(getLabel(), srvf);
 		Core.getInstance().getServersByType().safeGet(getType()).add(srvf);
-		Set<UUID> players = getPlayers();
+		Set<UUID> pll = getPlayers();
 		m.getPlayersOnNetwork().putAll(getPlayersMap());
-		Core.getInstance().getPlayersByType().safeGet(getType()).addAll(players);
+		Core.getInstance().getPlayersByType().safeGet(getType()).addAll(pll);
 		PacketPhantomServerInfo.fromServer(srvf).send();
 		Vps v = Core.getInstance().getVps().getOrDefault(vpsLabel, null);
 		if (v != null) PhantomTrigger.getAll().forEach(t -> t.handleVps(v));
