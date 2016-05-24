@@ -267,7 +267,7 @@ public class SPhantom implements Async {
 	}
 
 	private void updateMode(int var) {
-		OperatingMode m = var == 1 ? OperatingMode.Eco : var == 2 ? OperatingMode.NoLag : OperatingMode.NoLag;
+		OperatingMode m = var == 1 ? OperatingMode.ECO : var == 2 ? OperatingMode.NoLag : OperatingMode.NoLag;
 		if (Core.getInstance().getMode() == m) Log.out(m.name() + " mode is already enabled");
 		else Core.getInstance().setMode(OperatingMode.NoLag, false);
 	}

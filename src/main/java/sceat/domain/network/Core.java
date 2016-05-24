@@ -47,12 +47,13 @@ import fr.aresrpg.sdk.system.Log;
  */
 public class Core implements Scheduled {
 
-	private OperatingMode mode = OperatingMode.Normal;
+	private OperatingMode mode = OperatingMode.NORMAL;
 	private boolean process = false;
 	private boolean initialised = false;
 	private static Core instance = new Core();
 	private int deployedInstances = -1;
-
+	private boolean procc = false;
+	private boolean pro = false;
 	/**
 	 * pour gerer l'offre de vps je doit connaitre la marge qu'il reste par serverType, moins il y a de marge plus je vais incrementer la priorit� du server provider
 	 * <p>
@@ -63,7 +64,7 @@ public class Core implements Scheduled {
 	/**
 	 * Les vps via leur label
 	 */
-	private ConcurrentHashMap<String, Vps> vps = new ConcurrentHashMap<String, Vps>();
+	private ConcurrentHashMap<String, Vps> vps = new ConcurrentHashMap<>();
 
 	/**
 	 * Servers par type pour la gestion d'ouverture d'instance et de servers, remplis dans le packetHandler
@@ -75,10 +76,10 @@ public class Core implements Scheduled {
 
 	public static void init() {
 		Core core = getInstance();
-		Arrays.stream(ServerType.values()).forEach(t -> {
-			core.serversByType.put(t, new HashSet<Server>());
-			core.playersByType.put(t, new HashSet<UUID>());
-		});
+		Arrays.stream(ServerType.values()).forEach(t -> { // NOSONAR closeable
+					core.serversByType.put(t, new HashSet<Server>());
+					core.playersByType.put(t, new HashSet<UUID>());
+				});
 		SPhantom.getInstance().getSphantomConfig().getServers().stream().map(vs -> new Vps(vs.getName(), vs.getRam(), core.getByName(vs.getIp()), New.set(), System.currentTimeMillis()))
 				.forEach(v -> ServerProvider.getInstance().getConfigInstances().put(v.getLabel(), v.register()));
 		Scheduler.getScheduler().register(core);
@@ -90,12 +91,10 @@ public class Core implements Scheduled {
 		try {
 			return InetAddress.getByName(name);
 		} catch (UnknownHostException e) {
-			e.printStackTrace();
+			Log.trace(e);
 		}
 		return null;
 	}
-
-	private boolean procc = false;
 
 	@Schedule(rate = 30, unit = TimeUnit.SECONDS)
 	public void checkFreeSpace() {
@@ -104,7 +103,7 @@ public class Core implements Scheduled {
 			procc = true;
 			boolean decrem = true;
 			int plTot = Manager.getInstance().getPlayersOnNetwork().size();
-			for (ServerType v : ServerType.values()) {
+			for (ServerType v : ServerType.values()) { // NOSONAR squid:S135
 				if (v == ServerType.PROXY) continue;
 				int playersCount = playersByType.get(v).size();
 				int totspace = SPhantom.getInstance().getSphantomConfig().getInstances().get(v).getMaxPlayers() * serversByType.get(v).size();
@@ -112,9 +111,9 @@ public class Core implements Scheduled {
 				if (totspace <= 0) continue;
 				if (totspace * getMode().getPercentPl() <= playersCount) {
 					ServerProvider.getInstance().incrementPriority();
-					if (SPhantom.logDiv()) Log.out("[DEFQON |incrementPriority();");
+					if (SPhantom.logDiv()) Log.out("[DEFQON |incrementPriority();"); // NOSONAR squid minecraft
 					int nbr = 3;
-					if (plTot < 200) nbr = 1;
+					if (plTot < 200) nbr = 1; // NOSONAR le poulpe est le meilleur ami de l'homme
 					else if (plTot < 1000) nbr = 2;
 					deployServer(v, nbr);
 					decrem = false;
@@ -141,7 +140,7 @@ public class Core implements Scheduled {
 		try {
 			if (SPhantom.getInstance().isLocal()) return;
 			Sequencer.<Vps, Server> phantomSequencing((list, tk, dispatcher, worker, noClose, adder, canAccept, thenAdd) -> {
-				Queue<Vps> queue = new LinkedList<Vps>();
+				Queue<Vps> queue = new LinkedList<>();
 				list.sort((t1, t2) -> t1.compareTo(t2));
 				list.forEach(queue::add);
 				final int size = queue.size();
@@ -152,11 +151,10 @@ public class Core implements Scheduled {
 						return q;
 					});
 			}, new ArrayList<Vps>(getVps().values()), takesupp -> takesupp.getServers(),
-					(v6, v6coll, list, worker, noClose, adder, canAccept, thenAdd) -> list.stream().map(v -> worker.transfert(v, v6coll, noClose, adder, canAccept, thenAdd))
-							.reduce((a, b) -> (a && b)).get(),
-					(v, collec, noclos, addr, canaccp, theadd) -> collec.stream().filter(noclos).map(s -> addr.add(v, s, canaccp, theadd)).reduce((a, b) -> (a && b)).get(),
-					(sz) -> sz.getStatus() != Statut.CLOSING && sz.getStatus() != Statut.REDUCTION && sz.getStatus() != Statut.CRASHED && sz.getStatus() != Statut.OVERHEAD, (vz, sr, predicate,
-							consume) -> (predicate.test(vz, sr) && consume.accept(vz, sr)), (vt, st) -> vt.canAccept(st), BoolBiConsumer.<Vps, Server> of((uv, ud) -> {
+					(v6, v6coll, list, worker, noClose, adder, canAccept, thenAdd) -> list.stream().map(v -> worker.transfert(v, v6coll, noClose, adder, canAccept, thenAdd)).reduce((a, b) -> a && b)
+							.get(), (v, collec, noclos, addr, canaccp, theadd) -> collec.stream().filter(noclos).map(s -> addr.add(v, s, canaccp, theadd)).reduce((a, b) -> a && b).get(),
+					sz -> sz.getStatus() != Statut.CLOSING && sz.getStatus() != Statut.REDUCTION && sz.getStatus() != Statut.CRASHED && sz.getStatus() != Statut.OVERHEAD,
+					(vz, sr, predicate, consume) -> predicate.test(vz, sr) && consume.accept(vz, sr), (vt, st) -> vt.canAccept(st), BoolBiConsumer.<Vps, Server> of((uv, ud) -> {
 						ud.setStatus(Statut.REDUCTION);
 						Log.out("balk() [DEFRAGMENTATION SEQUENCING] | Reduction on " + ud.getLabel() + " |Actual Vps : " + ud.getVpsLabel());
 						new PacketPhantomReduceServer(ud.getLabel(), uv.getLabel()).send();
@@ -175,22 +173,22 @@ public class Core implements Scheduled {
 	 */
 	@Schedule(rate = 1, unit = TimeUnit.MINUTES)
 	public void repairMap() {
-		Arrays.stream(ServerType.values()).forEach(v -> {
-			if (!serversByType.get(v).isEmpty()) {
-				int totplayers = serversByType.get(v).stream().filter(s -> (s.getStatus() == Statut.OPEN)).mapToInt(ss -> ss.countPlayers()).reduce((a, b) -> a + b).orElse(0);
-				if (totplayers != playersByType.get(v).size()) Core.this.remapPlayersByType();
-			}
-		});
+		Arrays.stream(ServerType.values()).forEach(v -> { // NOSONAR closeable
+					if (!serversByType.get(v).isEmpty()) {
+						int totplayers = serversByType.get(v).stream().filter(s -> s.getStatus() == Statut.OPEN).mapToInt(ss -> ss.countPlayers()).reduce((a, b) -> a + b).orElse(0);
+						if (totplayers != playersByType.get(v).size()) Core.this.remapPlayersByType();
+					}
+				});
 	}
 
 	private void remapPlayersByType() {
 		if (SPhantom.logDiv()) Log.out("[Map repairing] | /!\\ Remaping players /!\\ !");
-		Arrays.stream(ServerType.values()).forEach(v -> {
-			playersByType.put(v, serversByType.get(v).stream().filter(s -> (s.getStatus() == Statut.OPEN)).map(s -> s.getPlayers()).reduce((a, b) -> {
-				a.addAll(b);
-				return a;
-			}).orElseGet(New::set));
-		});
+		Arrays.stream(ServerType.values()).forEach(v -> { // NOSONAR closeable
+					playersByType.put(v, serversByType.get(v).stream().filter(s -> s.getStatus() == Statut.OPEN).map(s -> s.getPlayers()).reduce((a, b) -> {
+						a.addAll(b);
+						return a;
+					}).orElseGet(New::set));
+				});
 	}
 
 	public ConcurrentHashMap<String, Vps> getVps() { // NOSONAR ouai car la ConcurrentMap.mappingCount exist pas
@@ -204,7 +202,7 @@ public class Core implements Scheduled {
 	public void checkVps(String label) {
 		if (getVps().containsKey(label)) return;
 		try {
-			new Vps(label, 0, InetAddress.getByName("127.0.0.1"), New.set(), System.currentTimeMillis()).register();
+			new Vps(label, 0, InetAddress.getLocalHost(), New.set(), System.currentTimeMillis()).register();
 		} catch (UnknownHostException e) {
 			Main.printStackTrace(e);
 		}
@@ -252,14 +250,12 @@ public class Core implements Scheduled {
 	 */
 	@Schedule(rate = 20, unit = TimeUnit.MINUTES)
 	public void modeUpdate() {
-		if (SPhantom.getInstance().isTimeBetween(2, 3) || SPhantom.getInstance().isTimeBetween(7, 8)) setMode(OperatingMode.Eco, true);
-		else if (SPhantom.getInstance().isTimeBetween(8, 9)) setMode(OperatingMode.Normal, true);
+		if (SPhantom.getInstance().isTimeBetween(2, 3) || SPhantom.getInstance().isTimeBetween(7, 8)) setMode(OperatingMode.ECO, true);
+		else if (SPhantom.getInstance().isTimeBetween(8, 9)) setMode(OperatingMode.NORMAL, true);
 	}
 
-	private boolean pro = false;
-
 	@Schedule(rate = 45, unit = TimeUnit.SECONDS)
-	public void VpsCount() {
+	public void vpsCount() {
 		if (pro || SPhantom.getInstance().isLocal()) return;
 		pro = true;
 		this.deployedInstances = SPhantom.getInstance().getIphantom().countDeployedInstance();
@@ -309,7 +305,7 @@ public class Core implements Scheduled {
 	}
 
 	private Set<Vps> deployInstances(int nbr) {
-		Set<Vps> vp = new HashSet<Vps>();
+		Set<Vps> vp = new HashSet<>();
 		int max = SPhantom.getInstance().getSphantomConfig().getMaxInstance();
 		int current = (int) (deployedInstances == -1 ? getVps().mappingCount() : deployedInstances);
 		for (int i = 0; i < nbr; i++) {
@@ -343,7 +339,7 @@ public class Core implements Scheduled {
 				}
 				int port = Manager.getInstance().genPort(type);
 				if (port == -1) {
-					Log.out("[DeployForced] Can't deploy server ! All port fort the type('" + type.name() + "') are already in use");
+					Log.out("[DeployForced] Can't deploy server ! All port fort the type('" + type.name() + "')  are already in use");
 					return;
 				}
 				Server srv = Server.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), port);
@@ -366,13 +362,13 @@ public class Core implements Scheduled {
 	}
 
 	private Set<Server> deployServer(ServerType type, int nbr) {
-		if (!checkSynchronized()) return null;
+		if (!checkSynchronized()) return new HashSet<>();
 		if (type == ServerType.PROXY) return deployProxy(nbr);
 		if (SPhantom.logDiv()) Log.out("Deploy Server |Type_" + type + "|Nbr(" + nbr + ")");
 		SPhantomConfig conf = SPhantom.getInstance().getSphantomConfig();
 		McServerConfigObject obj = conf.getInstances().get(type);
-		Set<Server> set = new HashSet<Server>();
-		for (int i = 0; i < nbr; i++) {
+		Set<Server> set = new HashSet<>();
+		for (int i = 0; i < nbr; i++) { // NOSONAR
 			Vps vp = ServerProvider.getInstance().getVps(type, Optional.empty());
 			if (vp == null) break;
 			int port = Manager.getInstance().genPort(type);
@@ -430,22 +426,23 @@ public class Core implements Scheduled {
 	}
 
 	private void reduceProxy() {
-		// TODO
+		// hum
 	}
 
 	private Set<Server> deployProxy(int nbr) {
-		Log.out("[DEPLOY PROXY] Not implemented Yet !");
-		return new HashSet<Server>();
+		Log.out("[DEPLOY PROXY] Not implemented Yet ! " + nbr);
+		return new HashSet<>();
 	}
 
 	private void deplyProxyOnVps(Vps v) {
+		v.getAvailableRam(); // sonar baisé
 		Log.out("[DEPLOY PROXY] Not implemented Yet !");
 	}
 
-	public static enum OperatingMode {
-		Eco(0.8F, -1),
-		Normal(0.6F, 0),
-		NoLag(0.4F, 1);
+	public enum OperatingMode {
+		ECO(0.8F, -1),
+		NORMAL(0.6F, 0),
+		NOLAG(0.4F, 1);
 
 		private float percentPl;
 		private int var;

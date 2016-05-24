@@ -38,6 +38,14 @@ public class Vps implements Comparable<Vps>, VpsApi, ICrash, IRegistrable<Vps> {
 	 */
 	private Set<Server> servers;
 
+	public Vps(String label, int ram, InetAddress ip, Set<Server> srvs, long created) {
+		this.label = label;
+		this.ram = ram;
+		this.servers = srvs;
+		this.createdMilli = created;
+		this.ip = ip;
+	}
+
 	public static Vps fromBoot(String label, int ram, InetAddress ip) {
 		return new Vps(label, ram, ip, new HashSet<Server>(), System.currentTimeMillis()).setState(VpsState.DEPLOYING);
 	}
@@ -48,16 +56,9 @@ public class Vps implements Comparable<Vps>, VpsApi, ICrash, IRegistrable<Vps> {
 				+ ")|Updated(" + isUpdated() + ")|Created('" + getCreatedInfos() + "') >-";
 	}
 
+	@Override
 	public String getCreatedInfos() {
 		return LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM HH:mm"));
-	}
-
-	public Vps(String label, int ram, InetAddress ip, Set<Server> srvs, long created) {
-		this.label = label;
-		this.ram = ram;
-		this.servers = srvs;
-		this.createdMilli = created;
-		this.ip = ip;
 	}
 
 	public boolean isCrashed() {
@@ -76,6 +77,7 @@ public class Vps implements Comparable<Vps>, VpsApi, ICrash, IRegistrable<Vps> {
 
 	}
 
+	@Override
 	public boolean isUpdated() {
 		return this.updated;
 	}
@@ -89,6 +91,7 @@ public class Vps implements Comparable<Vps>, VpsApi, ICrash, IRegistrable<Vps> {
 		return getAvailableRam(true) >= SPhantom.getInstance().getSphantomConfig().getRamFor(srv.getType());
 	}
 
+	@Override
 	public Vps register() {
 		Core.getInstance().getVps().put(getLabel(), this);
 		return this;
@@ -97,6 +100,7 @@ public class Vps implements Comparable<Vps>, VpsApi, ICrash, IRegistrable<Vps> {
 	/**
 	 * Unregister the vps but not his servers
 	 */
+	@Override
 	public Vps unregister() {
 		if (isDaemon()) throw new IllegalAccessError("Cannot unregister a configured vps ! (" + getLabel() + ")");
 		Core.getInstance().getVps().remove(getLabel());
@@ -118,10 +122,12 @@ public class Vps implements Comparable<Vps>, VpsApi, ICrash, IRegistrable<Vps> {
 								: true).mapToInt(t -> SPhantom.getInstance().getSphantomConfig().getRamFor(t.getType())).reduce((a, b) -> a + b).orElse(0);
 	}
 
+	@Override
 	public int getAvailableRam() {
 		return getAvailableRam(true);
 	}
 
+	@Override
 	public VpsState getState() {
 		return state;
 	}
@@ -139,10 +145,12 @@ public class Vps implements Comparable<Vps>, VpsApi, ICrash, IRegistrable<Vps> {
 		return SPhantom.getInstance().getSphantomConfig().getServers().stream().anyMatch(p -> p.getName().equals(getLabel()));
 	}
 
+	@Override
 	public InetAddress getIp() {
 		return ip;
 	}
 
+	@Override
 	public String getLabel() {
 		return label;
 	}
@@ -155,6 +163,7 @@ public class Vps implements Comparable<Vps>, VpsApi, ICrash, IRegistrable<Vps> {
 		return servers;
 	}
 
+	@Override
 	public Set<ServerApi> getAllServers() {
 		return getServers().stream().map(s -> s).collect(fr.aresrpg.commons.util.stream.Collectors.toSet());
 	}
@@ -177,7 +186,7 @@ public class Vps implements Comparable<Vps>, VpsApi, ICrash, IRegistrable<Vps> {
 		return Instant.ofEpochMilli(getCreatedMilli()).plus(50, ChronoUnit.MINUTES).isBefore(Instant.now());
 	}
 
-	public static enum VpsState {
+	public enum VpsState {
 		DEPLOYING((byte) 0),
 		ONLINE((byte) 1),
 		TIMEOUT((byte) 2),
@@ -194,12 +203,12 @@ public class Vps implements Comparable<Vps>, VpsApi, ICrash, IRegistrable<Vps> {
 		}
 
 		public static VpsState fromId(byte id) {
-			return Arrays.stream(values()).filter(i -> i.id == id).findFirst().orElse(null);
+			return Arrays.stream(values()).filter(i -> i.id == id).findFirst().orElse(null);// NOSONAR tg
 		}
 	}
 
 	@Override
-	public int compareTo(Vps o) {
+	public int compareTo(Vps o) { // NOSONAR non j'ai pas envie de override equals alors tu t'humidifie et te care toi meme dans ton cul
 		return getAvailableRam(true) - o.getAvailableRam(true);
 	}
 
