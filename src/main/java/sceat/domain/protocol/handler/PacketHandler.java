@@ -32,11 +32,6 @@ public class PacketHandler {
 	private class PacketDeserializer implements Runnable {
 		private RawPacket rawPacket;
 
-		@SuppressWarnings("unused")
-		public PacketDeserializer(RawPacket rawPacket, PacketWatchDog watchDog) {
-			this.rawPacket = rawPacket;
-		}
-
 		public PacketDeserializer(RawPacket rawPacket) {
 			this.rawPacket = rawPacket;
 		}
