@@ -38,12 +38,11 @@ import fr.aresrpg.commons.condition.match.Matcher.Case;
 import fr.aresrpg.sdk.Weed;
 import fr.aresrpg.sdk.concurrent.Async;
 import fr.aresrpg.sdk.lang.BaseLang;
-import fr.aresrpg.sdk.protocol.PacketPhantom;
 import fr.aresrpg.sdk.protocol.Security;
 import fr.aresrpg.sdk.system.Log;
 import fr.aresrpg.sdk.system.Root;
 
-public class SPhantom implements Async, Log {
+public class SPhantom implements Async {
 
 	private static SPhantom instance;
 	private static boolean $ynchronized = false; // NOSONAR laisse mon swag
@@ -55,9 +54,9 @@ public class SPhantom implements Async, Log {
 	private boolean lead = false;
 	private boolean local = false;
 	private boolean logPkt = true;
-	public boolean logHeart = false;
-	public boolean logprovider = true;
-	public boolean logDiv = true;
+	private boolean logHeart = false;
+	private boolean logprovider = true;
+	private boolean logDiv = true;
 	private IPhantom iphantom;
 	private Security security;
 	private PhantomApi mainApi;
@@ -75,11 +74,6 @@ public class SPhantom implements Async, Log {
 	public SPhantom(Boolean local) { // don't change the implementation order !
 		instance = this;
 		Weed.init(new Root() {
-
-			@Override
-			public Log getLog() {
-				return getInstance();
-			}
 
 			@Override
 			public BaseLang getLang() {
@@ -126,23 +120,20 @@ public class SPhantom implements Async, Log {
 	}
 
 	public void startWebPanel() {
-		print("Starting web panel..");
+		Log.out("Starting web panel..");
 		try {
-			new GrizzlyWebServer(81);
-			print("Web panel started!");
+			GrizzlyWebServer.init(81);
+			Log.out("Web panel started!");
 		} catch (IOException e) {
-			print("[ERREUR] Unable to start web server !");
-			print("____________________________________________________\n");
-			Main.printStackTrace(e);
-			print("\n____________________________________________________");
-
+			Log.out("[ERREUR] Unable to start web server !");
+			Log.trace(e);
 		}
 	}
 
 	public void stopWebPanel() {
-		print("WebPanel stoping...");
+		Log.out("WebPanel stoping...");
 		GrizzlyWebServer.stop();
-		print("WebPanel stopped.");
+		Log.out("WebPanel stopped.");
 	}
 
 	public InetAddress getIp() {
@@ -150,14 +141,13 @@ public class SPhantom implements Async, Log {
 	}
 
 	public void setupIp() {
-		print("Oppening socket to get Ip...");
-
+		Log.out("Oppening socket to get Ip...");
 		try (Socket s = new Socket("google.com", 80)) {
-			print("Ip founded ! [" + s.getLocalAddress().getHostName() + "]");
+			Log.out("Ip founded ! [" + s.getLocalAddress().getHostName() + "]");
 			this.ip = s.getLocalAddress();
 		} catch (IOException e) {
-			Main.printStackTrace(e);
-			print("Unable to find the Ip !");
+			Log.trace(e);
+			Log.out("Unable to find the Ip !");
 			Threads.uSleep(3, TimeUnit.SECONDS);
 			Main.shutDown();
 		}
@@ -192,12 +182,13 @@ public class SPhantom implements Async, Log {
 	}
 
 	public void setLead(boolean lead) {
+		Log l = Log.getInstance();
 		if (!lead) {
-			print("----------------------------------------------------------");
-			print("SPhantom instance has lost the lead !");
-			print("Starting to run in background and wait for wakingUp !");
-			print("try <forcelead> for set this instance to lead");
-			print("----------------------------------------------------------");
+			l.logOut("----------------------------------------------------------");
+			l.logOut("SPhantom instance has lost the lead !");
+			l.logOut("Starting to run in background and wait for wakingUp !");
+			l.logOut("try <forcelead> for set this instance to lead");
+			l.logOut("----------------------------------------------------------");
 		}
 		PacketSender.getInstance().pause(!lead);
 		this.lead = lead;
@@ -234,34 +225,35 @@ public class SPhantom implements Async, Log {
 
 	public void awaitForInput() {
 		Input input = Input.getInstance();
+		Log l = Log.getInstance();
 		while (isRunning()) {
-			print("Send Input (type help for show cmds) :");
-			print(".. >_");
+			l.logOut("Send Input (type help for show cmds) :");
+			l.logOut(".. >_");
 			Matcher.match(input.next(), when("help"::equalsIgnoreCase, () -> {
-				print("> shutdown [Close this Sphantom instance]");
-				print("> forcelead [This instance will become the replica leader]");
-				print("> logpkt [Enable/Disable the packet logger]");
-				print("> logProvider [Enable/Disable the overspan logger]");
-				print("> setMode <1|2|3> [Set operating mode Eco|Normal|NoLag]");
-				print("> logHB [Enable/Disable the heartBeat logger]");
-				print("> logDiv [Enable/Disable the global logger]");
-				print("> vps [Show all vps]");
-				print("> create_server");
+				l.logOut("> shutdown [Close this Sphantom instance]");
+				l.logOut("> forcelead [This instance will become the replica leader]");
+				l.logOut("> logpkt [Enable/Disable the packet logger]");
+				l.logOut("> logProvider [Enable/Disable the overspan logger]");
+				l.logOut("> setMode <1|2|3> [Set operating mode Eco|Normal|NoLag]");
+				l.logOut("> logHB [Enable/Disable the heartBeat logger]");
+				l.logOut("> logDiv [Enable/Disable the global logger]");
+				l.logOut("> vps [Show all vps]");
+				l.logOut("> create_server");
 			}), when("loghb"::equalsIgnoreCase, () -> {
-				this.logHeart = !this.logHeart;
-				print("HeartBeat logger " + (this.logHeart ? ENABLED : DISABLED) + " !");
+				this.setLogHeart(!this.isLogHeart());
+				l.logOut("HeartBeat logger " + (this.isLogHeart() ? ENABLED : DISABLED) + " !");
 			}), when("vps"::equalsIgnoreCase, () -> {
-				print("Vps registered : ");
-				Core.getInstance().getVps().values().forEach(v -> print(v.toString() + "\n"));
+				l.logOut("Vps registered : ");
+				Core.getInstance().getVps().values().forEach(v -> l.logOut(v.toString() + "\n"));
 			}), when("logdiv"::equalsIgnoreCase, () -> {
 				this.logDiv = !this.logDiv;
-				print("Diver logger " + (this.logDiv ? ENABLED : DISABLED) + " !");
+				l.logOut("Diver logger " + (this.logDiv ? ENABLED : DISABLED) + " !");
 			}), when("exit"::equalsIgnoreCase, Main::shutDown), when("forcelead"::equalsIgnoreCase, Heart.getInstance()::takeLead), when("logpkt"::equalsIgnoreCase, () -> {
 				this.logPkt = !this.logPkt;
-				print("Packet logger " + (this.logPkt ? ENABLED : DISABLED) + " !");
+				l.logOut("Packet logger " + (this.logPkt ? ENABLED : DISABLED) + " !");
 			}), when("logprovider"::equalsIgnoreCase, () -> {
-				this.logprovider = !this.logprovider;
-				print("ServerProvider logger " + (this.logprovider ? ENABLED : DISABLED) + " !");
+				this.setLogprovider(!this.isLogprovider());
+				l.logOut("ServerProvider logger " + (this.isLogprovider() ? ENABLED : DISABLED) + " !");
 			}), when(a -> {
 				java.util.regex.Matcher m = modeM.matcher(a.toLowerCase());
 				if (m.matches()) {
@@ -269,7 +261,7 @@ public class SPhantom implements Async, Log {
 					updateMode(Integer.parseInt(m.group(1)));
 				}
 				return false;
-			}, () -> {}), Matcher.def(() -> print("Unknow command!")));
+			}, () -> {}), Matcher.def(() -> Log.out("Unknow command!")));
 		}
 
 	}
@@ -288,16 +280,7 @@ public class SPhantom implements Async, Log {
 			if (i == maxline) break;
 			else i++;
 		}
-		System.out.println(msg);
-	}
-
-	public static void print(String txt) {
-		print(txt, true);
-	}
-
-	public static void print(String txt, boolean log) {
-		if (log) Main.getLogger().info(txt);
-		else System.out.println(new java.sql.Timestamp(System.currentTimeMillis()).toString().substring(0, 16) + " | [Sphantom] > " + txt);
+		Log.out(msg);
 	}
 
 	public static SPhantom getInstance() {
@@ -313,21 +296,6 @@ public class SPhantom implements Async, Log {
 	}
 
 	@Override
-	public void logOut(String log) {
-		print(log);
-	}
-
-	@Override
-	public void logPkt(PacketPhantom pkt, boolean in) {
-		if (logPkt) logOut((in ? "<RECV] " : "[SEND> ") + pkt.toString());
-	}
-
-	@Override
-	public void logTrace(Throwable t) {
-		Main.printStackTrace(t);
-	}
-
-	@Override
 	public void run(Runnable r) {
 		getExecutor().execute(r);
 	}
@@ -335,6 +303,22 @@ public class SPhantom implements Async, Log {
 	@Override
 	public <T> CompletableFuture<T> supply(Supplier<T> t) {
 		return CompletableFuture.<T> supplyAsync(t, getExecutor());
+	}
+
+	public boolean isLogprovider() {
+		return logprovider;
+	}
+
+	public void setLogprovider(boolean logprovider) {
+		this.logprovider = logprovider;
+	}
+
+	public boolean isLogHeart() {
+		return logHeart;
+	}
+
+	public void setLogHeart(boolean logHeart) {
+		this.logHeart = logHeart;
 	}
 
 }

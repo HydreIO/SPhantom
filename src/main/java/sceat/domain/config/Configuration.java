@@ -311,7 +311,7 @@ public final class Configuration {
 	/*------------------------------------------------------------------------*/
 	public List<?> getList(String path) {
 		Object def = getDefault(path);
-		return getList(path, (def instanceof List<?>) ? (List<?>) def : Collections.EMPTY_LIST);
+		return getList(path, (def instanceof List<?>) ? (List<?>) def : Collections.emptyList());
 	}
 
 	public List<?> getList(String path, List<?> def) {

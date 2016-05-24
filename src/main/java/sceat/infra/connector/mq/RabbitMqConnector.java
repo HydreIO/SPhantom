@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import sceat.Main;
-import sceat.SPhantom;
 import sceat.domain.common.mq.Broker;
 import sceat.domain.common.system.Config;
 import sceat.domain.protocol.packets.PacketPhantomBootServer;
@@ -54,9 +53,17 @@ public class RabbitMqConnector implements Broker {
 		return this.receiver;
 	}
 
+	public static void setConnection(Connection connection) {
+		RabbitMqConnector.connection = connection;
+	}
+
+	public static void setChannel(Channel channel) {
+		RabbitMqConnector.channel = channel;
+	}
+
 	public void initt(String user, String passwd, boolean local) {
 		if (local) {
-			SPhantom.print("Local mode ! No messaging service.");
+			Log.out("Local mode ! No messaging service.");
 			return;
 		}
 		getFactory().setHost(Config.get().getRabbitAdress());
@@ -64,22 +71,23 @@ public class RabbitMqConnector implements Broker {
 		getFactory().setUsername(user);
 		getFactory().setPassword(passwd);
 		Try.test(() -> {
-			connection = getFactory().newConnection();
-			channel = connection.createChannel();
-		}).catchEx((a) -> {
+			setConnection(getFactory().newConnection());
+			setChannel(connection.createChannel());
+		}).catchEx(a -> {
 			Log.out("Unable to access message broker RMQ, ScorchedRoot is going down..");
 			Log.trace(a);
 			Threads.uSleep(3, TimeUnit.SECONDS);
 			Root.exit(false);
 		});
 		Log.out("Sucessfully connected to broker RMQ");
-		Arrays.stream(MessagesType.values()).forEach(this::exchangeDeclare);
+		Arrays.stream(MessagesType.values()).forEach(this::exchangeDeclare); // NOSONAR TRIPLE FDP
 		this.receiver = new RabbitMqReceiver();
 	}
 
 	/**
-	 * Utilis� pour fermer la connection onDisable // A METTRE ONDISABLE()
+	 * Utilisé pour fermer la connection onDisable // A METTRE ONDISABLE()
 	 */
+	@Override
 	public void close() {
 		Try.test(() -> {
 			getChannel().close();

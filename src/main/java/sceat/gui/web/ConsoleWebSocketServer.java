@@ -7,7 +7,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Handler;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 import org.glassfish.grizzly.websockets.Broadcaster;
@@ -17,6 +16,7 @@ import org.glassfish.grizzly.websockets.WebSocketApplication;
 
 import sceat.Main;
 import sceat.domain.shell.Input;
+import fr.aresrpg.sdk.system.Log;
 
 public class ConsoleWebSocketServer extends WebSocketApplication implements Input.PhantomInput {
 	private class LoggerHandler extends Handler {
@@ -44,7 +44,7 @@ public class ConsoleWebSocketServer extends WebSocketApplication implements Inpu
 				throwable.printStackTrace(new PrintStream(stream));// NOSONAR
 				return new String(stream.toByteArray());
 			} catch (IOException e) {
-				Main.getLogger().log(Level.WARNING, "Could'not close stream", e);
+				Log.getInstance().getLogger().warning("Could'not close stream", e);
 				return null;
 			}
 		}
@@ -61,7 +61,7 @@ public class ConsoleWebSocketServer extends WebSocketApplication implements Inpu
 	@Override
 	public void onMessage(WebSocket socket, String text) {
 		super.onMessage(socket, text);
-		Main.getLogger().log(Level.INFO, text);
+		Log.out(text);
 		push(text);
 	}
 

@@ -38,14 +38,15 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 	private Statut state;
 	private boolean fromSymbiote = false; // if the packet came from symbiote, then we must get from the map like a closing server and not from "Server.fromPacket"
 
-	public PacketPhantomServerInfo(Statut state, String label, String vpsLabel, InetAddress ip, ServerType type, int maxp, int port, EnumMap<Grades, Set<UUID>> pl, boolean fromSymbiote) {
+	public PacketPhantomServerInfo(Statut state, String label, String vpsLabel, InetAddress ip, ServerType type, int maxp, int port, EnumMap<Grades, Set<UUID>> pl, boolean fromSymbiote) { // NOSONAR ENUMMAP C DEJA UNE PUTIN D'IMPLEM ALORS FERME LA
 		this.ip = ip.getHostAddress();
 		this.vpsLabel = vpsLabel;
 		this.label = label;
 		this.type = type;
 		this.players = pl == null ? new EnumHashMap<>(Grades.class) : pl;
-		if (pl == null) Arrays.stream(Grades.values()).forEach(g -> players.put(g, new HashSet<>()));
+		if (pl == null) Arrays.stream(Grades.values()).forEach(g -> players.put(g, new HashSet<>())); // NOSONAR CLOSE TA MERE
 		this.maxp = maxp;
+		this.fromSymbiote = fromSymbiote;
 		this.state = state;
 		this.port = port;
 	}
@@ -75,7 +76,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		this.maxp = readInt();
 		this.ip = readString();
 		this.players = readEnumMap(() -> Grades.valueOf(readString()), () -> readCollection(new HashSet<UUID>(), () -> UUID.fromString(readString())), Grades.class);
-		if (players.get(Grades.ADMIN) == null) Arrays.stream(Grades.values()).forEach(g -> players.put(g, New.set()));
+		if (players.get(Grades.ADMIN) == null) Arrays.stream(Grades.values()).forEach(g -> players.put(g, New.set())); // NOSONAR closeable comme ta mere qui boit de l'eau chaude a la caraffe
 		this.state = Statut.valueOf(readString());
 		this.fromSymbiote = readBoolean();
 		this.port = readInt();
@@ -179,7 +180,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		}
 	}
 
-	public EnumMap<Grades, Set<UUID>> getPlayersPerGrade() {
+	public EnumMap<Grades, Set<UUID>> getPlayersPerGrade() { // NOSONAR c déja une implem putin
 		return players;
 	}
 

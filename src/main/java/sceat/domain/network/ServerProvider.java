@@ -27,16 +27,17 @@ public class ServerProvider {
 	 * <p>
 	 * on cherchera d'abord a remplir ceux la avant de toucher au instances vultr
 	 */
-	private ConcurrentHashMap<String, Vps> configInstances = new ConcurrentHashMap<String, Vps>();
+	private ConcurrentHashMap<String, Vps> configInstances = new ConcurrentHashMap<>();
 	/**
 	 * Map des instances suplémentaire loué a l'heure, mises a jour en fonction de la ram dispo sur les Vps et la ram demandée pour le type du serveur
 	 */
-	private ConcurrentHashMap<ServerType, Vps> ordered = new ConcurrentHashMap<ServerType, Vps>();
+	private ConcurrentHashMap<ServerType, Vps> ordered = new ConcurrentHashMap<>();
 
 	private ServerProvider() {
 	}
 
 	public static void init() {
+		// mange mon gros sonar
 	}
 
 	public void incrementPriority() {
@@ -102,7 +103,7 @@ public class ServerProvider {
 	 * @return first proper vps for the serverType, null if no instance is found
 	 */
 	public synchronized Vps getVps(ServerType type, Optional<Vps> exclude) {
-		boolean log = SPhantom.getInstance().logprovider;
+		boolean log = SPhantom.getInstance().isLogprovider();
 		long time = System.currentTimeMillis();
 		if (log) Log.out("[Provider] Asking Vps for type : " + type.name());
 		SPhantomConfig sc = SPhantom.getInstance().getSphantomConfig();
@@ -123,7 +124,7 @@ public class ServerProvider {
 		if (vp == null) {
 			vp = searchFirst(sc.getRamFor(type), exclude);
 			if (vp != null && !vp.isUpdated()) vp = null;
-			if (SPhantom.getInstance().logprovider) Log.out("Force found vps : " + (vp == null ? "Not found again.. Wait for defqon to grow" : vp.getLabel()));
+			if (SPhantom.getInstance().isLogprovider()) Log.out("Force found vps : " + (vp == null ? "Not found again.. Wait for defqon to grow" : vp.getLabel()));
 			if (vp == null) return null; // si on trouve vraiment pas de vps on return null et tant pis aucun serveur ne s'ouvrira il faudra attendre l'ouverture d'une instance automatiquement
 		}
 		int rfm = sc.getRamFor(type);

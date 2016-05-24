@@ -30,7 +30,7 @@ public class PacketPhantomHeartBeat extends PacketPhantom {
 	@Override
 	public void handleData(MessagesType tp) {
 		if (tp == MessagesType.HEART_BEAT) {
-			if (SPhantom.getInstance().logHeart) Log.out("<<<<]RECV] PacketHeartBeat [Last " + new java.sql.Timestamp(getLastHandShake()).toString().substring(0, 16) + "]");
+			if (SPhantom.getInstance().isLogHeart()) Log.out("<<<<]RECV] PacketHeartBeat [Last " + new java.sql.Timestamp(getLastHandShake()).toString().substring(0, 16) + "]");
 			Heart.getInstance().transfuse(this);
 		} else if (tp == MessagesType.TAKE_LEAD) { // inutile mais en cas ou je rajoute un autre type pour ce pkt
 			if (cameFromLocal()) return;

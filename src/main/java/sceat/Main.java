@@ -1,16 +1,10 @@
 package sceat;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.UUID;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.FileHandler;
-import java.util.logging.Formatter;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -23,6 +17,7 @@ import sceat.gui.web.GrizzlyWebServer;
 import sceat.infra.input.ScannerInput;
 import fr.aresrpg.commons.log.Logger;
 import fr.aresrpg.commons.util.schedule.Scheduler;
+import fr.aresrpg.sdk.system.Log;
 import fr.aresrpg.sdk.util.Constant;
 
 public class Main {
@@ -39,11 +34,10 @@ public class Main {
 	public static void main(String[] args) {
 		assert false;
 		folder = new File(ClassLoader.getSystemClassLoader().getResource(".").getPath());
-		initLogger();
 		Options opt = new Options();
 		CommandLine cmd = setupOptions(opt, args);
 		if (cmd == null) throw new NullPointerException("Unable to setup the commandLine.. Aborting..");
-		Constant.SPHANTOM.forEach(SPhantom::print);
+		Constant.SPHANTOM.forEach(Log::out);
 		localMode = cmd.hasOption("local");
 		ClassLoader loader = ClassLoader.getSystemClassLoader();
 		loader.setDefaultAssertionStatus(true);
@@ -66,38 +60,6 @@ public class Main {
 		cause.printStackTrace(pw); // NOSONAR no need to use a logger here !
 		pw.flush();
 		return sw.toString();
-	}
-
-	private static void initLogger() {
-		FileHandler file;
-		Logger rootLogger = Logger.getLogger("");
-		Handler[] handlers = rootLogger.getHandlers();
-		if (handlers[0] instanceof ConsoleHandler) {
-			rootLogger.removeHandler(handlers[0]);
-		}
-
-		try {
-			file = new FileHandler(Main.folder.getAbsolutePath() + "/SPhantom.log");
-			file.setFormatter(new Formatter() {
-
-				@Override
-				public String format(LogRecord record) {
-					return new java.sql.Timestamp(System.currentTimeMillis()).toString().substring(0, 16) + " | [Sphantom] > " + record.getMessage() + "\n";
-				}
-			});
-			ConsoleHandler hand = new ConsoleHandler();
-			hand.setFormatter(new Formatter() {
-
-				@Override
-				public String format(LogRecord record) {
-					return new java.sql.Timestamp(System.currentTimeMillis()).toString().substring(0, 16) + " | [Sphantom] > " + record.getMessage() + "\n";
-				}
-			});
-			Main.logger.addHandler(hand);
-			Main.logger.addHandler(file);
-		} catch (SecurityException | IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	public static void shutDown() {
