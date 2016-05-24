@@ -1,61 +1,34 @@
 package sceat.gui.web;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
 
+import fr.aresrpg.commons.log.handler.BaseHandler;
+import fr.aresrpg.commons.log.handler.formatters.BasicFormatter;
 import org.glassfish.grizzly.websockets.Broadcaster;
 import org.glassfish.grizzly.websockets.OptimizedBroadcaster;
 import org.glassfish.grizzly.websockets.WebSocket;
 import org.glassfish.grizzly.websockets.WebSocketApplication;
 
-import sceat.Main;
 import sceat.domain.shell.Input;
 import fr.aresrpg.sdk.system.Log;
 
 public class ConsoleWebSocketServer extends WebSocketApplication implements Input.PhantomInput {
-	private class LoggerHandler extends Handler {
+	private class LoggerHandler extends BaseHandler {
 		@Override
-		public void publish(LogRecord record) {
-			String l = '[' + FORMAT.format(new Date(record.getMillis())) + "][" + Thread.currentThread().getName() + "][" + record.getLevel() + "]: " + record.getMessage() + '\n'
-					+ throwableToString(record.getThrown());
+		public void handle(fr.aresrpg.commons.log.Log log) throws IOException {
+			String l = format(log);
 			broadcaster.broadcast(getWebSockets(), l);
 			logs.append(l);
 		}
-
-		@Override
-		public void flush() {
-			// No
-		}
-
-		@Override
-		public void close() throws SecurityException { // NOSONAR jsai pas c ton code david
-			// no
-		}
-
-		private String throwableToString(Throwable throwable) {
-			if (throwable == null) return "";
-			try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
-				throwable.printStackTrace(new PrintStream(stream));// NOSONAR
-				return new String(stream.toByteArray());
-			} catch (IOException e) {
-				Log.getInstance().getLogger().warning("Could'not close stream", e);
-				return null;
-			}
-		}
 	}
 
-	private static final DateFormat FORMAT = new SimpleDateFormat("HH:mm:ss");
 	private StringBuilder logs = new StringBuilder();
 	private Broadcaster broadcaster = new OptimizedBroadcaster();
 
 	public ConsoleWebSocketServer() {
-		Main.getLogger().addHandler(new LoggerHandler());
+		LoggerHandler handler = new LoggerHandler();
+		handler.setFormatter(new BasicFormatter());
+		Log.getInstance().getLogger().addHandler(handler);
 	}
 
 	@Override
