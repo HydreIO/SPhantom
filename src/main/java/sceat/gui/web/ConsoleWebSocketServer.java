@@ -2,14 +2,14 @@ package sceat.gui.web;
 
 import java.io.IOException;
 
-import fr.aresrpg.commons.log.handler.BaseHandler;
-import fr.aresrpg.commons.log.handler.formatters.BasicFormatter;
 import org.glassfish.grizzly.websockets.Broadcaster;
 import org.glassfish.grizzly.websockets.OptimizedBroadcaster;
 import org.glassfish.grizzly.websockets.WebSocket;
 import org.glassfish.grizzly.websockets.WebSocketApplication;
 
 import sceat.domain.shell.Input;
+import fr.aresrpg.commons.log.handler.BaseHandler;
+import fr.aresrpg.commons.log.handler.formatters.BasicFormatter;
 import fr.aresrpg.sdk.system.Log;
 
 public class ConsoleWebSocketServer extends WebSocketApplication implements Input.PhantomInput {

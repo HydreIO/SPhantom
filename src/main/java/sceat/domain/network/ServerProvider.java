@@ -102,7 +102,7 @@ public class ServerProvider {
 	 *            chercher un vps autre que celui en parametre
 	 * @return first proper vps for the serverType, null if no instance is found
 	 */
-	public synchronized Vps getVps(ServerType type, Optional<Vps> exclude) {
+	public synchronized Vps getVps(ServerType type, Optional<Vps> exclude) { // NOSONAR sorry pour la cyclomatic complexity
 		boolean log = SPhantom.getInstance().isLogprovider();
 		long time = System.currentTimeMillis();
 		if (log) Log.out("[Provider] Asking Vps for type : " + type.name());
@@ -119,7 +119,7 @@ public class ServerProvider {
 			}
 		Vps vf = getOrdered().safeGet(type);
 		if (vp == null) vp = exclude.isPresent() ? vf == exclude.get() ? null : vf : vf;
-		if (vf != null && !vf.isUpdated()) vf = null;
+		if (vf != null && !vf.isUpdated()) vf = null; // NOSONAR bitch
 		if (log) Log.out("Found vps : " + (vp == null ? "NULL :(" : vp.getLabel()));
 		if (vp == null) {
 			vp = searchFirst(sc.getRamFor(type), exclude);
@@ -146,7 +146,7 @@ public class ServerProvider {
 
 	private Vps searchFirst(int ramNeeded, Optional<Vps>... exclude) {
 		Set<Vps> comp = new HashSet<>();
-		Arrays.stream(exclude).filter(Optional::isPresent).forEach(o -> comp.add(o.get()));
+		Arrays.stream(exclude).filter(Optional::isPresent).forEach(o -> comp.add(o.get())); // NOSONAR closeable
 		return Core.getInstance().getVps().values().stream().filter(vp -> vp.getAvailableRam(true) >= ramNeeded && (comp.isEmpty() || !comp.contains(vp))).findFirst().orElse(null);
 	}
 

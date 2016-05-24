@@ -41,6 +41,7 @@ public class Server implements ServerApi, IRegistrable<Server> {
 		this.maxPlayers = maxplayer;
 		this.status = state;
 		this.ipadress = ip;
+		this.port = port;
 	}
 
 	/**
@@ -55,7 +56,7 @@ public class Server implements ServerApi, IRegistrable<Server> {
 	 * @return
 	 */
 	public static Server fromPacket(PacketPhantomServerInfo pkt, boolean canBeNull) {
-		Server sr = null; // je ne peut pas use la methode getOrDefault de la concurrentHashmap car je doit modif le serveur contenu dans la map :(
+		Server sr = null; // NOSONAR je ne peut pas use la methode getOrDefault de la concurrentHashmap car je doit modif le serveur contenu dans la map :(
 		boolean neww = false;
 		ConcurrentMap<String, Server> sbl = Manager.getInstance().getServersByLabel();
 		if (sbl.containsKey(pkt.getLabel())) {
@@ -127,7 +128,7 @@ public class Server implements ServerApi, IRegistrable<Server> {
 		return this;
 	}
 
-	public Server setPlayers(EnumMap<Grades, Set<UUID>> players) {
+	public Server setPlayers(EnumMap<Grades, Set<UUID>> players) { // NOSONAR already an impl
 		this.players = players;
 		return this;
 	}
@@ -166,7 +167,7 @@ public class Server implements ServerApi, IRegistrable<Server> {
 		return getPlayersMap().get(gr);
 	}
 
-	public EnumMap<Grades, Set<UUID>> getPlayersMap() {
+	public EnumMap<Grades, Set<UUID>> getPlayersMap() { // NOSONAR already an impl
 		return players;
 	}
 
