@@ -8,6 +8,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import fr.aresrpg.sdk.util.Reflection;
 import sceat.Main;
 
 public class PhantomThreadPoolExecutor extends ThreadPoolExecutor {
