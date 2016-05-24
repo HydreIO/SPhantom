@@ -4,10 +4,10 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import sceat.Main;
-import sceat.domain.utils.PhantomThreadPoolExecutor;
 import fr.aresrpg.sdk.protocol.MessagesType;
 import fr.aresrpg.sdk.protocol.PacketPhantom;
 import fr.aresrpg.sdk.system.Log;
+import fr.aresrpg.sdk.util.PhantomThreadPoolExecutor;
 
 /**
  * Le PacketSender peut se mettre en pause en cas de prise du lead par un autre replica,
