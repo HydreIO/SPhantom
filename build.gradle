@@ -55,7 +55,7 @@ repositories {
         }
     }
     maven {
-        url 'https://oss.sonatype.org/content/repositories/xyzdeltaevo-1002/'
+        url 'https://oss.sonatype.org/content/repositories/public/'
     }
 }
 
