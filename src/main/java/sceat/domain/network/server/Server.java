@@ -164,7 +164,7 @@ public class Server implements ServerApi, IRegistrable<Server> {
 	}
 
 	public Set<UUID> getPlayers(Grades gr) {
-		return getPlayersMap().get(gr);
+		return getPlayersMap().safeGet(gr);
 	}
 
 	public EnumMap<Grades, Set<UUID>> getPlayersMap() { // NOSONAR already an impl

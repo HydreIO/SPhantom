@@ -77,7 +77,7 @@ public class RabbitMqConnector implements Broker {
 			Log.out("Unable to access message broker RMQ, ScorchedRoot is going down..");
 			Log.trace(a);
 			Threads.uSleep(3, TimeUnit.SECONDS);
-			Root.exit(false);
+			Root.safeExit();
 		});
 		Log.out("Sucessfully connected to broker RMQ");
 		Arrays.stream(MessagesType.values()).forEach(this::exchangeDeclare); // NOSONAR TRIPLE FDP

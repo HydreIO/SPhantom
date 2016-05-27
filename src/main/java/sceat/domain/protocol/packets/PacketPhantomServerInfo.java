@@ -76,7 +76,7 @@ public class PacketPhantomServerInfo extends PacketPhantom {
 		this.maxp = readInt();
 		this.ip = readString();
 		this.players = readEnumMap(() -> Grades.valueOf(readString()), () -> readCollection(new HashSet<UUID>(), () -> UUID.fromString(readString())), Grades.class);
-		if (players.get(Grades.ADMIN) == null) Arrays.stream(Grades.values()).forEach(g -> players.put(g, New.set())); // NOSONAR closeable comme ta mere qui boit de l'eau chaude a la caraffe
+		if (players.safeGet(Grades.ADMIN) == null) Arrays.stream(Grades.values()).forEach(g -> players.put(g, New.set())); // NOSONAR closeable comme ta mere qui boit de l'eau chaude a la caraffe
 		this.state = Statut.valueOf(readString());
 		this.fromSymbiote = readBoolean();
 		this.port = readInt();

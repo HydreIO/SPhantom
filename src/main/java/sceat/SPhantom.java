@@ -86,7 +86,7 @@ public class SPhantom implements Async {
 			}
 
 			@Override
-			public void exit() {
+			public void exit(boolean crash) {
 				Main.shutDown();
 			}
 		});

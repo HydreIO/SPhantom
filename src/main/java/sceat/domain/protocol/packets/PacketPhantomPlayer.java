@@ -64,7 +64,7 @@ public class PacketPhantomPlayer extends PacketPhantom {
 		switch (action) {
 			case CONNECT:
 				m.getPlayersOnNetwork().put(getPlayer(), serverLabelNew);
-				getServerNew().getPlayersMap().get(getGrade()).add(getPlayer());
+				getServerNew().getPlayersMap().safeGet(getGrade()).add(getPlayer());
 				break;
 			case DISCONNECT:
 				m.getPlayersOnNetwork().safeRemove(getPlayer());
@@ -72,8 +72,8 @@ public class PacketPhantomPlayer extends PacketPhantom {
 				break;
 			case SERVER_SWITCH:
 				m.getPlayersOnNetwork().put(getPlayer(), serverLabelNew);
-				getServerLast().getPlayersMap().get(getGrade()).safeRemove(getPlayer());
-				getServerNew().getPlayersMap().get(getGrade()).add(getPlayer());
+				getServerLast().getPlayersMap().safeGet(getGrade()).safeRemove(getPlayer());
+				getServerNew().getPlayersMap().safeGet(getGrade()).add(getPlayer());
 				break;
 			default:
 				throw new IllegalStateException();
