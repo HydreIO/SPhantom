@@ -27,14 +27,23 @@ public class RabbitMqReceiver {
 
 	// initialisation dans RabbitMqConnector
 	public void init() {
-		connector = RabbitMqConnector.getInstance();
+		setConnector(RabbitMqConnector.getInstance());
+		;
 		try {
-			qname = getChannel().queueDeclare().getQueue();
+			setQname(getChannel().queueDeclare().getQueue());
 			bind();
 			startReceiver();
 		} catch (IOException e) {
 			Main.printStackTrace(e);
 		}
+	}
+
+	public static void setConnector(RabbitMqConnector connector) {
+		RabbitMqReceiver.connector = connector;
+	}
+
+	public static void setQname(String qname) {
+		RabbitMqReceiver.qname = qname;
 	}
 
 	private static RabbitMqConnector getConnector() {

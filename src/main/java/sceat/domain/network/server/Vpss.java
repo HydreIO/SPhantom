@@ -16,6 +16,10 @@ import fr.aresrpg.sdk.util.VpsState;
 
 public class Vpss {
 
+	private Vpss() {
+
+	}
+
 	public static Vps fromBoot(String label, int ram, InetAddress ip) {
 		return new Vps(label, ram, ip, new HashSet<Server>(), System.currentTimeMillis()).setState(VpsState.DEPLOYING);
 	}
