@@ -4,13 +4,13 @@ import java.io.IOException;
 import java.util.List;
 
 import sceat.Main;
-import sceat.domain.protocol.handler.PacketHandler;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 
+import fr.aresrpg.sdk.protocol.handling.PacketHandler;
 import fr.aresrpg.sdk.protocol.util.MessagesType;
 import fr.aresrpg.sdk.protocol.util.RoutingKey;
 
