@@ -6,14 +6,16 @@ import java.util.Optional;
 
 import sceat.SPhantom;
 import sceat.domain.config.SPhantomConfig;
-import sceat.domain.network.server.Vps;
+import sceat.domain.network.server.Vpss;
 import sceat.domain.trigger.PhantomTrigger;
 import fr.aresrpg.commons.concurrent.ConcurrentHashMap;
 import fr.aresrpg.commons.concurrent.ConcurrentMap;
 import fr.aresrpg.commons.util.collection.HashSet;
 import fr.aresrpg.commons.util.collection.Set;
 import fr.aresrpg.sdk.mc.ServerType;
+import fr.aresrpg.sdk.network.Vps;
 import fr.aresrpg.sdk.system.Log;
+import fr.aresrpg.sdk.util.Defqon;
 
 @SuppressWarnings("unchecked")
 public class ServerProvider {
@@ -72,14 +74,6 @@ public class ServerProvider {
 		return priority;
 	}
 
-	public enum Defqon {
-		FIVE,
-		FOUR,
-		THREE,
-		TWO,
-		ONE
-	}
-
 	public static ServerProvider getInstance() {
 		return instance;
 	}
@@ -109,7 +103,7 @@ public class ServerProvider {
 		SPhantomConfig sc = SPhantom.getInstance().getSphantomConfig();
 		Vps vp = null;
 		for (Vps vss : getConfigInstances().values())
-			if (vss.getAvailableRam(true) >= sc.getRamFor(type)) { // recherche prioritaire dans les machines configurée (vps/dédié non loué a l'heure)
+			if (Vpss.getAvailableRam(vss, true) >= sc.getRamFor(type)) { // recherche prioritaire dans les machines configurée (vps/dédié non loué a l'heure)
 				vp = vss;
 				if (!vp.isUpdated() || (exclude.isPresent() && vss == exclude.get())) {
 					vp = null;
@@ -128,13 +122,13 @@ public class ServerProvider {
 			if (vp == null) return null; // si on trouve vraiment pas de vps on return null et tant pis aucun serveur ne s'ouvrira il faudra attendre l'ouverture d'une instance automatiquement
 		}
 		int rfm = sc.getRamFor(type);
-		int availableRam = vp.getAvailableRam(true) - rfm;
+		int availableRam = Vpss.getAvailableRam(vp, true) - rfm;
 		if (log) Log.out("Available ram : " + (availableRam + rfm));
 		for (Entry<ServerType, Vps> e : ordered.entrySet()) {
 			Vps value = e.getValue();
 			ServerType key = e.getKey();
 			int ramfor = sc.getRamFor(key);
-			int ramavail = value == null ? -1 : value == vp ? availableRam : value.getAvailableRam(true);
+			int ramavail = value == null ? -1 : value == vp ? availableRam : Vpss.getAvailableRam(value, true);
 			if (ramfor > ramavail) {
 				Vps neew = searchFirst(ramfor, Optional.of(vp), exclude);
 				ordered.put(key, neew);
@@ -147,7 +141,7 @@ public class ServerProvider {
 	private Vps searchFirst(int ramNeeded, Optional<Vps>... exclude) {
 		Set<Vps> comp = new HashSet<>();
 		Arrays.stream(exclude).filter(Optional::isPresent).forEach(o -> comp.add(o.get())); // NOSONAR closeable
-		return Core.getInstance().getVps().values().stream().filter(vp -> vp.getAvailableRam(true) >= ramNeeded && (comp.isEmpty() || !comp.contains(vp))).findFirst().orElse(null);
+		return Core.getInstance().getVps().values().stream().filter(vp -> Vpss.getAvailableRam(vp, true) >= ramNeeded && (comp.isEmpty() || !comp.contains(vp))).findFirst().orElse(null);
 	}
 
 }

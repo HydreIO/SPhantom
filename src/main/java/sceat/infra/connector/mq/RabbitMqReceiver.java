@@ -11,8 +11,8 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 
-import fr.aresrpg.sdk.protocol.MessagesType;
-import fr.aresrpg.sdk.protocol.RoutingKey;
+import fr.aresrpg.sdk.protocol.util.MessagesType;
+import fr.aresrpg.sdk.protocol.util.RoutingKey;
 
 public class RabbitMqReceiver {
 

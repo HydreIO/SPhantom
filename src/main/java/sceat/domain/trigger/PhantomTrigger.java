@@ -1,21 +1,21 @@
 package sceat.domain.trigger;
 
+import fr.aresrpg.api.PhantomApi.VpsApi;
 import fr.aresrpg.commons.util.collection.HashSet;
 import fr.aresrpg.commons.util.collection.Set;
-
-import sceat.api.PhantomApi.VpsApi;
-import sceat.domain.network.Core.OperatingMode;
-import sceat.domain.network.ServerProvider.Defqon;
+import fr.aresrpg.sdk.util.Defqon;
+import fr.aresrpg.sdk.util.OperatingMode;
 
 public class PhantomTrigger {
 
 	private static PhantomTrigger instance = new PhantomTrigger();
-	private Set<Trigger> trg = new HashSet<Trigger>();
+	private Set<Trigger> trg = new HashSet<>();
 
 	private PhantomTrigger() {
 	}
 
 	public static void init() {
+		// init instance
 	}
 
 	public static Set<Trigger> getAll() {

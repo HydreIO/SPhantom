@@ -18,12 +18,8 @@ import sceat.domain.compute.Sequencer.BoolBiConsumer;
 import sceat.domain.compute.Sequencer.Chainer;
 import sceat.domain.config.SPhantomConfig;
 import sceat.domain.config.SPhantomConfig.McServerConfigObject;
-import sceat.domain.network.ServerProvider.Defqon;
-import sceat.domain.network.server.Server;
-import sceat.domain.network.server.Vps;
-import sceat.domain.protocol.packets.PacketPhantomBootServer;
-import sceat.domain.protocol.packets.PacketPhantomDestroyInstance;
-import sceat.domain.protocol.packets.PacketPhantomReduceServer;
+import sceat.domain.network.server.Servers;
+import sceat.domain.network.server.Vpss;
 import sceat.domain.trigger.PhantomTrigger;
 import sceat.domain.utils.New;
 import sceat.domain.utils.ServerLabel;
@@ -37,7 +33,14 @@ import fr.aresrpg.commons.util.schedule.Scheduler;
 import fr.aresrpg.commons.util.schedule.TimeUnit;
 import fr.aresrpg.sdk.mc.ServerType;
 import fr.aresrpg.sdk.mc.Statut;
+import fr.aresrpg.sdk.network.Server;
+import fr.aresrpg.sdk.network.Vps;
+import fr.aresrpg.sdk.protocol.packets.PacketPhantomBootServer;
+import fr.aresrpg.sdk.protocol.packets.PacketPhantomDestroyInstance;
+import fr.aresrpg.sdk.protocol.packets.PacketPhantomReduceServer;
 import fr.aresrpg.sdk.system.Log;
+import fr.aresrpg.sdk.util.Defqon;
+import fr.aresrpg.sdk.util.OperatingMode;
 
 /**
  * This is where the magic happens
@@ -81,7 +84,7 @@ public class Core implements Scheduled {
 					core.playersByType.put(t, new HashSet<UUID>());
 				});
 		SPhantom.getInstance().getSphantomConfig().getServers().stream().map(vs -> new Vps(vs.getName(), vs.getRam(), core.getByName(vs.getIp()), New.set(), System.currentTimeMillis()))
-				.forEach(v -> ServerProvider.getInstance().getConfigInstances().put(v.getLabel(), v.register()));
+				.forEach(v -> ServerProvider.getInstance().getConfigInstances().put(v.getLabel(), Vpss.register(v)));
 		Scheduler.getScheduler().register(core);
 		core.initialised = true;
 	}
@@ -154,7 +157,7 @@ public class Core implements Scheduled {
 					(v6, v6coll, list, worker, noClose, adder, canAccept, thenAdd) -> list.stream().map(v -> worker.transfert(v, v6coll, noClose, adder, canAccept, thenAdd)).reduce((a, b) -> a && b)
 							.get(), (v, collec, noclos, addr, canaccp, theadd) -> collec.stream().filter(noclos).map(s -> addr.add(v, s, canaccp, theadd)).reduce((a, b) -> a && b).get(),
 					sz -> sz.getStatus() != Statut.CLOSING && sz.getStatus() != Statut.REDUCTION && sz.getStatus() != Statut.CRASHED && sz.getStatus() != Statut.OVERHEAD,
-					(vz, sr, predicate, consume) -> predicate.test(vz, sr) && consume.accept(vz, sr), (vt, st) -> vt.canAccept(st), BoolBiConsumer.<Vps, Server> of((uv, ud) -> {
+					(vz, sr, predicate, consume) -> predicate.test(vz, sr) && consume.accept(vz, sr), (vt, st) -> Vpss.canAccept(vt, st), BoolBiConsumer.<Vps, Server> of((uv, ud) -> {
 						ud.setStatus(Statut.REDUCTION);
 						Log.out("balk() [DEFRAGMENTATION SEQUENCING] | Reduction on " + ud.getLabel() + " |Actual Vps : " + ud.getVpsLabel());
 						new PacketPhantomReduceServer(ud.getLabel(), uv.getLabel()).send();
@@ -202,7 +205,7 @@ public class Core implements Scheduled {
 	public void checkVps(String label) {
 		if (getVps().containsKey(label)) return;
 		try {
-			new Vps(label, 0, InetAddress.getLocalHost(), New.set(), System.currentTimeMillis()).register();
+			Vpss.register(new Vps(label, 0, InetAddress.getLocalHost(), New.set(), System.currentTimeMillis()));
 		} catch (UnknownHostException e) {
 			Main.printStackTrace(e);
 		}
@@ -313,7 +316,7 @@ public class Core implements Scheduled {
 				Log.out("[" + max + "] instances are already deployed ! For bypass this security please change the Sphantom config");
 				break;
 			}
-			vp.add(SPhantom.getInstance().getIphantom().deployInstance(ServerLabel.newVpsLabel(), SPhantom.getInstance().getSphantomConfig().getDeployedVpsRam()).register());
+			vp.add(Vpss.register(SPhantom.getInstance().getIphantom().deployInstance(ServerLabel.newVpsLabel(), SPhantom.getInstance().getSphantomConfig().getDeployedVpsRam())));
 		}
 		return vp;
 	}
@@ -342,13 +345,13 @@ public class Core implements Scheduled {
 					Log.out("[DeployForced] Can't deploy server ! All port fort the type('" + type.name() + "')  are already in use");
 					return;
 				}
-				Server srv = Server.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), port);
+				Server srv = Servers.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), port);
 				srv.setVpsLabel(vp.getLabel());
 				Log.out("Deploying server [Label('" + srv.getLabel() + "')|State('" + srv.getStatus() + "')|MaxP(" + srv.getMaxPlayers() + ")]");
 				serversByType.get(type).add(srv);
 				Manager.getInstance().getServersByLabel().put(srv.getLabel(), srv);
 				vp.getServers().add(srv);
-				new PacketPhantomBootServer(srv).send();
+				new PacketPhantomBootServer(srv, obj.getRamNeeded()).send();
 			}
 		}
 	}
@@ -376,13 +379,13 @@ public class Core implements Scheduled {
 				Log.out("[DeployAuto] Can't deploy server ! All port fort the type('" + type.name() + "') are already in use");
 				break;
 			}
-			Server srv = Server.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), port);
+			Server srv = Servers.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), port);
 			set.add(srv);
 			srv.setVpsLabel(vp.getLabel());
 			serversByType.get(type).add(srv);
 			Manager.getInstance().getServersByLabel().put(srv.getLabel(), srv);
 			vp.getServers().add(srv);
-			new PacketPhantomBootServer(srv).send();
+			new PacketPhantomBootServer(srv, obj.getRamNeeded()).send();
 		}
 		return set;
 	}
@@ -401,12 +404,12 @@ public class Core implements Scheduled {
 			Log.out("[DeployOnVps] Can't deploy server ! All port fort the type('" + type.name() + "') are already in use");
 			return;
 		}
-		Server srv = Server.fromScratch(type, obj.getMaxPlayers(), v.getIp(), port);
+		Server srv = Servers.fromScratch(type, obj.getMaxPlayers(), v.getIp(), port);
 		serversByType.get(type).add(srv);
 		Manager.getInstance().getServersByLabel().put(srv.getLabel(), srv);
 		v.getServers().add(srv);
 		srv.setVpsLabel(v.getLabel());
-		new PacketPhantomBootServer(srv).send();
+		new PacketPhantomBootServer(srv, obj.getRamNeeded()).send();
 	}
 
 	/**
@@ -437,28 +440,6 @@ public class Core implements Scheduled {
 	private void deplyProxyOnVps(Vps v) {
 		v.getAvailableRam(); // sonar baisé
 		Log.out("[DEPLOY PROXY] Not implemented Yet !");
-	}
-
-	public enum OperatingMode {
-		ECO(0.8F, -1),
-		NORMAL(0.6F, 0),
-		NOLAG(0.4F, 1);
-
-		private float percentPl;
-		private int var;
-
-		private OperatingMode(float percent, int var) {
-			this.percentPl = percent;
-			this.var = var;
-		}
-
-		public int getVar() {
-			return var;
-		}
-
-		public float getPercentPl() {
-			return percentPl;
-		}
 	}
 
 }

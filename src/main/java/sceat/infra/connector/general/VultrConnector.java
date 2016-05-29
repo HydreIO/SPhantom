@@ -9,8 +9,7 @@ import sceat.Main;
 import sceat.SPhantom;
 import sceat.domain.common.IPhantom;
 import sceat.domain.network.Core;
-import sceat.domain.network.server.Vps;
-import sceat.domain.network.server.Vps.VpsState;
+import sceat.domain.network.server.Vpss;
 import xyz.deltaevo.jvultr.JVultrAPI;
 import xyz.deltaevo.jvultr.JVultrClient;
 import xyz.deltaevo.jvultr.api.JVultrOS;
@@ -24,7 +23,9 @@ import xyz.deltaevo.jvultr.utils.JVultrUtil;
 import fr.aresrpg.commons.concurrent.ConcurrentHashMap;
 import fr.aresrpg.commons.util.map.HashMap;
 import fr.aresrpg.commons.util.map.Map;
+import fr.aresrpg.sdk.network.Vps;
 import fr.aresrpg.sdk.system.Log;
+import fr.aresrpg.sdk.util.VpsState;
 
 public class VultrConnector implements IPhantom {
 
@@ -117,7 +118,7 @@ public class VultrConnector implements IPhantom {
 					} catch (Exception e) {
 						Main.printStackTrace(e);
 					}
-					vp.unregister();
+					Vpss.unregister(vp);
 				});
 			} catch (JVultrException e) {
 				servers.put(label, id); // si l'api a fail bah on reAdd le vps pour qu'il puisse le destroy plus tard

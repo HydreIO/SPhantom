@@ -28,7 +28,7 @@ public class ServerLabel {
 	}
 
 	public static ServerType getTypeWithLabel(String label) {
-		return ServerType.valueOf(label.split("-")[0]);
+		return ServerType.valueOf(label.split("-")[0]); // attention j'utilise aussi cette methode dans AresInternal dans le packetPhantomPlayer
 	}
 
 }

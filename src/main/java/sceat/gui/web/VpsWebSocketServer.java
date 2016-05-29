@@ -5,9 +5,7 @@ import org.glassfish.grizzly.websockets.OptimizedBroadcaster;
 import org.glassfish.grizzly.websockets.WebSocket;
 import org.glassfish.grizzly.websockets.WebSocketApplication;
 
-import sceat.api.PhantomApi;
 import sceat.domain.network.Core;
-import sceat.domain.network.ServerProvider;
 import sceat.domain.trigger.PhantomTrigger;
 
 import com.google.gson.Gson;
@@ -16,8 +14,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
+import fr.aresrpg.api.PhantomApi;
 import fr.aresrpg.commons.util.map.Map;
 import fr.aresrpg.sdk.mc.ServerType;
+import fr.aresrpg.sdk.util.Defqon;
+import fr.aresrpg.sdk.util.OperatingMode;
 
 public class VpsWebSocketServer extends WebSocketApplication implements PhantomTrigger.Trigger {
 
@@ -50,7 +51,7 @@ public class VpsWebSocketServer extends WebSocketApplication implements PhantomT
 	@Override
 	public void onConnect(WebSocket socket) {
 		super.onConnect(socket);
-		for (Map.Entry<String, PhantomApi.VpsApi> e : PhantomApi.getAllVps().entrySet())
+		for (Map.Entry<String, PhantomApi.VpsApi> e : PhantomApi.get().getAllVps().entrySet())
 			socket.send(gson.toJson(toJsonObject(e.getKey(), e.getValue())));
 	}
 
@@ -91,12 +92,12 @@ public class VpsWebSocketServer extends WebSocketApplication implements PhantomT
 	}
 
 	@Override
-	public void handleDefcon(ServerProvider.Defqon d) {
+	public void handleDefcon(Defqon d) {
 		// Ignore
 	}
 
 	@Override
-	public void handleOpMode(Core.OperatingMode o) {
+	public void handleOpMode(OperatingMode o) {
 		// Ignore
 	}
 

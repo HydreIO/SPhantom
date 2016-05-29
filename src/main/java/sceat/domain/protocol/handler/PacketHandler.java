@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import sceat.Main;
-import fr.aresrpg.sdk.protocol.MessagesType;
 import fr.aresrpg.sdk.protocol.PacketPhantom;
+import fr.aresrpg.sdk.protocol.util.MessagesType;
 import fr.aresrpg.sdk.system.Log;
 import fr.aresrpg.sdk.util.PhantomThreadPoolExecutor;
 
@@ -39,7 +39,7 @@ public class PacketHandler {
 		@Override
 		public void run() {
 			try {
-				PacketPhantom.fromByteArray(rawPacket.data).deserialize().handleData(rawPacket.type);
+				PacketPhantom.fromByteArray(rawPacket.data).deserialize().handleData();
 			} catch (Exception e) {
 				Main.printStackTrace(e);
 			}

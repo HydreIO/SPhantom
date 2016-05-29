@@ -11,12 +11,12 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-import sceat.domain.Heart;
-import sceat.domain.common.mq.Broker;
+import sceat.domain.utils.IronHeart;
 import sceat.gui.web.GrizzlyWebServer;
 import sceat.infra.input.ScannerInput;
 import fr.aresrpg.commons.log.Logger;
 import fr.aresrpg.commons.util.schedule.Scheduler;
+import fr.aresrpg.sdk.system.Broker;
 import fr.aresrpg.sdk.system.Log;
 import fr.aresrpg.sdk.util.Constant;
 
@@ -69,7 +69,7 @@ public class Main {
 		ScannerInput.shutDown();
 		SPhantom.getInstance().getExecutor().shutdown();
 		Scheduler.getScheduler().shutdown();
-		if (Heart.getInstance() != null) Heart.getInstance().broke();
+		if (IronHeart.get() != null) IronHeart.get().broke();
 		fr.aresrpg.commons.log.Logger.MAIN_LOGGER.info("Bye.");
 		SPhantom.getInstance().running = false;
 		System.exit(0); // NOSONAR system.exit is required here

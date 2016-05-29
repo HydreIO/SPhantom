@@ -6,43 +6,47 @@ import java.net.Socket;
 import java.util.Calendar;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
-import sceat.api.PhantomApi;
-import sceat.api.PhantomApi.ServerApi;
-import sceat.api.PhantomApi.VpsApi;
-import sceat.domain.Heart;
 import sceat.domain.Manager;
 import sceat.domain.common.IPhantom;
 import sceat.domain.config.SPhantomConfig;
 import sceat.domain.network.Core;
-import sceat.domain.network.Core.OperatingMode;
 import sceat.domain.network.ServerProvider;
-import sceat.domain.protocol.PacketSender;
+import sceat.domain.protocol.handler.Handler;
 import sceat.domain.protocol.handler.PacketHandler;
-import sceat.domain.protocol.packets.PacketRegistry;
 import sceat.domain.shell.Input;
 import sceat.domain.trigger.PhantomTrigger;
+import sceat.domain.utils.IronHeart;
 import sceat.gui.web.GrizzlyWebServer;
 import sceat.infra.connector.general.VultrConnector;
+import sceat.infra.connector.mq.RabbitMqConnector;
 import sceat.infra.input.ScannerInput;
-import fr.aresrpg.commons.concurrent.ThreadBuilder;
+import fr.aresrpg.api.PhantomApi;
+import fr.aresrpg.commons.concurrent.Pool;
+import fr.aresrpg.commons.concurrent.Pool.PoolType;
 import fr.aresrpg.commons.concurrent.Threads;
+import fr.aresrpg.commons.condition.Option;
 import fr.aresrpg.commons.condition.functional.Executable;
 import fr.aresrpg.commons.condition.match.Matcher;
 import fr.aresrpg.commons.condition.match.Matcher.Case;
+import fr.aresrpg.commons.util.map.Map;
+import fr.aresrpg.commons.util.stream.Collectors;
 import fr.aresrpg.sdk.Weed;
 import fr.aresrpg.sdk.concurrent.Async;
 import fr.aresrpg.sdk.lang.BaseLang;
-import fr.aresrpg.sdk.protocol.Security;
+import fr.aresrpg.sdk.protocol.IHandler;
+import fr.aresrpg.sdk.protocol.util.Security;
+import fr.aresrpg.sdk.system.Broker;
 import fr.aresrpg.sdk.system.Log;
 import fr.aresrpg.sdk.system.Root;
+import fr.aresrpg.sdk.util.Defqon;
+import fr.aresrpg.sdk.util.OperatingMode;
 
-public class SPhantom implements Async {
+public class SPhantom implements Async, PhantomApi {
 
 	private static SPhantom instance;
 	private static boolean $ynchronized = false; // NOSONAR laisse mon swag
@@ -58,9 +62,9 @@ public class SPhantom implements Async {
 	private boolean logprovider = true;
 	private boolean logDiv = true;
 	private IPhantom iphantom;
-	private Security security;
 	private PhantomApi mainApi;
 	private InetAddress ip;
+	private final Security security = new Security(Main.serial, Main.security);
 	private static final String ENABLED = "enabled";
 	private static final String DISABLED = "disabled";
 	private static final Pattern modeM = Pattern.compile("^setmode ((?:\\d))$");
@@ -89,15 +93,33 @@ public class SPhantom implements Async {
 			public void exit(boolean crash) {
 				Main.shutDown();
 			}
+
+			@Override
+			public PhantomApi getApi() {
+				return getInstance();
+			}
+
+			@Override
+			public Broker getBroker() {
+				return RabbitMqConnector.getInstance();
+			}
+
+			@Override
+			public IHandler getPacketHandler() {
+				return Handler.get();
+			}
+
+			@Override
+			public Security getSecurity() {
+				return instance.security;
+			}
 		});
 		setupIp();
-		this.security = new Security(Main.serial, Main.security);
-		PacketRegistry.registry();
 		this.running = true;
 		this.local = local;
-		this.pinger = Executors.newSingleThreadExecutor(new ThreadBuilder().setName("Pinger Pool - [Thrd: %1%]").toFactory());
-		this.peaceMaker = Executors.newSingleThreadExecutor(new ThreadBuilder().setName("PeaceMaker Pool - [Thrd: %1%]").toFactory());
-		this.executor = Executors.newFixedThreadPool(70, new ThreadBuilder().setName("Main Pool - [Thrd: %1%]").toFactory());
+		this.pinger = Pool.builder().setType(PoolType.FIXED).setName("Pinger Pool - [Thrd: %1%]").toService(Option.none());
+		this.peaceMaker = Pool.builder().setType(PoolType.FIXED).setName("PeaceMaker Pool - [Thrd: %1%]").toService(Option.none());
+		this.executor = Pool.COMMON_POOL.getExecutor();
 		this.config = new SPhantomConfig();
 		this.iphantom = new VultrConnector();
 		CompletableFuture.runAsync(() -> {
@@ -110,8 +132,9 @@ public class SPhantom implements Async {
 		Core.init();
 		ScannerInput.init();
 		PacketHandler.init();
-		PacketSender.init(getSphantomConfig().getRabbitUser(), getSphantomConfig().getRabbitPassword(), local);
-		new Heart(local).takeLead();
+		RabbitMqConnector.init(local);
+		IronHeart.init(isLocal());
+		IronHeart.lead();
 		startWebPanel(); // ne pas start deux sphantom sur la meme ip sinon le port va être déja utilisé abruti ! de tt façon quel interet d'un replica sur la meme machine..
 	}
 
@@ -157,10 +180,12 @@ public class SPhantom implements Async {
 		return mainApi;
 	}
 
+	@Override
 	public ServerApi getServerApi(String srv) {
 		return Manager.getInstance().getServersByLabel().safeGetOrDefault(srv, null);
 	}
 
+	@Override
 	public VpsApi getVpsApi(String vps) {
 		return Core.getInstance().getVps().getOrDefault(vps, null);
 	}
@@ -190,12 +215,8 @@ public class SPhantom implements Async {
 			l.logOut("try <forcelead> for set this instance to lead");
 			l.logOut("----------------------------------------------------------");
 		}
-		PacketSender.getInstance().pause(!lead);
+		RabbitMqConnector.getInstance().pause(!lead);
 		this.lead = lead;
-	}
-
-	public Security getSecurity() {
-		return security;
 	}
 
 	public boolean isLeading() {
@@ -248,7 +269,7 @@ public class SPhantom implements Async {
 			}), when("logdiv"::equalsIgnoreCase, () -> {
 				this.logDiv = !this.logDiv;
 				l.logOut("Diver logger " + (this.logDiv ? ENABLED : DISABLED) + " !");
-			}), when("exit"::equalsIgnoreCase, Main::shutDown), when("forcelead"::equalsIgnoreCase, Heart.getInstance()::takeLead), when("logpkt"::equalsIgnoreCase, () -> {
+			}), when("exit"::equalsIgnoreCase, Main::shutDown), when("forcelead"::equalsIgnoreCase, IronHeart::lead), when("logpkt"::equalsIgnoreCase, () -> {
 				this.logPkt = !this.logPkt;
 				l.logOut("Packet logger " + (this.logPkt ? ENABLED : DISABLED) + " !");
 			}), when("logprovider"::equalsIgnoreCase, () -> {
@@ -319,6 +340,26 @@ public class SPhantom implements Async {
 
 	public void setLogHeart(boolean logHeart) {
 		this.logHeart = logHeart;
+	}
+
+	@Override
+	public Map<String, VpsApi> getAllVps() {
+		return Core.getInstance().getVps().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+	}
+
+	@Override
+	public Defqon getDefkonLevel() {
+		return ServerProvider.getInstance().getDefqon();
+	}
+
+	@Override
+	public int countAllPlayers() {
+		return Manager.getInstance().countPlayersOnNetwork();
+	}
+
+	@Override
+	public OperatingMode getOpMode() {
+		return Core.getInstance().getMode();
 	}
 
 }
