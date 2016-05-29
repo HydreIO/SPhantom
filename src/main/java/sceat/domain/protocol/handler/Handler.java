@@ -18,7 +18,6 @@ import fr.aresrpg.sdk.mc.Statut;
 import fr.aresrpg.sdk.network.Server;
 import fr.aresrpg.sdk.network.Vps;
 import fr.aresrpg.sdk.protocol.IHandler;
-import fr.aresrpg.sdk.protocol.PacketPhantom;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomBanned;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomBootServer;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomBroadcast;
@@ -46,13 +45,9 @@ public class Handler implements IHandler {
 		return instance;
 	}
 
-	private <T extends PacketPhantom> void trow(T t) {
-		PacketPhantom.throwCantHandle(t);
-	}
-
 	@Override
 	public void handle(PacketPhantomBanned t) {
-		trow(t);
+		cantHandle(t);
 	}
 
 	@Override
@@ -69,7 +64,7 @@ public class Handler implements IHandler {
 
 	@Override
 	public void handle(PacketPhantomBroadcast t) {
-		trow(t);
+		cantHandle(t);
 	}
 
 	@Override
@@ -109,7 +104,7 @@ public class Handler implements IHandler {
 
 	@Override
 	public void handle(PacketPhantomKillProcess t) {
-		trow(t);
+		cantHandle(t);
 	}
 
 	@Override
