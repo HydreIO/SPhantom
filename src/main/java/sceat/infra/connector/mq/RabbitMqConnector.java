@@ -174,7 +174,7 @@ public class RabbitMqConnector implements Broker {
 		setSecurity(pkt);
 		if (allowed) {
 			Log.packet(pkt, false);
-			basicPublich(MessagesType.UPDATE_SERVER, this.serverinfosKey, pkt.serialize().toByteArray());
+			basicPublich(MessagesType.UPDATE_SERVER, this.serverinfosKey, pkt.serializePacket().toByteArray());
 		}
 	}
 
@@ -182,14 +182,14 @@ public class RabbitMqConnector implements Broker {
 	public void takeLead(PacketPhantomHeartBeat pkt) {
 		setSecurity(pkt);
 		Log.packet(pkt, false);
-		basicPublich(MessagesType.TAKE_LEAD, this.sphantomKey, pkt.serialize().toByteArray());
+		basicPublich(MessagesType.TAKE_LEAD, this.sphantomKey, pkt.serializePacket().toByteArray());
 	}
 
 	@Override
 	public void heartBeat(PacketPhantomHeartBeat pkt) {
 		setSecurity(pkt);
 		Log.packet(pkt, false);
-		basicPublich(MessagesType.HEART_BEAT, this.sphantomKey, pkt.serialize().toByteArray());
+		basicPublich(MessagesType.HEART_BEAT, this.sphantomKey, pkt.serializePacket().toByteArray());
 	}
 
 	@Override
@@ -197,7 +197,7 @@ public class RabbitMqConnector implements Broker {
 		setSecurity(pkt);
 		if (allowed) {
 			Log.packet(pkt, false);
-			basicPublich(MessagesType.UPDATE_PLAYER_ACTION, this.allsphantomKey, pkt.serialize().toByteArray());
+			basicPublich(MessagesType.UPDATE_PLAYER_ACTION, this.allsphantomKey, pkt.serializePacket().toByteArray());
 		}
 	}
 
@@ -206,7 +206,7 @@ public class RabbitMqConnector implements Broker {
 		setSecurity(pkt);
 		if (allowed) {
 			Log.packet(pkt, false);
-			basicPublich(MessagesType.BOOT_SERVER, this.bootserverKey, pkt.serialize().toByteArray());
+			basicPublich(MessagesType.BOOT_SERVER, this.bootserverKey, pkt.serializePacket().toByteArray());
 		}
 	}
 
@@ -220,7 +220,7 @@ public class RabbitMqConnector implements Broker {
 		setSecurity(pkt);
 		if (allowed) {
 			Log.packet(pkt, false);
-			basicPublich(MessagesType.DESTROY_INSTANCE, this.sphantomKey, pkt.serialize().toByteArray());
+			basicPublich(MessagesType.DESTROY_INSTANCE, this.sphantomKey, pkt.serializePacket().toByteArray());
 		}
 	}
 
@@ -229,7 +229,7 @@ public class RabbitMqConnector implements Broker {
 		setSecurity(pkt);
 		if (allowed) {
 			Log.packet(pkt, false);
-			basicPublich(MessagesType.REDUCE_SERVER, this.allsphantomKey, pkt.serialize().toByteArray());
+			basicPublich(MessagesType.REDUCE_SERVER, this.allsphantomKey, pkt.serializePacket().toByteArray());
 		}
 	}
 
@@ -243,7 +243,7 @@ public class RabbitMqConnector implements Broker {
 		setSecurity(pkt);
 		if (allowed) {
 			Log.packet(pkt, false);
-			basicPublich(MessagesType.KILL_PROCESS, this.symbioteKey, pkt.serialize().toByteArray());
+			basicPublich(MessagesType.KILL_PROCESS, this.symbioteKey, pkt.serializePacket().toByteArray());
 		}
 	}
 
@@ -252,7 +252,7 @@ public class RabbitMqConnector implements Broker {
 		setSecurity(pkt);
 		if (allowed) {
 			Log.packet(pkt, false);
-			basicPublich(MessagesType.UPDATE_PLAYER_GRADE, this.allsphantomKey, pkt.serialize().toByteArray());
+			basicPublich(MessagesType.UPDATE_PLAYER_GRADE, this.allsphantomKey, pkt.serializePacket().toByteArray());
 		}
 	}
 
