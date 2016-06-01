@@ -4,11 +4,8 @@ import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import sceat.domain.config.SPhantomConfig;
-import sceat.domain.config.SPhantomConfig.PortRange;
 import fr.aresrpg.commons.concurrent.ConcurrentHashMap;
 import fr.aresrpg.commons.concurrent.ConcurrentMap;
-import fr.aresrpg.sdk.mc.ServerType;
 import fr.aresrpg.sdk.network.Server;
 
 public class Manager {
@@ -27,20 +24,6 @@ public class Manager {
 
 	public CopyOnWriteArrayList<Integer> getUsedPorts() { // NOSONAR non je peut pas mettre list
 		return usedPorts;
-	}
-
-	/**
-	 * Gen a port who isnt already used
-	 * 
-	 * @param type
-	 * @return the port or -1 if all port allowed are used
-	 */
-	public synchronized int genPort(ServerType type) {
-		PortRange range = SPhantomConfig.get().getInstances().get(type).getPortRange();
-		int port = range.getMinPort();
-		while (getUsedPorts().contains(port++))
-			if (port > range.getMaxPort()) return -1;
-		return port;
 	}
 
 	public Server getServer(String srv) {

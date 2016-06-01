@@ -1,7 +1,5 @@
 package sceat.infra.connector.general;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -81,8 +79,8 @@ public class VultrConnector implements IPhantom {
 			JVultrScript script = api.getScripts().values().iterator().next();
 			JVultrServer server = api.createServer(plan.getSecond(), plan.getFirst(), os, null, null, script, null, null, null, label, null, false, null, null, null, null, -1, label);
 			servers.put(label, server.getId());
-			return Vps.fromBoot(label, ram, InetAddress.getByName(server.getMainIp()));
-		} catch (JVultrException | UnknownHostException | IllegalAccessException e) {
+			return Vps.fromBoot(label, ram);
+		} catch (JVultrException | IllegalAccessException e) {
 			Main.printStackTrace(e);
 			return null;
 		}

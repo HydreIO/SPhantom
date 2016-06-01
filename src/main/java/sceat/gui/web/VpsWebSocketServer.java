@@ -69,7 +69,7 @@ public class VpsWebSocketServer extends WebSocketApplication implements PhantomT
 		object.add("label", new JsonPrimitive(label));
 		object.add("state", new JsonPrimitive(vps.getState().name()));
 		object.add("ram", new JsonPrimitive(vps.getAvailableRam()));
-		object.add("ip", new JsonPrimitive(vps.getIp().getHostAddress()));
+		object.add("ip", new JsonPrimitive("no longer available"));
 		object.add("user", new JsonPrimitive("unknown"));
 		object.add("password", new JsonPrimitive("unknown"));
 		object.add("created", new JsonPrimitive(vps.getCreatedInfos()));

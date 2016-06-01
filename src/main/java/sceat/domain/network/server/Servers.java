@@ -1,7 +1,5 @@
 package sceat.domain.network.server;
 
-import java.net.InetAddress;
-
 import sceat.domain.Manager;
 import sceat.domain.network.Core;
 import sceat.domain.utils.ServerLabel;
@@ -46,7 +44,7 @@ public class Servers {
 			if (sr.getStatus() != Statut.REDUCTION) sr.setStatus(pkt.getState()); // si on connait le serv et qu'il est en reduction alors on ne change pas le statut
 			if (!pkt.isFromSymbiote()) sr.setPlayers(pkt.getPlayersPerGrade()); // sa voudra dire qu'on a reçu un packet avant d'avoir pu informer le serveur qu'il devait se reduire
 		} else {
-			sr = canBeNull ? null : new Server(pkt.getLabel(), pkt.getType(), pkt.getState(), pkt.getMaxp(), pkt.getPort(), pkt.getIp()).setPlayers(pkt.getPlayersPerGrade());
+			sr = canBeNull ? null : new Server(pkt.getLabel(), pkt.getType(), pkt.getState(), pkt.getMaxp()).setPlayers(pkt.getPlayersPerGrade());
 			neww = true; // si on créé on a pas besoin de verifier si le pkt vient du symbiote car de tt fa�on la liste des joueurs (seul field que le symbiote ne connait pas) devra attendre de se sync later
 		}
 		if (sr != null) {
@@ -63,8 +61,8 @@ public class Servers {
 		return sr;
 	}
 
-	public static Server fromScratch(ServerType type, int maxPlayers, InetAddress ip, int port) {
-		return new Server(ServerLabel.newLabel(type), type, Statut.CREATING, maxPlayers, port, ip);
+	public static Server fromScratch(ServerType type, int maxPlayers) {
+		return new Server(ServerLabel.newLabel(type), type, Statut.CREATING, maxPlayers);
 	}
 
 	public static Vps getVps(Server s) {

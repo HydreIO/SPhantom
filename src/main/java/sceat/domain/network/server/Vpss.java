@@ -1,6 +1,5 @@
 package sceat.domain.network.server;
 
-import java.net.InetAddress;
 import java.util.Map.Entry;
 
 import sceat.SPhantom;
@@ -20,8 +19,8 @@ public class Vpss {
 
 	}
 
-	public static Vps fromBoot(String label, int ram, InetAddress ip) {
-		return new Vps(label, ram, ip, new HashSet<Server>(), System.currentTimeMillis()).setState(VpsState.DEPLOYING);
+	public static Vps fromBoot(String label, int ram) {
+		return new Vps(label, ram, new HashSet<Server>(), System.currentTimeMillis()).setState(VpsState.DEPLOYING);
 	}
 
 	public static void handleCrash(Vps v) {

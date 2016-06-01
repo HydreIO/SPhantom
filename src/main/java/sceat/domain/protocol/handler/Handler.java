@@ -58,8 +58,7 @@ public class Handler implements IHandler {
 		}
 		if (t.cameFromLocal()) return;
 		Log.packet(t, true);
-		Servers.fromPacket(new PacketPhantomServerInfo(Statut.CREATING, t.getLabel(), t.getVpsLabel(), t.getIp(), t.getType(), t.getMaxP(), t.getPort(), new EnumHashMap<Grades, Set<UUID>>(
-				Grades.class), false), false);
+		Servers.fromPacket(new PacketPhantomServerInfo(Statut.CREATING, t.getLabel(), t.getVpsLabel(), t.getType(), t.getMaxP(), new EnumHashMap<Grades, Set<UUID>>(Grades.class), false), false);
 	}
 
 	@Override
@@ -192,7 +191,7 @@ public class Handler implements IHandler {
 		Log.packet(t, true);
 		ConcurrentHashMap<String, Vps> varmap = Core.getInstance().getVps();
 		if (varmap.containsKey(t.getVpsLabel())) varmap.get(t.getVpsLabel()).setUpdated(true).setState(t.getState()).setCreatedMilli(t.getCreated());
-		else Vpss.register(new Vps(t.getVpsLabel(), t.getRam(), t.getIp(), new HashSet<>(), t.getCreated()).setUpdated(true).setState(t.getState()));
+		else Vpss.register(new Vps(t.getVpsLabel(), t.getRam(), new HashSet<>(), t.getCreated()).setUpdated(true).setState(t.getState()));
 		Vps v = Core.getInstance().getVps().getOrDefault(t.getVpsLabel(), null);
 		if (v != null) PhantomTrigger.getAll().forEach(tt -> tt.handleVps(v));
 	}

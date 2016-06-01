@@ -1,7 +1,5 @@
 package sceat.domain.network;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -83,20 +81,10 @@ public class Core implements Scheduled {
 					core.serversByType.put(t, new HashSet<Server>());
 					core.playersByType.put(t, new HashSet<UUID>());
 				});
-		SPhantom.getInstance().getSphantomConfig().getServers().stream().map(vs -> new Vps(vs.getName(), vs.getRam(), core.getByName(vs.getIp()), New.set(), System.currentTimeMillis()))
+		SPhantom.getInstance().getSphantomConfig().getServers().stream().map(vs -> new Vps(vs.getName(), vs.getRam(), New.set(), System.currentTimeMillis()))
 				.forEach(v -> ServerProvider.getInstance().getConfigInstances().put(v.getLabel(), Vpss.register(v)));
 		Scheduler.getScheduler().register(core);
 		core.initialised = true;
-	}
-
-	// internal use for bypass tryCatch block
-	private InetAddress getByName(String name) {
-		try {
-			return InetAddress.getByName(name);
-		} catch (UnknownHostException e) {
-			Log.trace(e);
-		}
-		return null;
 	}
 
 	@Schedule(rate = 30, unit = TimeUnit.SECONDS)
@@ -204,11 +192,7 @@ public class Core implements Scheduled {
 
 	public void checkVps(String label) {
 		if (getVps().containsKey(label)) return;
-		try {
-			Vpss.register(new Vps(label, 0, InetAddress.getLocalHost(), New.set(), System.currentTimeMillis()));
-		} catch (UnknownHostException e) {
-			Main.printStackTrace(e);
-		}
+		Vpss.register(new Vps(label, 0, New.set(), System.currentTimeMillis()));
 	}
 
 	public static Core getInstance() {
@@ -340,12 +324,7 @@ public class Core implements Scheduled {
 					deployInstances(1);
 					break;
 				}
-				int port = Manager.getInstance().genPort(type);
-				if (port == -1) {
-					Log.out("[DeployForced] Can't deploy server ! All port fort the type('" + type.name() + "')  are already in use");
-					return;
-				}
-				Server srv = Servers.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), port);
+				Server srv = Servers.fromScratch(type, obj.getMaxPlayers());
 				srv.setVpsLabel(vp.getLabel());
 				Log.out("Deploying server [Label('" + srv.getLabel() + "')|State('" + srv.getStatus() + "')|MaxP(" + srv.getMaxPlayers() + ")]");
 				serversByType.get(type).add(srv);
@@ -374,12 +353,7 @@ public class Core implements Scheduled {
 		for (int i = 0; i < nbr; i++) { // NOSONAR
 			Vps vp = ServerProvider.getInstance().getVps(type, Optional.empty());
 			if (vp == null) break;
-			int port = Manager.getInstance().genPort(type);
-			if (port == -1) {
-				Log.out("[DeployAuto] Can't deploy server ! All port fort the type('" + type.name() + "') are already in use");
-				break;
-			}
-			Server srv = Servers.fromScratch(type, obj.getMaxPlayers(), vp.getIp(), port);
+			Server srv = Servers.fromScratch(type, obj.getMaxPlayers());
 			set.add(srv);
 			srv.setVpsLabel(vp.getLabel());
 			serversByType.get(type).add(srv);
@@ -399,12 +373,7 @@ public class Core implements Scheduled {
 		McServerConfigObject obj = conf.getInstances().get(type);
 		if (fromBalk) Log.out("[DEFRAGMENTATION SEQUENCING] | Transfert on " + v.getLabel() + " |Type : " + type + "\n_______________________________________________]");
 		else if (SPhantom.logDiv()) Log.out("Deploy Server ON VPS |Type_" + type + "|Vps = " + v.getLabel());
-		int port = Manager.getInstance().genPort(type);
-		if (port == -1) {
-			Log.out("[DeployOnVps] Can't deploy server ! All port fort the type('" + type.name() + "') are already in use");
-			return;
-		}
-		Server srv = Servers.fromScratch(type, obj.getMaxPlayers(), v.getIp(), port);
+		Server srv = Servers.fromScratch(type, obj.getMaxPlayers());
 		serversByType.get(type).add(srv);
 		Manager.getInstance().getServersByLabel().put(srv.getLabel(), srv);
 		v.getServers().add(srv);
