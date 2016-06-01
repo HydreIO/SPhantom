@@ -1,8 +1,6 @@
 package sceat;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.Socket;
 import java.util.Calendar;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -63,7 +61,6 @@ public class SPhantom implements Async, PhantomApi {
 	private boolean logDiv = true;
 	private IPhantom iphantom;
 	private PhantomApi mainApi;
-	private InetAddress ip;
 	private final Security security = new Security(Main.serial, Main.security);
 	private static final String ENABLED = "enabled";
 	private static final String DISABLED = "disabled";
@@ -114,7 +111,6 @@ public class SPhantom implements Async, PhantomApi {
 				return instance.security;
 			}
 		});
-		setupIp();
 		this.running = true;
 		this.local = local;
 		this.pinger = Pool.builder().setType(PoolType.FIXED).setName("Pinger Pool - [Thrd: %1%]").toService(Option.none());
@@ -157,23 +153,6 @@ public class SPhantom implements Async, PhantomApi {
 		Log.out("WebPanel stoping...");
 		GrizzlyWebServer.stop();
 		Log.out("WebPanel stopped.");
-	}
-
-	public InetAddress getIp() {
-		return ip;
-	}
-
-	public void setupIp() {
-		Log.out("Oppening socket to get Ip...");
-		try (Socket s = new Socket("google.com", 80)) {
-			Log.out("Ip founded ! [" + s.getLocalAddress().getHostName() + "]");
-			this.ip = s.getLocalAddress();
-		} catch (IOException e) {
-			Log.trace(e);
-			Log.out("Unable to find the Ip !");
-			Threads.uSleep(3, TimeUnit.SECONDS);
-			Main.shutDown();
-		}
 	}
 
 	public PhantomApi getMainApi() {
