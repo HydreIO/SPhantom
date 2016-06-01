@@ -23,6 +23,7 @@ import fr.aresrpg.sdk.protocol.packets.PacketPhantomGradeUpdate;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomHeartBeat;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomKillProcess;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomPlayer;
+import fr.aresrpg.sdk.protocol.packets.PacketPhantomProxyAddServer;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomReduceServer;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomServerInfo;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomSymbiote;
@@ -269,6 +270,11 @@ public class RabbitMqConnector implements Broker {
 	@Override
 	public void sendSymbioteInfos(PacketPhantomSymbiote pkt) {
 		PacketPhantom.throwCantSend(pkt);
+	}
+
+	@Override
+	public void sendProxyAdd(PacketPhantomProxyAddServer pkt) {
+		cantSend(pkt);
 	}
 
 }

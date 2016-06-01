@@ -27,6 +27,7 @@ import fr.aresrpg.sdk.protocol.packets.PacketPhantomHeartBeat;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomHeartBeat.BeatType;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomKillProcess;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomPlayer;
+import fr.aresrpg.sdk.protocol.packets.PacketPhantomProxyAddServer;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomReduceServer;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomServerInfo;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomSymbiote;
@@ -194,6 +195,11 @@ public class Handler implements IHandler {
 		else Vpss.register(new Vps(t.getVpsLabel(), t.getRam(), new HashSet<>(), t.getCreated()).setUpdated(true).setState(t.getState()));
 		Vps v = Core.getInstance().getVps().getOrDefault(t.getVpsLabel(), null);
 		if (v != null) PhantomTrigger.getAll().forEach(tt -> tt.handleVps(v));
+	}
+
+	@Override
+	public void handle(PacketPhantomProxyAddServer t) {
+		cantHandle(t);
 	}
 
 }
