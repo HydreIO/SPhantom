@@ -45,7 +45,7 @@ public class RabbitMqConnector implements Broker {
 
 	private final String sphantomKey = RoutingKey.genKey(RoutingKey.SPHANTOM);
 	private final String allsphantomKey = RoutingKey.genKey(RoutingKey.SPHANTOM, RoutingKey.HUBS, RoutingKey.PROXY, RoutingKey.SERVERS);
-	private final String bootserverKey = RoutingKey.genKey(RoutingKey.HUBS, RoutingKey.PROXY, RoutingKey.SPHANTOM, RoutingKey.SYMBIOTE);
+	private final String bootserverKey = RoutingKey.genKey(RoutingKey.HUBS, RoutingKey.SPHANTOM, RoutingKey.SYMBIOTE);
 	private final String symbioteKey = RoutingKey.genKey(RoutingKey.SYMBIOTE);
 	private final String serverinfosKey = RoutingKey.genKey(RoutingKey.HUBS, RoutingKey.PROXY, RoutingKey.SPHANTOM);
 
