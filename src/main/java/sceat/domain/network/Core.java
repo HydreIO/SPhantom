@@ -29,8 +29,6 @@ import fr.aresrpg.commons.util.schedule.Schedule;
 import fr.aresrpg.commons.util.schedule.Scheduled;
 import fr.aresrpg.commons.util.schedule.Scheduler;
 import fr.aresrpg.commons.util.schedule.TimeUnit;
-import fr.aresrpg.sdk.mc.ServerType;
-import fr.aresrpg.sdk.mc.Statut;
 import fr.aresrpg.sdk.network.Server;
 import fr.aresrpg.sdk.network.Vps;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomBootServer;
@@ -39,6 +37,8 @@ import fr.aresrpg.sdk.protocol.packets.PacketPhantomReduceServer;
 import fr.aresrpg.sdk.system.Log;
 import fr.aresrpg.sdk.util.Defqon;
 import fr.aresrpg.sdk.util.OperatingMode;
+import fr.aresrpg.sdk.util.minecraft.ServerType;
+import fr.aresrpg.sdk.util.minecraft.Statut;
 
 /**
  * This is where the magic happens

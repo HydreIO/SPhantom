@@ -13,8 +13,6 @@ import fr.aresrpg.commons.concurrent.ConcurrentHashMap;
 import fr.aresrpg.commons.util.collection.HashSet;
 import fr.aresrpg.commons.util.collection.Set;
 import fr.aresrpg.commons.util.map.EnumHashMap;
-import fr.aresrpg.sdk.mc.Grades;
-import fr.aresrpg.sdk.mc.Statut;
 import fr.aresrpg.sdk.network.Server;
 import fr.aresrpg.sdk.network.Vps;
 import fr.aresrpg.sdk.protocol.IHandler;
@@ -33,6 +31,8 @@ import fr.aresrpg.sdk.protocol.packets.PacketPhantomServerInfo;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomSymbiote;
 import fr.aresrpg.sdk.system.Broker;
 import fr.aresrpg.sdk.system.Log;
+import fr.aresrpg.sdk.util.minecraft.Grades;
+import fr.aresrpg.sdk.util.minecraft.Statut;
 
 public class Handler implements IHandler {
 

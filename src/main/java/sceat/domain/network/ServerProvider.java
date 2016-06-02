@@ -12,10 +12,10 @@ import fr.aresrpg.commons.concurrent.ConcurrentHashMap;
 import fr.aresrpg.commons.concurrent.ConcurrentMap;
 import fr.aresrpg.commons.util.collection.HashSet;
 import fr.aresrpg.commons.util.collection.Set;
-import fr.aresrpg.sdk.mc.ServerType;
 import fr.aresrpg.sdk.network.Vps;
 import fr.aresrpg.sdk.system.Log;
 import fr.aresrpg.sdk.util.Defqon;
+import fr.aresrpg.sdk.util.minecraft.ServerType;
 
 @SuppressWarnings("unchecked")
 public class ServerProvider {

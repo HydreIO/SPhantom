@@ -7,11 +7,11 @@ import sceat.domain.common.IPhantom;
 import sceat.domain.network.Core;
 import sceat.domain.network.ServerProvider;
 import fr.aresrpg.commons.util.collection.HashSet;
-import fr.aresrpg.sdk.mc.ServerType;
-import fr.aresrpg.sdk.mc.Statut;
 import fr.aresrpg.sdk.network.Server;
 import fr.aresrpg.sdk.network.Vps;
 import fr.aresrpg.sdk.util.VpsState;
+import fr.aresrpg.sdk.util.minecraft.ServerType;
+import fr.aresrpg.sdk.util.minecraft.Statut;
 
 public class Vpss {
 

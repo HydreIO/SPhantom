@@ -11,8 +11,8 @@ import sceat.Main;
 import sceat.SPhantom;
 import sceat.domain.ressources.Constant;
 import fr.aresrpg.commons.util.map.EnumHashMap;
-import fr.aresrpg.sdk.mc.ServerType;
 import fr.aresrpg.sdk.system.Log;
+import fr.aresrpg.sdk.util.minecraft.ServerType;
 
 public class SPhantomConfig {
 

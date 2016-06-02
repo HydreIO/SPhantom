@@ -4,11 +4,11 @@ import sceat.domain.Manager;
 import sceat.domain.network.Core;
 import sceat.domain.utils.ServerLabel;
 import fr.aresrpg.commons.concurrent.ConcurrentMap;
-import fr.aresrpg.sdk.mc.ServerType;
-import fr.aresrpg.sdk.mc.Statut;
 import fr.aresrpg.sdk.network.Server;
 import fr.aresrpg.sdk.network.Vps;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomServerInfo;
+import fr.aresrpg.sdk.util.minecraft.ServerType;
+import fr.aresrpg.sdk.util.minecraft.Statut;
 
 /**
  * Cette class était l'ancienne implem de server que j'ai refactor dans AresInternal
