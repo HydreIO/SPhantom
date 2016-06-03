@@ -22,7 +22,6 @@ import sceat.gui.web.GrizzlyWebServer;
 import sceat.infra.connector.general.VultrConnector;
 import sceat.infra.connector.mq.RabbitMqConnector;
 import sceat.infra.input.ScannerInput;
-import fr.aresrpg.api.PhantomApi;
 import fr.aresrpg.commons.concurrent.Pool;
 import fr.aresrpg.commons.concurrent.Pool.PoolType;
 import fr.aresrpg.commons.concurrent.Threads;
@@ -30,9 +29,12 @@ import fr.aresrpg.commons.condition.Option;
 import fr.aresrpg.commons.condition.functional.Executable;
 import fr.aresrpg.commons.condition.match.Matcher;
 import fr.aresrpg.commons.condition.match.Matcher.Case;
+import fr.aresrpg.commons.log.Logger;
+import fr.aresrpg.commons.log.LoggerBuilder;
 import fr.aresrpg.commons.util.map.Map;
 import fr.aresrpg.commons.util.stream.Collectors;
 import fr.aresrpg.sdk.Weed;
+import fr.aresrpg.sdk.phantom.PhantomApi;
 import fr.aresrpg.sdk.protocol.IHandler;
 import fr.aresrpg.sdk.protocol.handling.PacketHandler;
 import fr.aresrpg.sdk.protocol.util.Security;
@@ -109,6 +111,11 @@ public class SPhantom implements Async, PhantomApi {
 			@Override
 			public Security getSecurity() {
 				return instance.security;
+			}
+
+			@Override
+			public Logger getLogger() {
+				return new LoggerBuilder("ARESRPG").setUseConsoleHandler(true, true).build();
 			}
 		});
 		this.running = true;
