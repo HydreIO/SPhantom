@@ -6,7 +6,7 @@ import sceat.SPhantom;
 import sceat.domain.common.IPhantom;
 import sceat.domain.network.Core;
 import sceat.domain.network.ServerProvider;
-import fr.aresrpg.commons.util.collection.HashSet;
+import fr.aresrpg.commons.domain.util.collection.HashSet;
 import fr.aresrpg.sdk.network.Server;
 import fr.aresrpg.sdk.network.Vps;
 import fr.aresrpg.sdk.util.VpsState;

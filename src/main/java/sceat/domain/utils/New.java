@@ -6,10 +6,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import fr.aresrpg.commons.util.collection.HashSet;
-import fr.aresrpg.commons.util.collection.Set;
-import fr.aresrpg.commons.util.map.HashMap;
-import fr.aresrpg.commons.util.map.Map;
+import fr.aresrpg.commons.domain.util.collection.HashSet;
+import fr.aresrpg.commons.domain.util.collection.Set;
+import fr.aresrpg.commons.domain.util.map.HashMap;
+import fr.aresrpg.commons.domain.util.map.Map;
 
 public class New {
 

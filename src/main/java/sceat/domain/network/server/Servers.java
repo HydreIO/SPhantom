@@ -3,7 +3,7 @@ package sceat.domain.network.server;
 import sceat.domain.Manager;
 import sceat.domain.network.Core;
 import sceat.domain.utils.ServerLabel;
-import fr.aresrpg.commons.concurrent.ConcurrentMap;
+import fr.aresrpg.commons.domain.concurrent.ConcurrentMap;
 import fr.aresrpg.sdk.network.Server;
 import fr.aresrpg.sdk.network.Vps;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomServerInfo;

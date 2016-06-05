@@ -14,7 +14,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-import fr.aresrpg.commons.util.map.Map;
+import fr.aresrpg.commons.domain.util.map.Map;
 import fr.aresrpg.sdk.phantom.PhantomApi;
 import fr.aresrpg.sdk.util.Defqon;
 import fr.aresrpg.sdk.util.OperatingMode;

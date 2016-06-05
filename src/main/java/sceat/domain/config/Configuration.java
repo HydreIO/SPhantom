@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import fr.aresrpg.commons.util.collection.LinkedHashSet;
-import fr.aresrpg.commons.util.collection.Set;
-import fr.aresrpg.commons.util.map.LinkedHashMap;
-import fr.aresrpg.commons.util.map.Map;
+import fr.aresrpg.commons.domain.util.collection.LinkedHashSet;
+import fr.aresrpg.commons.domain.util.collection.Set;
+import fr.aresrpg.commons.domain.util.map.LinkedHashMap;
+import fr.aresrpg.commons.domain.util.map.Map;
 
 public final class Configuration {
 

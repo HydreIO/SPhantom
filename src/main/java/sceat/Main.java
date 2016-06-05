@@ -14,8 +14,8 @@ import org.apache.commons.cli.ParseException;
 import sceat.domain.utils.IronHeart;
 import sceat.gui.web.GrizzlyWebServer;
 import sceat.infra.input.ScannerInput;
-import fr.aresrpg.commons.log.Logger;
-import fr.aresrpg.commons.util.schedule.Scheduler;
+import fr.aresrpg.commons.domain.log.Logger;
+import fr.aresrpg.commons.domain.util.schedule.Scheduler;
 import fr.aresrpg.sdk.system.Broker;
 import fr.aresrpg.sdk.system.Log;
 import fr.aresrpg.sdk.util.Constant;
@@ -63,14 +63,14 @@ public class Main {
 	}
 
 	public static void shutDown() {
-		fr.aresrpg.commons.log.Logger.MAIN_LOGGER.info("Bye.");
+		fr.aresrpg.commons.domain.log.Logger.MAIN_LOGGER.info("Bye.");
 		Broker.get().close();
 		GrizzlyWebServer.stop();
 		ScannerInput.shutDown();
 		SPhantom.getInstance().getExecutor().shutdown();
 		Scheduler.getScheduler().shutdown();
 		if (IronHeart.get() != null) IronHeart.get().broke();
-		fr.aresrpg.commons.log.Logger.MAIN_LOGGER.info("Bye.");
+		fr.aresrpg.commons.domain.log.Logger.MAIN_LOGGER.info("Bye.");
 		SPhantom.getInstance().running = false;
 		System.exit(0); // NOSONAR system.exit is required here
 	}
@@ -80,7 +80,7 @@ public class Main {
 		try {
 			return new BasicParser().parse(opt, args);
 		} catch (ParseException e) {
-			fr.aresrpg.commons.log.Logger.MAIN_LOGGER.info(e);
+			fr.aresrpg.commons.domain.log.Logger.MAIN_LOGGER.info(e);
 			return null;
 		}
 	}

@@ -10,7 +10,7 @@ import java.util.List;
 import sceat.Main;
 import sceat.SPhantom;
 import sceat.domain.ressources.Constant;
-import fr.aresrpg.commons.util.map.EnumHashMap;
+import fr.aresrpg.commons.domain.util.map.EnumHashMap;
 import fr.aresrpg.sdk.system.Log;
 import fr.aresrpg.sdk.util.minecraft.ServerType;
 

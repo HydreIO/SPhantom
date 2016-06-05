@@ -6,10 +6,10 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
 import sceat.SPhantom;
 import sceat.infra.connector.mq.RabbitMqConnector;
-import fr.aresrpg.commons.util.schedule.Schedule;
-import fr.aresrpg.commons.util.schedule.Scheduled;
-import fr.aresrpg.commons.util.schedule.Scheduler;
-import fr.aresrpg.commons.util.schedule.TimeUnit;
+import fr.aresrpg.commons.domain.util.schedule.Schedule;
+import fr.aresrpg.commons.domain.util.schedule.Scheduled;
+import fr.aresrpg.commons.domain.util.schedule.Scheduler;
+import fr.aresrpg.commons.domain.util.schedule.TimeUnit;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomHeartBeat;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomHeartBeat.BeatType;
 import fr.aresrpg.sdk.protocol.util.Pulse;

@@ -11,8 +11,8 @@ import java.io.Writer;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
-import fr.aresrpg.commons.util.map.LinkedHashMap;
-import fr.aresrpg.commons.util.map.Map;
+import fr.aresrpg.commons.domain.util.map.LinkedHashMap;
+import fr.aresrpg.commons.domain.util.map.Map;
 
 public class YamlConfiguration extends ConfigurationProvider {
 

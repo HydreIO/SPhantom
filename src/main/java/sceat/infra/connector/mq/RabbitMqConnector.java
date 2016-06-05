@@ -12,8 +12,8 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
-import fr.aresrpg.commons.concurrent.Threads;
-import fr.aresrpg.commons.condition.Try;
+import fr.aresrpg.commons.domain.concurrent.Threads;
+import fr.aresrpg.commons.domain.condition.Try;
 import fr.aresrpg.sdk.protocol.PacketPhantom;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomBanned;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomBootServer;

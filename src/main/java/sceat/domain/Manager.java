@@ -4,8 +4,8 @@ import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import fr.aresrpg.commons.concurrent.ConcurrentHashMap;
-import fr.aresrpg.commons.concurrent.ConcurrentMap;
+import fr.aresrpg.commons.domain.concurrent.ConcurrentHashMap;
+import fr.aresrpg.commons.domain.concurrent.ConcurrentMap;
 import fr.aresrpg.sdk.network.Server;
 
 public class Manager {

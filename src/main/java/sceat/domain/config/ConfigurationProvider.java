@@ -6,8 +6,8 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
 
-import fr.aresrpg.commons.util.map.HashMap;
-import fr.aresrpg.commons.util.map.Map;
+import fr.aresrpg.commons.domain.util.map.HashMap;
+import fr.aresrpg.commons.domain.util.map.Map;
 
 public abstract class ConfigurationProvider {
 

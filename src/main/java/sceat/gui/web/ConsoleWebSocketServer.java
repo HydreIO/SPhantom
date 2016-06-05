@@ -8,14 +8,14 @@ import org.glassfish.grizzly.websockets.WebSocket;
 import org.glassfish.grizzly.websockets.WebSocketApplication;
 
 import sceat.domain.shell.Input;
-import fr.aresrpg.commons.log.handler.BaseHandler;
-import fr.aresrpg.commons.log.handler.formatters.BasicFormatter;
+import fr.aresrpg.commons.domain.log.handler.BaseHandler;
+import fr.aresrpg.commons.domain.log.handler.formatters.BasicFormatter;
 import fr.aresrpg.sdk.system.Log;
 
 public class ConsoleWebSocketServer extends WebSocketApplication implements Input.PhantomInput {
 	private class LoggerHandler extends BaseHandler {
 		@Override
-		public void handle(fr.aresrpg.commons.log.Log log) throws IOException {
+		public void handle(fr.aresrpg.commons.domain.log.Log log) throws IOException {
 			String l = format(log);
 			broadcaster.broadcast(getWebSockets(), l);
 			logs.append(l);

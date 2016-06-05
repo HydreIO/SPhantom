@@ -1,7 +1,7 @@
 package sceat.domain.trigger;
 
-import fr.aresrpg.commons.util.collection.HashSet;
-import fr.aresrpg.commons.util.collection.Set;
+import fr.aresrpg.commons.domain.util.collection.HashSet;
+import fr.aresrpg.commons.domain.util.collection.Set;
 import fr.aresrpg.sdk.phantom.PhantomApi.VpsApi;
 import fr.aresrpg.sdk.util.Defqon;
 import fr.aresrpg.sdk.util.OperatingMode;
