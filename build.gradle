@@ -61,9 +61,9 @@ repositories {
 
 dependencies {
     mappings 'fr.aresrpg:AresCommons:0.6@map'
-    mappings 'fr.aresrpg:AresInternal:1.4@map'
+    mappings 'fr.aresrpg:AresInternal:1.5@map'
     obfuscated 'fr.aresrpg:AresCommons:0.6@jar'
-    obfuscated 'fr.aresrpg:AresInternal:1.4@jar'
+    obfuscated 'fr.aresrpg:AresInternal:1.5@jar'
     compile 'commons-cli:commons-cli:1.2'
     compile 'com.rabbitmq:amqp-client:3.6.1'
     compile 'org.yaml:snakeyaml:1.17'
