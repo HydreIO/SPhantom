@@ -122,9 +122,9 @@ public class Core implements Scheduled {
 	}
 
 	/**
-	 * Cette methode du futur confectionn�es par mes soins m'a pris 3 putain de jours !
+	 * Cette methode du futur confectionnées par mes soins m'a pris 3 putain de jours !
 	 * <p>
-	 * Elle effectue une sorte de d�fragmentation pour regrouper un maximum les serveurs sur les vps et ainsi pouvoir fermer les instances en trop ! Economie d'argent morray !
+	 * Elle effectue une sorte de défragmentation pour regrouper un maximum les serveurs sur les vps et ainsi pouvoir fermer les instances en trop ! Economie d'argent morray !
 	 */
 	@Schedule(rate = 1, unit = TimeUnit.HOURS)
 	public void balk() {
@@ -153,7 +153,7 @@ public class Core implements Scheduled {
 						return true;
 					}));
 		} catch (Exception e) {
-			Main.printStackTrace(e);
+			Log.trace(e);
 		}
 	}
 

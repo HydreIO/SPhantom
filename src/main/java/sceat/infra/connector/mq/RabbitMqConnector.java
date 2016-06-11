@@ -15,18 +15,14 @@ import com.rabbitmq.client.ConnectionFactory;
 import fr.aresrpg.commons.domain.concurrent.Threads;
 import fr.aresrpg.commons.domain.condition.Try;
 import fr.aresrpg.sdk.protocol.PacketPhantom;
-import fr.aresrpg.sdk.protocol.packets.PacketPhantomBanned;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomBootServer;
-import fr.aresrpg.sdk.protocol.packets.PacketPhantomBroadcast;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomDestroyInstance;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomGradeUpdate;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomHeartBeat;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomKillProcess;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomPlayer;
-import fr.aresrpg.sdk.protocol.packets.PacketPhantomProxyAddServer;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomReduceServer;
 import fr.aresrpg.sdk.protocol.packets.PacketPhantomServerInfo;
-import fr.aresrpg.sdk.protocol.packets.PacketPhantomSymbiote;
 import fr.aresrpg.sdk.protocol.util.MessagesType;
 import fr.aresrpg.sdk.protocol.util.RoutingKey;
 import fr.aresrpg.sdk.system.Broker;
@@ -255,26 +251,6 @@ public class RabbitMqConnector implements Broker {
 			Log.packet(pkt, false);
 			basicPublich(MessagesType.UPDATE_PLAYER_GRADE, this.allsphantomKey, pkt.serializePacket().toByteArray());
 		}
-	}
-
-	@Override
-	public void banned(PacketPhantomBanned pkt) {
-		PacketPhantom.throwCantSend(pkt);
-	}
-
-	@Override
-	public void broadcast(PacketPhantomBroadcast pkt) {
-		PacketPhantom.throwCantSend(pkt);
-	}
-
-	@Override
-	public void sendSymbioteInfos(PacketPhantomSymbiote pkt) {
-		PacketPhantom.throwCantSend(pkt);
-	}
-
-	@Override
-	public void sendProxyAdd(PacketPhantomProxyAddServer pkt) {
-		cantSend(pkt);
 	}
 
 }
