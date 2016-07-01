@@ -1,18 +1,21 @@
 package sceat.domain.network;
 
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import sceat.SPhantom;
 import sceat.domain.config.SPhantomConfig;
-import sceat.domain.network.server.Server.ServerType;
-import sceat.domain.network.server.Vps;
+import sceat.domain.network.server.Vpss;
 import sceat.domain.trigger.PhantomTrigger;
+import fr.aresrpg.commons.domain.concurrent.ConcurrentHashMap;
+import fr.aresrpg.commons.domain.concurrent.ConcurrentMap;
+import fr.aresrpg.commons.domain.util.collection.HashSet;
+import fr.aresrpg.commons.domain.util.collection.Set;
+import fr.aresrpg.sdk.network.Vps;
+import fr.aresrpg.sdk.system.Log;
+import fr.aresrpg.sdk.util.Defqon;
+import fr.aresrpg.sdk.util.minecraft.ServerType;
 
 @SuppressWarnings("unchecked")
 public class ServerProvider {
@@ -26,16 +29,17 @@ public class ServerProvider {
 	 * <p>
 	 * on cherchera d'abord a remplir ceux la avant de toucher au instances vultr
 	 */
-	private ConcurrentHashMap<String, Vps> configInstances = new ConcurrentHashMap<String, Vps>();
+	private ConcurrentHashMap<String, Vps> configInstances = new ConcurrentHashMap<>();
 	/**
 	 * Map des instances suplémentaire loué a l'heure, mises a jour en fonction de la ram dispo sur les Vps et la ram demandée pour le type du serveur
 	 */
-	private ConcurrentHashMap<ServerType, Vps> ordered = new ConcurrentHashMap<ServerType, Vps>();
+	private ConcurrentHashMap<ServerType, Vps> ordered = new ConcurrentHashMap<>();
 
 	private ServerProvider() {
 	}
 
 	public static void init() {
+		// mange mon gros sonar
 	}
 
 	public void incrementPriority() {
@@ -70,23 +74,15 @@ public class ServerProvider {
 		return priority;
 	}
 
-	public enum Defqon {
-		FIVE,
-		FOUR,
-		THREE,
-		TWO,
-		ONE
-	}
-
 	public static ServerProvider getInstance() {
 		return instance;
 	}
 
-	public Map<ServerType, Vps> getOrdered() {
+	public ConcurrentMap<ServerType, Vps> getOrdered() {
 		return ordered;
 	}
 
-	public Map<String, Vps> getConfigInstances() {
+	public ConcurrentMap<String, Vps> getConfigInstances() {
 		return configInstances;
 	}
 
@@ -100,14 +96,14 @@ public class ServerProvider {
 	 *            chercher un vps autre que celui en parametre
 	 * @return first proper vps for the serverType, null if no instance is found
 	 */
-	public synchronized Vps getVps(ServerType type, Optional<Vps> exclude) {
-		boolean log = SPhantom.getInstance().logprovider;
+	public synchronized Vps getVps(ServerType type, Optional<Vps> exclude) { // NOSONAR sorry pour la cyclomatic complexity
+		boolean log = SPhantom.getInstance().isLogprovider();
 		long time = System.currentTimeMillis();
-		if (log) SPhantom.print("[Provider] Asking Vps for type : " + type.name());
+		if (log) Log.out("[Provider] Asking Vps for type : " + type.name());
 		SPhantomConfig sc = SPhantom.getInstance().getSphantomConfig();
 		Vps vp = null;
 		for (Vps vss : getConfigInstances().values())
-			if (vss.getAvailableRam(true) >= sc.getRamFor(type)) { // recherche prioritaire dans les machines configurée (vps/dédié non loué a l'heure)
+			if (Vpss.getAvailableRam(vss, true) >= sc.getRamFor(type)) { // recherche prioritaire dans les machines configurée (vps/dédié non loué a l'heure)
 				vp = vss;
 				if (!vp.isUpdated() || (exclude.isPresent() && vss == exclude.get())) {
 					vp = null;
@@ -115,37 +111,37 @@ public class ServerProvider {
 				}
 				break;
 			}
-		Vps vf = getOrdered().get(type);
+		Vps vf = getOrdered().safeGet(type);
 		if (vp == null) vp = exclude.isPresent() ? vf == exclude.get() ? null : vf : vf;
-		if (vf != null && !vf.isUpdated()) vf = null;
-		if (log) SPhantom.print("Found vps : " + (vp == null ? "NULL :(" : vp.getLabel()));
+		if (vf != null && !vf.isUpdated()) vf = null; // NOSONAR bitch
+		if (log) Log.out("Found vps : " + (vp == null ? "NULL :(" : vp.getLabel()));
 		if (vp == null) {
 			vp = searchFirst(sc.getRamFor(type), exclude);
 			if (vp != null && !vp.isUpdated()) vp = null;
-			if (SPhantom.getInstance().logprovider) SPhantom.print("Force found vps : " + (vp == null ? "Not found again.. Wait for defqon to grow" : vp.getLabel()));
+			if (SPhantom.getInstance().isLogprovider()) Log.out("Force found vps : " + (vp == null ? "Not found again.. Wait for defqon to grow" : vp.getLabel()));
 			if (vp == null) return null; // si on trouve vraiment pas de vps on return null et tant pis aucun serveur ne s'ouvrira il faudra attendre l'ouverture d'une instance automatiquement
 		}
 		int rfm = sc.getRamFor(type);
-		int availableRam = vp.getAvailableRam(true) - rfm;
-		if (log) SPhantom.print("Available ram : " + (availableRam + rfm));
+		int availableRam = Vpss.getAvailableRam(vp, true) - rfm;
+		if (log) Log.out("Available ram : " + (availableRam + rfm));
 		for (Entry<ServerType, Vps> e : ordered.entrySet()) {
 			Vps value = e.getValue();
 			ServerType key = e.getKey();
 			int ramfor = sc.getRamFor(key);
-			int ramavail = value == null ? -1 : value == vp ? availableRam : value.getAvailableRam(true);
+			int ramavail = value == null ? -1 : value == vp ? availableRam : Vpss.getAvailableRam(value, true);
 			if (ramfor > ramavail) {
 				Vps neew = searchFirst(ramfor, Optional.of(vp), exclude);
 				ordered.put(key, neew);
 			}
 		}
-		if (log) SPhantom.print("Founded in " + (System.currentTimeMillis() - time) + "ms");
+		if (log) Log.out("Founded in " + (System.currentTimeMillis() - time) + "ms");
 		return vp;
 	}
 
 	private Vps searchFirst(int ramNeeded, Optional<Vps>... exclude) {
 		Set<Vps> comp = new HashSet<>();
-		Arrays.stream(exclude).filter(Optional::isPresent).forEach(o -> comp.add(o.get()));
-		return Core.getInstance().getVps().values().stream().filter(vp -> vp.getAvailableRam(true) >= ramNeeded && (comp.isEmpty() || !comp.contains(vp))).findFirst().orElse(null);
+		Arrays.stream(exclude).filter(Optional::isPresent).forEach(o -> comp.add(o.get())); // NOSONAR closeable
+		return Core.getInstance().getVps().values().stream().filter(vp -> Vpss.getAvailableRam(vp, true) >= ramNeeded && (comp.isEmpty() || !comp.contains(vp))).findFirst().orElse(null);
 	}
 
 }

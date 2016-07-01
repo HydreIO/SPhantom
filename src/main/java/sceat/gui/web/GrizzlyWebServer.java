@@ -14,7 +14,7 @@ public class GrizzlyWebServer {
 	private HttpServer server;
 	private Input.PhantomInput input;
 
-	public GrizzlyWebServer(int port) throws IOException {
+	private GrizzlyWebServer(int port) throws IOException {
 		instance = this;
 		this.server = HttpServer.createSimpleServer(null, port);
 		this.server.getListener("grizzly").registerAddOn(new WebSocketAddOn());
@@ -28,6 +28,10 @@ public class GrizzlyWebServer {
 
 	public Input.PhantomInput getInput() {
 		return input;
+	}
+
+	public static void init(int port) throws IOException {
+		instance = new GrizzlyWebServer(port);
 	}
 
 	public static void stop() {

@@ -1,31 +1,45 @@
 package sceat.domain;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.CopyOnWriteArrayList;
 
-import sceat.domain.minecraft.Grades;
-import sceat.domain.network.server.Server;
+import fr.aresrpg.commons.domain.concurrent.ConcurrentHashMap;
+import fr.aresrpg.commons.domain.concurrent.ConcurrentMap;
+import fr.aresrpg.sdk.network.Server;
 
 public class Manager {
 
 	private static Manager instance = new Manager();
-
 	private ConcurrentHashMap<String, Server> serversByLabel = new ConcurrentHashMap<>();
-	private CopyOnWriteArraySet<UUID> playersOnNetwork = new CopyOnWriteArraySet<>();
-	private ConcurrentHashMap<Grades, Set<UUID>> playersPerGrade = new ConcurrentHashMap<>();
+	private ConcurrentHashMap<UUID, String> playersOnNetwork = new ConcurrentHashMap<>();
+	private CopyOnWriteArrayList<Integer> usedPorts = new CopyOnWriteArrayList<>();
 
 	private Manager() {
 	}
 
 	public static void init() {
-		Manager i = instance;
-		Arrays.stream(Grades.values()).forEach(g -> i.playersPerGrade.put(g, new HashSet<>()));
+		// nobitchies
+	}
+
+	public CopyOnWriteArrayList<Integer> getUsedPorts() { // NOSONAR non je peut pas mettre list
+		return usedPorts;
+	}
+
+	public Server getServer(String srv) {
+		return getServersByLabel().safeGetOrDefault(srv, null);
+	}
+
+	public static boolean isPortUsed(int port) {
+		return instance.getUsedPorts().contains(port);
+	}
+
+	public static void usePort(int port) {
+		instance.usedPorts.add(port);
+	}
+
+	public static void unusePort(int port) {
+		instance.usedPorts.remove(Integer.valueOf(port));
 	}
 
 	public static Manager getInstance() {
@@ -40,15 +54,12 @@ public class Manager {
 		return getPlayersOnNetwork().size();
 	}
 
-	public Map<String, Server> getServersByLabel() {
+	public ConcurrentMap<String, Server> getServersByLabel() {
 		return serversByLabel;
 	}
 
-	public Set<UUID> getPlayersOnNetwork() {
+	public ConcurrentMap<UUID, String> getPlayersOnNetwork() {
 		return playersOnNetwork;
 	}
 
-	public Map<Grades, Set<UUID>> getPlayersPerGrade() {
-		return playersPerGrade;
-	}
 }

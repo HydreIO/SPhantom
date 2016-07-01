@@ -1,19 +1,14 @@
 package sceat.infra.connector.general;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import sceat.Main;
 import sceat.SPhantom;
 import sceat.domain.common.IPhantom;
 import sceat.domain.network.Core;
-import sceat.domain.network.server.Vps;
-import sceat.domain.network.server.Vps.VpsState;
+import sceat.domain.network.server.Vpss;
 import xyz.deltaevo.jvultr.JVultrAPI;
 import xyz.deltaevo.jvultr.JVultrClient;
 import xyz.deltaevo.jvultr.api.JVultrOS;
@@ -24,9 +19,18 @@ import xyz.deltaevo.jvultr.api.JVultrServer;
 import xyz.deltaevo.jvultr.exception.JVultrException;
 import xyz.deltaevo.jvultr.utils.BiValue;
 import xyz.deltaevo.jvultr.utils.JVultrUtil;
+import fr.aresrpg.commons.domain.concurrent.ConcurrentHashMap;
+import fr.aresrpg.commons.domain.concurrent.Threads;
+import fr.aresrpg.commons.domain.util.map.HashMap;
+import fr.aresrpg.commons.domain.util.map.Map;
+import fr.aresrpg.sdk.network.Vps;
+import fr.aresrpg.sdk.system.Log;
+import fr.aresrpg.sdk.util.VpsState;
 
 public class VultrConnector implements IPhantom {
 
+	private int deployed;
+	private long lastReq = System.currentTimeMillis();
 	private static final List<String> REGIONS = Arrays.asList("Paris", "Amsterdam", "London", "Frankfurt");
 	private static JVultrOS os;
 	static {
@@ -50,9 +54,6 @@ public class VultrConnector implements IPhantom {
 		this.servers = new HashMap<>();
 	}
 
-	private int deployed;
-	private long lastReq = System.currentTimeMillis();
-
 	public synchronized boolean checkReq() {
 		if (System.currentTimeMillis() < lastReq) return false;
 		lastReq = System.currentTimeMillis();
@@ -60,11 +61,7 @@ public class VultrConnector implements IPhantom {
 	}
 
 	private void sleep() {
-		try {
-			Thread.sleep(1300);
-		} catch (InterruptedException e) {
-			Main.printStackTrace(e);
-		}
+		Threads.uSleep(1300, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
@@ -82,8 +79,8 @@ public class VultrConnector implements IPhantom {
 			JVultrScript script = api.getScripts().values().iterator().next();
 			JVultrServer server = api.createServer(plan.getSecond(), plan.getFirst(), os, null, null, script, null, null, null, label, null, false, null, null, null, null, -1, label);
 			servers.put(label, server.getId());
-			return Vps.fromBoot(label, ram, InetAddress.getByName(server.getMainIp()));
-		} catch (JVultrException | UnknownHostException | IllegalAccessException e) {
+			return Vps.fromBoot(label, ram);
+		} catch (JVultrException | IllegalAccessException e) {
 			Main.printStackTrace(e);
 			return null;
 		}
@@ -93,30 +90,26 @@ public class VultrConnector implements IPhantom {
 	public void destroyServer(String label) {
 		if (!checkReq()) sleep();
 		ConcurrentHashMap<String, Vps> vps = Core.getInstance().getVps();
-		if (!vps.containsKey(label)) SPhantom.print("Try destroying vps instance : [" + label + "] /!\\ This instance is not registered in Sphantom or already destroyed /!\\");
+		if (!vps.containsKey(label)) Log.out("Try destroying vps instance : [" + label + "] /!\\ This instance is not registered in Sphantom or already destroyed /!\\");
 		else {
-			Integer id = servers.get(label);
+			Integer id = servers.safeGet(label);
 			try {
-				if (SPhantom.logDiv()) SPhantom.print("Destroying instance : " + label);
+				if (SPhantom.logDiv()) Log.out("Destroying instance : " + label);
 				Vps vp = vps.get(label).setState(VpsState.DESTROYING);
 				if (id == null) {
-					for (Map.Entry<Integer, JVultrServer> servers : api.getSevers().entrySet()) {
-						if (servers.getValue().getLabel().equals(label)) {
-							id = servers.getKey();
+					for (Map.Entry<Integer, JVultrServer> servvers : api.getSevers().entrySet()) {
+						if (servvers.getValue().getLabel().equals(label)) {
+							id = servvers.getKey();
 							break;
 						}
 					}
-					Main.printStackTrace(new IllegalStateException("VPS not found " + label));
+					Log.trace(new IllegalStateException("VPS not found " + label));
 					return;
-				} else servers.remove(label);
+				} else servers.safeRemove(label);
 				api.destroyServer(id); // moment ou sa peut fail, on aura pas besoin de vp.register si sa fail car le vp.unregister est call si tout fonctionne
 				SPhantom.getInstance().getExecutor().execute(() -> {
-					try {
-						Thread.sleep(6000); // on attend un peu que le vps soit bien destroy
-					} catch (Exception e) {
-						Main.printStackTrace(e);
-					}
-					vp.unregister();
+					Threads.uSleep(6, TimeUnit.SECONDS);
+					Vpss.unregister(vp);
 				});
 			} catch (JVultrException e) {
 				servers.put(label, id); // si l'api a fail bah on reAdd le vps pour qu'il puisse le destroy plus tard

@@ -7,11 +7,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
+
+import fr.aresrpg.commons.domain.util.map.LinkedHashMap;
+import fr.aresrpg.commons.domain.util.map.Map;
 
 public class YamlConfiguration extends ConfigurationProvider {
 

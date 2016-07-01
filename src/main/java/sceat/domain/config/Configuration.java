@@ -1,12 +1,13 @@
 package sceat.domain.config;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
+
+import fr.aresrpg.commons.domain.util.collection.LinkedHashSet;
+import fr.aresrpg.commons.domain.util.collection.Set;
+import fr.aresrpg.commons.domain.util.map.LinkedHashMap;
+import fr.aresrpg.commons.domain.util.map.Map;
 
 public final class Configuration {
 
@@ -33,7 +34,7 @@ public final class Configuration {
 		if (index == -1) { return this; }
 
 		String root = path.substring(0, index);
-		Object section = self.get(root);
+		Object section = self.safeGet(root);
 		if (section == null) {
 			section = new LinkedHashMap<>();
 			self.put(root, section);
@@ -54,7 +55,7 @@ public final class Configuration {
 		Configuration section = getSectionFor(path);
 		Object val;
 		if (section == this) {
-			val = self.get(path);
+			val = self.safeGet(path);
 		} else {
 			val = section.get(getChild(path), def);
 		}
@@ -74,7 +75,7 @@ public final class Configuration {
 		Configuration section = getSectionFor(path);
 		if (section == this) {
 			if (value == null) {
-				self.remove(path);
+				self.safeRemove(path);
 			} else {
 				self.put(path, value);
 			}
@@ -87,7 +88,7 @@ public final class Configuration {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Configuration getSection(String path) {
 		Object def = getDefault(path);
-		return new Configuration((Map) (get(path, (def instanceof Map) ? def : Collections.EMPTY_MAP)), (defaults == null) ? null : defaults.getSection(path));
+		return new Configuration((Map) (get(path, (def instanceof Map) ? def : Collections.emptyMap())), (defaults == null) ? null : defaults.getSection(path));
 	}
 
 	/**
@@ -95,7 +96,7 @@ public final class Configuration {
 	 *
 	 * @return top level keys for this section
 	 */
-	public Collection<String> getKeys() {
+	public Set<String> getKeys() {
 		return new LinkedHashSet<>(self.keySet());
 	}
 
@@ -310,7 +311,7 @@ public final class Configuration {
 	/*------------------------------------------------------------------------*/
 	public List<?> getList(String path) {
 		Object def = getDefault(path);
-		return getList(path, (def instanceof List<?>) ? (List<?>) def : Collections.EMPTY_LIST);
+		return getList(path, (def instanceof List<?>) ? (List<?>) def : Collections.emptyList());
 	}
 
 	public List<?> getList(String path, List<?> def) {

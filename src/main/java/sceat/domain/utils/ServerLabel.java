@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import sceat.domain.Manager;
 import sceat.domain.network.Core;
-import sceat.domain.network.server.Server.ServerType;
+import fr.aresrpg.sdk.util.minecraft.ServerType;
 
 public class ServerLabel {
 	private static Random r = new Random();
@@ -15,7 +15,7 @@ public class ServerLabel {
 
 	public static String newLabel(ServerType type) {
 		String label;
-		while (Manager.getInstance().getServersByLabel().containsKey(label = type.name() + "-" + r.nextInt(5000)))
+		while (Manager.getInstance().getServersByLabel().containsKey(label = type.name().toLowerCase() + "-" + r.nextInt(5000)))
 			;
 		return label;
 	}
@@ -28,7 +28,7 @@ public class ServerLabel {
 	}
 
 	public static ServerType getTypeWithLabel(String label) {
-		return ServerType.valueOf(label.split("-")[0]);
+		return ServerType.valueOf(label.split("-")[0]); // attention j'utilise aussi cette methode dans AresInternal dans le packetPhantomPlayer
 	}
 
 }

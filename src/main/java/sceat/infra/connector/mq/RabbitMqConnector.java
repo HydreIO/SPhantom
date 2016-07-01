@@ -3,32 +3,31 @@ package sceat.infra.connector.mq;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import sceat.Main;
-import sceat.SPhantom;
-import sceat.domain.common.java.Lambdas;
-import sceat.domain.common.mq.Broker;
 import sceat.domain.common.system.Config;
-import sceat.domain.common.system.Log;
-import sceat.domain.common.system.Root;
-import sceat.domain.common.thread.ScThread;
-import sceat.domain.protocol.MessagesType;
-import sceat.domain.protocol.RoutingKey;
-import sceat.domain.protocol.packets.PacketPhantomBootServer;
-import sceat.domain.protocol.packets.PacketPhantomDestroyInstance;
-import sceat.domain.protocol.packets.PacketPhantomGradeUpdate;
-import sceat.domain.protocol.packets.PacketPhantomHeartBeat;
-import sceat.domain.protocol.packets.PacketPhantomKillProcess;
-import sceat.domain.protocol.packets.PacketPhantomPlayer;
-import sceat.domain.protocol.packets.PacketPhantomReduceServer;
-import sceat.domain.protocol.packets.PacketPhantomServerInfo;
-import sceat.domain.utils.Try;
-import sceat.domain.utils.Try.TryVoidRunnable;
+import sceat.domain.config.SPhantomConfig;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+
+import fr.aresrpg.commons.domain.concurrent.Threads;
+import fr.aresrpg.commons.domain.condition.Try;
+import fr.aresrpg.sdk.protocol.PacketPhantom;
+import fr.aresrpg.sdk.protocol.packets.PacketPhantomBootServer;
+import fr.aresrpg.sdk.protocol.packets.PacketPhantomDestroyInstance;
+import fr.aresrpg.sdk.protocol.packets.PacketPhantomGradeUpdate;
+import fr.aresrpg.sdk.protocol.packets.PacketPhantomHeartBeat;
+import fr.aresrpg.sdk.protocol.packets.PacketPhantomKillProcess;
+import fr.aresrpg.sdk.protocol.packets.PacketPhantomPlayer;
+import fr.aresrpg.sdk.protocol.packets.PacketPhantomReduceServer;
+import fr.aresrpg.sdk.protocol.packets.PacketPhantomServerInfo;
+import fr.aresrpg.sdk.protocol.util.MessagesType;
+import fr.aresrpg.sdk.protocol.util.RoutingKey;
+import fr.aresrpg.sdk.system.Broker;
+import fr.aresrpg.sdk.system.Log;
+import fr.aresrpg.sdk.system.Root;
 
 public class RabbitMqConnector implements Broker {
 
@@ -37,53 +36,80 @@ public class RabbitMqConnector implements Broker {
 	private ConnectionFactory factory = new ConnectionFactory();
 	private static Connection connection;
 	private static Channel channel;
-	public static final String type = "direct";
+	public static final String TYPE = "direct";
+	private boolean allowed = false;
+
+	private final String sphantomKey = RoutingKey.genKey(RoutingKey.SPHANTOM);
+	private final String allsphantomKey = RoutingKey.genKey(RoutingKey.SPHANTOM, RoutingKey.HUBS, RoutingKey.PROXY, RoutingKey.SERVERS);
+	private final String bootserverKey = RoutingKey.genKey(RoutingKey.HUBS, RoutingKey.SPHANTOM, RoutingKey.SYMBIOTE);
+	private final String symbioteKey = RoutingKey.genKey(RoutingKey.SYMBIOTE);
+	private final String serverinfosKey = RoutingKey.genKey(RoutingKey.HUBS, RoutingKey.PROXY, RoutingKey.SPHANTOM);
 
 	private RabbitMqConnector() {
 	}
 
-	public static void init(String user, String pass, boolean local) {
-		instance.initt(user, pass, local);
+	/**
+	 * Empeche Sphantom d'envoyer des packet mise a part HEART_BEAT/Takelead
+	 * 
+	 * @param pause
+	 *            mettre en pause ou reveiller
+	 */
+	public void pause(boolean pause) {
+		allowed = !pause;
+	}
+
+	public static void init(boolean local) {
+		instance.initt(SPhantomConfig.get().getRabbitUser(), SPhantomConfig.get().getRabbitPassword(), local);
 	}
 
 	public RabbitMqReceiver getReceiver() {
 		return this.receiver;
 	}
 
+	private void setSecurity(PacketPhantom pkt) {
+		pkt.setSecu(Root.get().getSecurity());
+	}
+
+	public static void setConnection(Connection connection) {
+		RabbitMqConnector.connection = connection;
+	}
+
+	public static void setChannel(Channel channel) {
+		RabbitMqConnector.channel = channel;
+	}
+
 	public void initt(String user, String passwd, boolean local) {
 		if (local) {
-			SPhantom.print("Local mode ! No messaging service.");
+			Log.out("Local mode ! No messaging service.");
 			return;
 		}
-		Lambdas.<ConnectionFactory> emptyConsumer((f) -> {
-			f.setHost(Config.get().getRabbitAdress());
-			f.setPort(Config.get().getRabbitPort());
-			f.setUsername(user);
-			f.setPassword(passwd);
-		}).accept(getFactory());
-		Try.orVoidWithActions(TryVoidRunnable.empty(() -> {
-			connection = getFactory().newConnection();
-			channel = connection.createChannel();
-		}), true, () -> {
+		getFactory().setHost(Config.get().getRabbitAdress());
+		getFactory().setPort(Config.get().getRabbitPort());
+		getFactory().setUsername(user);
+		getFactory().setPassword(passwd);
+		Try.test(() -> {
+			setConnection(getFactory().newConnection());
+			setChannel(connection.createChannel());
+		}).catchEx(a -> {
 			Log.out("Unable to access message broker RMQ, ScorchedRoot is going down..");
-			ScThread.sleep(3, TimeUnit.SECONDS); // ultime swag !!!!!!
-				Root.exit(false);
-			});
+			Log.trace(a);
+			Threads.uSleep(3, TimeUnit.SECONDS);
+			Root.safeExit();
+		});
 		Log.out("Sucessfully connected to broker RMQ");
-		Arrays.stream(MessagesType.values()).forEach(this::exchangeDeclare);
+		Arrays.stream(MessagesType.values()).forEach(this::exchangeDeclare); // NOSONAR TRIPLE FDP
 		this.receiver = new RabbitMqReceiver();
 	}
 
 	/**
-	 * Utilis� pour fermer la connection onDisable // A METTRE ONDISABLE()
+	 * Utilisé pour fermer la connection onDisable // A METTRE ONDISABLE()
 	 */
+	@Override
 	public void close() {
-		try {
+		Try.test(() -> {
 			getChannel().close();
 			getConnection().close();
-		} catch (IOException | TimeoutException e) {
-			Main.printStackTrace(e);
-		}
+		}).catchEx(Log::trace);
 	}
 
 	// **************** Getters ***************
@@ -109,7 +135,7 @@ public class RabbitMqConnector implements Broker {
 	 */
 	public void exchangeDeclare(MessagesType msg) {
 		try {
-			getChannel().exchangeDeclare(msg.getName(), type);
+			getChannel().exchangeDeclare(msg.getName(), TYPE);
 		} catch (IOException e) {
 			Main.printStackTrace(e);
 		}
@@ -137,55 +163,94 @@ public class RabbitMqConnector implements Broker {
 		}
 	}
 
-	private final String SPHANTOM_key = RoutingKey.genKey(RoutingKey.SPHANTOM);
-	private final String ALL_SPHANTOM_key = RoutingKey.genKey(RoutingKey.SPHANTOM, RoutingKey.HUBS, RoutingKey.PROXY, RoutingKey.SERVERS);
-	private final String BOOTSERVER_key = RoutingKey.genKey(RoutingKey.HUBS, RoutingKey.PROXY, RoutingKey.SPHANTOM, RoutingKey.SYMBIOTE);
-	private final String SYMBIOTE_key = RoutingKey.genKey(RoutingKey.SYMBIOTE);
-	private final String SERVER_INFOS_key = RoutingKey.genKey(RoutingKey.HUBS, RoutingKey.PROXY, RoutingKey.SPHANTOM);
-
+	/**
+	 * Tout ce qui n'est pas interne comme le heartbeat doit verifier d'être sur le bon replica avant de pouvoir envoyer le packet, si cet instance de Sphantom est en pause alors on n'envoie rien
+	 */
 	@Override
 	public void sendServer(PacketPhantomServerInfo pkt) {
-		basicPublich(MessagesType.UPDATE_SERVER, this.SERVER_INFOS_key, pkt.toByteArray());
+		setSecurity(pkt);
+		if (allowed) {
+			Log.packet(pkt, false);
+			basicPublich(MessagesType.UPDATE_SERVER, this.serverinfosKey, pkt.serializePacket().toByteArray());
+		}
 	}
 
 	@Override
 	public void takeLead(PacketPhantomHeartBeat pkt) {
-		basicPublich(MessagesType.TAKE_LEAD, this.SPHANTOM_key, pkt.toByteArray());
+		setSecurity(pkt);
+		Log.packet(pkt, false);
+		basicPublich(MessagesType.TAKE_LEAD, this.sphantomKey, pkt.serializePacket().toByteArray());
 	}
 
 	@Override
 	public void heartBeat(PacketPhantomHeartBeat pkt) {
-		basicPublich(MessagesType.HEART_BEAT, this.SPHANTOM_key, pkt.toByteArray());
+		setSecurity(pkt);
+		Log.packet(pkt, false);
+		basicPublich(MessagesType.HEART_BEAT, this.sphantomKey, pkt.serializePacket().toByteArray());
 	}
 
 	@Override
 	public void sendPlayer(PacketPhantomPlayer pkt) {
-		basicPublich(MessagesType.UPDATE_PLAYER_ACTION, this.ALL_SPHANTOM_key, pkt.toByteArray());
+		setSecurity(pkt);
+		if (allowed) {
+			Log.packet(pkt, false);
+			basicPublich(MessagesType.UPDATE_PLAYER_ACTION, this.allsphantomKey, pkt.serializePacket().toByteArray());
+		}
 	}
 
 	@Override
 	public void bootServer(PacketPhantomBootServer pkt) {
-		basicPublich(MessagesType.BOOT_SERVER, this.BOOTSERVER_key, pkt.toByteArray());
+		setSecurity(pkt);
+		if (allowed) {
+			Log.packet(pkt, false);
+			basicPublich(MessagesType.BOOT_SERVER, this.bootserverKey, pkt.serializePacket().toByteArray());
+		}
 	}
 
+	/**
+	 * Only for get up to date other sphantom instances
+	 * 
+	 * @param pkt
+	 */
 	@Override
 	public void destroyInstance(PacketPhantomDestroyInstance pkt) {
-		basicPublich(MessagesType.DESTROY_INSTANCE, this.SPHANTOM_key, pkt.toByteArray());
+		setSecurity(pkt);
+		if (allowed) {
+			Log.packet(pkt, false);
+			basicPublich(MessagesType.DESTROY_INSTANCE, this.sphantomKey, pkt.serializePacket().toByteArray());
+		}
 	}
 
 	@Override
 	public void reduceServer(PacketPhantomReduceServer pkt) {
-		basicPublich(MessagesType.REDUCE_SERVER, this.ALL_SPHANTOM_key, pkt.toByteArray());
+		setSecurity(pkt);
+		if (allowed) {
+			Log.packet(pkt, false);
+			basicPublich(MessagesType.REDUCE_SERVER, this.allsphantomKey, pkt.serializePacket().toByteArray());
+		}
 	}
 
+	/**
+	 * when mc serv CGoverhead
+	 * 
+	 * @param pkt
+	 */
 	@Override
 	public void killProcess(PacketPhantomKillProcess pkt) {
-		basicPublich(MessagesType.KILL_PROCESS, this.SYMBIOTE_key, pkt.toByteArray());
+		setSecurity(pkt);
+		if (allowed) {
+			Log.packet(pkt, false);
+			basicPublich(MessagesType.KILL_PROCESS, this.symbioteKey, pkt.serializePacket().toByteArray());
+		}
 	}
 
 	@Override
-	public void gradeUpdate(PacketPhantomGradeUpdate pkt) {
-		basicPublich(MessagesType.UPDATE_PLAYER_GRADE, this.ALL_SPHANTOM_key, pkt.toByteArray());
+	public void sendGradeUpdate(PacketPhantomGradeUpdate pkt) {
+		setSecurity(pkt);
+		if (allowed) {
+			Log.packet(pkt, false);
+			basicPublich(MessagesType.UPDATE_PLAYER_GRADE, this.allsphantomKey, pkt.serializePacket().toByteArray());
+		}
 	}
 
 }

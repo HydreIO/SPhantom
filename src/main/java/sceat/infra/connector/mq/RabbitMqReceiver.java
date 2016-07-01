@@ -1,18 +1,18 @@
 package sceat.infra.connector.mq;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 import sceat.Main;
-import sceat.domain.protocol.MessagesType;
-import sceat.domain.protocol.RoutingKey;
-import sceat.domain.protocol.handler.PacketHandler;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
+
+import fr.aresrpg.sdk.protocol.handling.PacketHandler;
+import fr.aresrpg.sdk.protocol.util.MessagesType;
+import fr.aresrpg.sdk.protocol.util.RoutingKey;
 
 public class RabbitMqReceiver {
 
@@ -27,14 +27,23 @@ public class RabbitMqReceiver {
 
 	// initialisation dans RabbitMqConnector
 	public void init() {
-		connector = RabbitMqConnector.getInstance();
+		setConnector(RabbitMqConnector.getInstance());
+		;
 		try {
-			qname = getChannel().queueDeclare().getQueue();
+			setQname(getChannel().queueDeclare().getQueue());
 			bind();
 			startReceiver();
 		} catch (IOException e) {
 			Main.printStackTrace(e);
 		}
+	}
+
+	public static void setConnector(RabbitMqConnector connector) {
+		RabbitMqReceiver.connector = connector;
+	}
+
+	public static void setQname(String qname) {
+		RabbitMqReceiver.qname = qname;
 	}
 
 	private static RabbitMqConnector getConnector() {
@@ -69,7 +78,15 @@ public class RabbitMqReceiver {
 	 * On s'occupe de bind les message en fonction du serveur actuel
 	 */
 	private void bind() {
-		Arrays.stream(MessagesType.values()).forEach(this::bind);
+		bind(MessagesType.BOOT_SERVER);
+		bind(MessagesType.DESTROY_INSTANCE);
+		bind(MessagesType.HEART_BEAT);
+		bind(MessagesType.REDUCE_SERVER);
+		bind(MessagesType.SYMBIOTE_INFOS);
+		bind(MessagesType.TAKE_LEAD);
+		bind(MessagesType.UPDATE_PLAYER_ACTION);
+		bind(MessagesType.UPDATE_PLAYER_GRADE);
+		bind(MessagesType.UPDATE_SERVER);
 	}
 
 	/**

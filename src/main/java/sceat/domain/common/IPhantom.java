@@ -1,7 +1,7 @@
 package sceat.domain.common;
 
 import sceat.SPhantom;
-import sceat.domain.network.server.Vps;
+import fr.aresrpg.sdk.network.Vps;
 
 public interface IPhantom {
 

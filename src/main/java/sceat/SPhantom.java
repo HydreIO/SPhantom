@@ -1,42 +1,55 @@
 package sceat;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.Socket;
 import java.util.Calendar;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
-import sceat.api.PhantomApi;
-import sceat.api.PhantomApi.ServerApi;
-import sceat.api.PhantomApi.VpsApi;
-import sceat.domain.Heart;
 import sceat.domain.Manager;
 import sceat.domain.common.IPhantom;
-import sceat.domain.common.system.Log;
-import sceat.domain.common.system.Root;
-import sceat.domain.common.thread.Async;
-import sceat.domain.common.thread.PhantomFactory;
 import sceat.domain.config.SPhantomConfig;
 import sceat.domain.network.Core;
-import sceat.domain.network.Core.OperatingMode;
 import sceat.domain.network.ServerProvider;
-import sceat.domain.protocol.PacketSender;
-import sceat.domain.protocol.Security;
-import sceat.domain.protocol.handler.PacketHandler;
-import sceat.domain.protocol.packets.PacketPhantom;
+import sceat.domain.protocol.handler.Handler;
 import sceat.domain.shell.Input;
 import sceat.domain.trigger.PhantomTrigger;
-import sceat.gui.terminal.PhantomTui;
+import sceat.domain.utils.IronHeart;
 import sceat.gui.web.GrizzlyWebServer;
 import sceat.infra.connector.general.VultrConnector;
+import sceat.infra.connector.mq.RabbitMqConnector;
 import sceat.infra.input.ScannerInput;
+import fr.aresrpg.commons.domain.concurrent.Pool;
+import fr.aresrpg.commons.domain.concurrent.Pool.PoolType;
+import fr.aresrpg.commons.domain.concurrent.Threads;
+import fr.aresrpg.commons.domain.condition.Option;
+import fr.aresrpg.commons.domain.condition.functional.Executable;
+import fr.aresrpg.commons.domain.condition.match.Matcher;
+import fr.aresrpg.commons.domain.condition.match.Matcher.Case;
+import fr.aresrpg.commons.domain.log.Logger;
+import fr.aresrpg.commons.domain.log.LoggerBuilder;
+import fr.aresrpg.commons.domain.util.map.Map;
+import fr.aresrpg.commons.domain.util.stream.Collectors;
+import fr.aresrpg.sdk.Weed;
+import fr.aresrpg.sdk.phantom.PhantomApi;
+import fr.aresrpg.sdk.protocol.IHandler;
+import fr.aresrpg.sdk.protocol.handling.PacketHandler;
+import fr.aresrpg.sdk.protocol.util.Security;
+import fr.aresrpg.sdk.system.Broker;
+import fr.aresrpg.sdk.system.Log;
+import fr.aresrpg.sdk.system.Root;
+import fr.aresrpg.sdk.util.Defqon;
+import fr.aresrpg.sdk.util.OperatingMode;
+import fr.aresrpg.sdk.util.concurrent.Async;
+import fr.aresrpg.sdk.util.lang.BaseLang;
 
-public class SPhantom implements Async, Log, Root {
+public class SPhantom implements Async, PhantomApi {
 
 	private static SPhantom instance;
+	private static boolean $ynchronized = false; // NOSONAR laisse mon swag
 	private ExecutorService executor;
 	private ExecutorService pinger;
 	private ExecutorService peaceMaker;
@@ -45,100 +58,120 @@ public class SPhantom implements Async, Log, Root {
 	private boolean lead = false;
 	private boolean local = false;
 	private boolean logPkt = true;
-	public boolean logHeart = false;
-	public boolean logprovider = true;
-	public boolean logDiv = true;
+	private boolean logHeart = false;
+	private boolean logprovider = true;
+	private boolean logDiv = true;
 	private IPhantom iphantom;
-	private Security security;
 	private PhantomApi mainApi;
-	private InetAddress ip;
+	private final Security security = new Security(Main.serial, Main.security);
+	private static final String ENABLED = "enabled";
+	private static final String DISABLED = "disabled";
+	private static final Pattern modeM = Pattern.compile("^setmode ((?:\\d))$");
 
 	/**
 	 * Init sphantom
 	 * 
 	 * @param local
-	 *            if true, allow the broker to send message (false for debugmode without broker)
+	 *            if true, allow the broker to send message (false for debugmode without broker).
 	 */
 	public SPhantom(Boolean local) { // don't change the implementation order !
 		instance = this;
-		setupIp();
-		this.security = new Security(Main.serial, Main.security);
-		PacketPhantom.registerPkts();
+		Weed.init(new Root() {
+
+			@Override
+			public BaseLang getLang() {
+				return null;
+			}
+
+			@Override
+			public Async getAsync() {
+				return getInstance();
+			}
+
+			@Override
+			public void exit(boolean crash) {
+				Main.shutDown();
+			}
+
+			@Override
+			public PhantomApi getApi() {
+				return getInstance();
+			}
+
+			@Override
+			public Broker getBroker() {
+				return RabbitMqConnector.getInstance();
+			}
+
+			@Override
+			public IHandler getPacketHandler() {
+				return Handler.get();
+			}
+
+			@Override
+			public Security getSecurity() {
+				return instance.security;
+			}
+
+			@Override
+			public Logger getLogger() {
+				return new LoggerBuilder("ARESRPG").setUseConsoleHandler(true, true).build();
+			}
+		});
 		this.running = true;
 		this.local = local;
-		this.pinger = Executors.newSingleThreadExecutor(PhantomFactory.create("Pinger Pool - [Thrd: $d]").build());
-		this.peaceMaker = Executors.newSingleThreadExecutor(PhantomFactory.create("PeaceMaker Pool - [Thrd: $d]").build());
-		this.executor = Executors.newFixedThreadPool(70, PhantomFactory.create("Main Pool - [Thrd: $d]").build());
+		this.pinger = Pool.builder().setType(PoolType.FIXED).setName("Pinger Pool - [Thrd: %1%]").toService(Option.none());
+		this.peaceMaker = Pool.builder().setType(PoolType.FIXED).setName("PeaceMaker Pool - [Thrd: %1%]").toService(Option.none());
+		this.executor = Pool.COMMON_POOL.getExecutor();
 		this.config = new SPhantomConfig();
 		this.iphantom = new VultrConnector();
+		CompletableFuture.runAsync(() -> {
+			Threads.uSleep(2, TimeUnit.MINUTES);
+			$ynchronized = true;
+		});
 		PhantomTrigger.init();
 		Manager.init();
 		ServerProvider.init();
 		Core.init();
 		ScannerInput.init();
 		PacketHandler.init();
-		PacketSender.init(getSphantomConfig().getRabbitUser(), getSphantomConfig().getRabbitPassword(), local);
-		new Heart(local).takeLead();
+		RabbitMqConnector.init(local);
+		IronHeart.init(isLocal());
+		IronHeart.lead();
 		startWebPanel(); // ne pas start deux sphantom sur la meme ip sinon le port va être déja utilisé abruti ! de tt façon quel interet d'un replica sur la meme machine..
 	}
 
-	public void startWebPanel() {
-		print("Starting web panel..");
-		try {
-			new GrizzlyWebServer(81);
-			print("Web panel started!");
-		} catch (IOException e) {
-			print("[ERREUR] Unable to start web server !");
-			print("____________________________________________________\n");
-			Main.printStackTrace(e);
-			print("\n____________________________________________________");
+	public static boolean isSynchronized() {
+		return $ynchronized;
+	}
 
+	public void startWebPanel() {
+		Log.out("Starting web panel..");
+		try {
+			GrizzlyWebServer.init(81);
+			Log.out("Web panel started!");
+		} catch (IOException e) {
+			Log.out("[ERREUR] Unable to start web server !");
+			Log.trace(e);
 		}
 	}
 
 	public void stopWebPanel() {
-		print("WebPanel stoping...");
+		Log.out("WebPanel stoping...");
 		GrizzlyWebServer.stop();
-		print("WebPanel stopped.");
-	}
-
-	public InetAddress getIp() {
-		return ip;
-	}
-
-	public void setupIp() {
-		print("Oppening socket to get Ip...");
-		Socket s = null;
-		try {
-			s = new Socket("google.com", 80);
-			print("Ip founded ! [" + s.getLocalAddress().getHostName() + "]");
-			this.ip = s.getLocalAddress();
-		} catch (IOException e) {
-			Main.printStackTrace(e);
-			print("Unable to find the Ip !");
-			try {
-				Thread.sleep(3000);
-			} catch (InterruptedException e1) {
-				Main.printStackTrace(e1);
-			}
-			Main.shutDown();
-		} finally {
-			try {
-				s.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
+		Log.out("WebPanel stopped.");
 	}
 
 	public PhantomApi getMainApi() {
 		return mainApi;
 	}
 
+	@Override
 	public ServerApi getServerApi(String srv) {
-		return Manager.getInstance().getServersByLabel().getOrDefault(srv, null);
+		return Manager.getInstance().getServersByLabel().safeGetOrDefault(srv, null);
 	}
 
+	@Override
 	public VpsApi getVpsApi(String vps) {
 		return Core.getInstance().getVps().getOrDefault(vps, null);
 	}
@@ -160,19 +193,16 @@ public class SPhantom implements Async, Log, Root {
 	}
 
 	public void setLead(boolean lead) {
+		Log l = Log.getInstance();
 		if (!lead) {
-			print("----------------------------------------------------------");
-			print("SPhantom instance has lost the lead !");
-			print("Starting to run in background and wait for wakingUp !");
-			print("try <forcelead> for set this instance to lead");
-			print("----------------------------------------------------------");
+			l.logOut("----------------------------------------------------------");
+			l.logOut("SPhantom instance has lost the lead !");
+			l.logOut("Starting to run in background and wait for wakingUp !");
+			l.logOut("try <forcelead> for set this instance to lead");
+			l.logOut("----------------------------------------------------------");
 		}
-		PacketSender.getInstance().pause(!lead);
+		RabbitMqConnector.getInstance().pause(!lead);
 		this.lead = lead;
-	}
-
-	public Security getSecurity() {
-		return security;
 	}
 
 	public boolean isLeading() {
@@ -196,95 +226,57 @@ public class SPhantom implements Async, Log, Root {
 		return peaceMaker;
 	}
 
+	private <T, R> Case<T, R> when(Predicate<T> p, Executable e) {
+		return Matcher.when(p, e);
+	}
+
 	public void awaitForInput() {
 		Input input = Input.getInstance();
+		Log l = Log.getInstance();
 		while (isRunning()) {
-			print("Send Input (type help for show cmds) :");
-			print(".. >_");
-			switch (input.next()) {
-				case "help":
-				case "Help":
-					print("> shutdown [Close this Sphantom instance]");
-					print("> forcelead [This instance will become the replica leader]");
-					print("> logpkt [Enable/Disable the packet logger]");
-					print("> logProvider [Enable/Disable the overspan logger]");
-					print("> setMode <1|2|3> [Set operating mode Eco|Normal|NoLag]");
-					print("> logHB [Enable/Disable the heartBeat logger]");
-					print("> logDiv [Enable/Disable the global logger]");
-					print("> vps [Show all vps]");
-					print("> create_server");
-					break;
-				case "create_srv":
-				case "create_server":
-					try {
-						PhantomTui.commandServ();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					break;
-				case "loghb":
-				case "logHB":
-					this.logHeart = !this.logHeart;
-					print("HeartBeat logger " + (this.logHeart ? "enabled" : "disabled") + " !");
-					break;
-				case "vps":
-					print("Vps registered : ");
-					Core.getInstance().getVps().values().forEach(v -> print(v.toString() + "\n"));
-					break;
-				case "logdiv":
-				case "logDiv":
-					this.logDiv = !this.logDiv;
-					print("Diver logger " + (this.logDiv ? "enabled" : "disabled") + " !");
-					break;
-				case "exit":
-				case "shutdown":
-					Main.shutDown();
-					break;
-				case "forcelead":
-					Heart.getInstance().takeLead();
-					break;
-				case "logpkt":
-					this.logPkt = !this.logPkt;
-					print("Packet logger " + (this.logPkt ? "enabled" : "disabled") + " !");
-					break;
-				case "logprovider":
-				case "logProvider":
-					this.logprovider = !this.logprovider;
-					print("ServerProvider logger " + (this.logprovider ? "enabled" : "disabled") + " !");
-					break;
-				case "setmode1": // olalala aucun parsing, pabo dutou !
-				case "setMode1":
-					if (Core.getInstance().getMode() == OperatingMode.Eco) {
-						print("Eco mode already enabled !");
-						break;
-					}
-					Core.getInstance().setMode(OperatingMode.Eco, false);
-					print("Eco mode enabled");
-					break;
-				case "setmode2":
-				case "setMode2":
-					if (Core.getInstance().getMode() == OperatingMode.Normal) {
-						print("Normal mode already enabled !");
-						break;
-					}
-					Core.getInstance().setMode(OperatingMode.Normal, false);
-					print("Normal mode enabled");
-					break;
-				case "setmode3":
-				case "setMode3":
-					if (Core.getInstance().getMode() == OperatingMode.NoLag) {
-						print("NoLag mode already enabled !");
-						break;
-					}
-					Core.getInstance().setMode(OperatingMode.NoLag, false);
-					print("NoLag mode enabled");
-					break;
-				default:
-					print("Unknow command!");
-					break;
-			}
+			l.logOut("Send Input (type help for show cmds) :");
+			l.logOut(".. >_");
+			Matcher.match(input.next(), when("help"::equalsIgnoreCase, () -> {
+				l.logOut("> shutdown [Close this Sphantom instance]");
+				l.logOut("> forcelead [This instance will become the replica leader]");
+				l.logOut("> logpkt [Enable/Disable the packet logger]");
+				l.logOut("> logProvider [Enable/Disable the overspan logger]");
+				l.logOut("> setMode <1|2|3> [Set operating mode Eco|Normal|NoLag]");
+				l.logOut("> logHB [Enable/Disable the heartBeat logger]");
+				l.logOut("> logDiv [Enable/Disable the global logger]");
+				l.logOut("> vps [Show all vps]");
+				l.logOut("> create_server");
+			}), when("loghb"::equalsIgnoreCase, () -> {
+				this.setLogHeart(!this.isLogHeart());
+				l.logOut("HeartBeat logger " + (this.isLogHeart() ? ENABLED : DISABLED) + " !");
+			}), when("vps"::equalsIgnoreCase, () -> {
+				l.logOut("Vps registered : ");
+				Core.getInstance().getVps().values().forEach(v -> l.logOut(v.toString() + "\n"));
+			}), when("logdiv"::equalsIgnoreCase, () -> {
+				this.logDiv = !this.logDiv;
+				l.logOut("Diver logger " + (this.logDiv ? ENABLED : DISABLED) + " !");
+			}), when("exit"::equalsIgnoreCase, Main::shutDown), when("forcelead"::equalsIgnoreCase, IronHeart::lead), when("logpkt"::equalsIgnoreCase, () -> {
+				this.logPkt = !this.logPkt;
+				l.logOut("Packet logger " + (this.logPkt ? ENABLED : DISABLED) + " !");
+			}), when("logprovider"::equalsIgnoreCase, () -> {
+				this.setLogprovider(!this.isLogprovider());
+				l.logOut("ServerProvider logger " + (this.isLogprovider() ? ENABLED : DISABLED) + " !");
+			}), when(a -> {
+				java.util.regex.Matcher m = modeM.matcher(a.toLowerCase());
+				if (m.matches()) {
+					m.start();
+					updateMode(Integer.parseInt(m.group(1)));
+				}
+				return false;
+			}, () -> {}), Matcher.def(() -> Log.out("Unknow command!")));
 		}
 
+	}
+
+	private void updateMode(int var) {
+		OperatingMode m = var == 1 ? OperatingMode.ECO : var == 2 ? OperatingMode.NOLAG : OperatingMode.NOLAG;
+		if (Core.getInstance().getMode() == m) Log.out(m.name() + " mode is already enabled");
+		else Core.getInstance().setMode(OperatingMode.NOLAG, false);
 	}
 
 	public void stackTrace(int maxline) {
@@ -295,17 +287,7 @@ public class SPhantom implements Async, Log, Root {
 			if (i == maxline) break;
 			else i++;
 		}
-		System.out.println(msg);
-	}
-
-	public static void print(String txt) {
-		print(txt, true);
-	}
-
-	public static void print(String txt, boolean log) {
-		if (!PhantomTui.canlog) return;
-		if (log) Main.getLogger().info(txt);
-		else System.out.println(new java.sql.Timestamp(System.currentTimeMillis()).toString().substring(0, 16) + " | [Sphantom] > " + txt);
+		Log.out(msg);
 	}
 
 	public static SPhantom getInstance() {
@@ -321,26 +303,6 @@ public class SPhantom implements Async, Log, Root {
 	}
 
 	@Override
-	public void logOut(String log) {
-		print(log);
-	}
-
-	@Override
-	public void logPkt(PacketPhantom pkt, boolean in) {
-		if (logPkt) logOut((in ? "<RECV] " : "[SEND> ") + pkt.toString());
-	}
-
-	@Override
-	public void logTrace(Exception e) {
-		Main.printStackTrace(e);
-	}
-
-	@Override
-	public void logTrace(Throwable t) {
-		Main.printStackTrace(t);
-	}
-
-	@Override
 	public void run(Runnable r) {
 		getExecutor().execute(r);
 	}
@@ -350,9 +312,40 @@ public class SPhantom implements Async, Log, Root {
 		return CompletableFuture.<T> supplyAsync(t, getExecutor());
 	}
 
+	public boolean isLogprovider() {
+		return logprovider;
+	}
+
+	public void setLogprovider(boolean logprovider) {
+		this.logprovider = logprovider;
+	}
+
+	public boolean isLogHeart() {
+		return logHeart;
+	}
+
+	public void setLogHeart(boolean logHeart) {
+		this.logHeart = logHeart;
+	}
+
 	@Override
-	public void exit() {
-		Main.shutDown();
+	public Map<String, VpsApi> getAllVps() {
+		return Core.getInstance().getVps().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+	}
+
+	@Override
+	public Defqon getDefkonLevel() {
+		return ServerProvider.getInstance().getDefqon();
+	}
+
+	@Override
+	public int countAllPlayers() {
+		return Manager.getInstance().countPlayersOnNetwork();
+	}
+
+	@Override
+	public OperatingMode getOpMode() {
+		return Core.getInstance().getMode();
 	}
 
 }

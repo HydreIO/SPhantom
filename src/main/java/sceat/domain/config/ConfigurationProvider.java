@@ -5,8 +5,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.HashMap;
-import java.util.Map;
+
+import fr.aresrpg.commons.domain.util.map.HashMap;
+import fr.aresrpg.commons.domain.util.map.Map;
 
 public abstract class ConfigurationProvider {
 
@@ -17,7 +18,7 @@ public abstract class ConfigurationProvider {
 	}
 
 	public static ConfigurationProvider getProvider(Class<? extends ConfigurationProvider> provider) {
-		return providers.get(provider);
+		return providers.safeGet(provider);
 	}
 
 	/*------------------------------------------------------------------------*/
